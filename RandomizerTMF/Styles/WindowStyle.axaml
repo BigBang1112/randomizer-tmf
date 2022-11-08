@@ -1,0 +1,43 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+		<Window Width="500" Height="400">
+			<Label>Contents</Label>
+		</Window>
+    </Design.PreviewWith>
+
+	<Style Selector="Window">
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="ExtendClientAreaToDecorationsHint" Value="True"/>
+		<Setter Property="TransparencyLevelHint" Value="AcrylicBlur"/>
+		<Setter Property="ExtendClientAreaTitleBarHeightHint" Value="36"/>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Panel>
+					<ExperimentalAcrylicBorder IsHitTestVisible="False">
+						<ExperimentalAcrylicBorder.Material>
+							<ExperimentalAcrylicMaterial
+								BackgroundSource="Digger"
+								TintColor="Black"
+								TintOpacity="1"
+								MaterialOpacity="0.7" />
+						</ExperimentalAcrylicBorder.Material>
+						<Border BorderThickness="3" Opacity="0.85" Padding="-3">
+							<Border.BorderBrush>
+								<LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+									<GradientStop Color="Transparent" Offset="0.1" />
+									<GradientStop Color="#444" Offset="1" />
+								</LinearGradientBrush>
+							</Border.BorderBrush>
+						</Border>
+					</ExperimentalAcrylicBorder>
+					<ContentPresenter
+						Content="{TemplateBinding Content}"
+						Margin="{TemplateBinding Padding}"
+						HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+						VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+				</Panel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+</Styles>

@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="RandomizerTMF.Views.MainWindow"
+		WindowStartupLocation="CenterScreen"
+		Width="800"
+		Height="400"
+		MinWidth="750"
+		Title="Randomizer TMF - Random Map Challenge for TMNF/TMUF">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+
+	<DockPanel>
+		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+		<Grid ShowGridLines="False">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="2"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="5"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="5"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="5"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="10"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="10"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="10"/>
+			</Grid.ColumnDefinitions>
+			
+			<TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="15" HorizontalAlignment="Center">Select the game installation directory of your TMNF/TMUF (containing TmForever.exe, Nadeo.ini, etc)...</TextBlock>
+			
+			<Button Grid.Row="2" Grid.Column="1" Command="{Binding SelectGameDirectoryClick}" Content="Select installation directory..."/>
+			<TextBox Grid.Row="2" Grid.Column="2" Text="{Binding GameDirectory}" IsEnabled="False" Margin="5 0 0 0"/>
+			
+			<TextBlock Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 5 0">Nadeo.ini:</TextBlock>
+			<TextBox Grid.Row="4" Grid.Column="2" Text="{Binding NadeoIni}" IsEnabled="False" Margin="5 0 0 0"/>
+			
+			<TextBlock Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 5 0">User data directory:</TextBlock>
+			<TextBox Grid.Row="6" Grid.Column="2" Text="{Binding UserDirectory}" IsEnabled="False" Margin="5 0 0 0"/>
+			
+			<TextBlock Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" Margin="15" HorizontalAlignment="Center">That should be it! Validate the directories above (if they make sense), then click Proceed to begin.</TextBlock>
+		</Grid>
+
+	</DockPanel>
+</Window>
