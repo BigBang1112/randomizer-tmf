@@ -5,10 +5,12 @@ using ReactiveUI;
 namespace RandomizerTMF.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
-{
+{    
     private string? gameDirectory;
     private string? nadeoIni;
     private string? userDirectory;
+    
+    public required Window Window { get; init; }
 
     public TopBarViewModel TopBarViewModel { get; set; }
 
@@ -34,11 +36,17 @@ public class MainWindowViewModel : ViewModelBase
     {
         TopBarViewModel = new();
         TopBarViewModel.CloseClick += CloseClick;
+        TopBarViewModel.MinimizeClick += MinimizeClick;
     }
 
     public void CloseClick()
     {
         RandomizerEngine.Exit();
+    }
+
+    public void MinimizeClick()
+    {
+        Window.WindowState = WindowState.Minimized;
     }
 
     public async Task SelectGameDirectoryClick()

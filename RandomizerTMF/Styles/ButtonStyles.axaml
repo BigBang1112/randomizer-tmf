@@ -1,0 +1,20 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:views="using:RandomizerTMF.Views">
+    <Design.PreviewWith>
+        <Border Width="200" Height="100">
+            <!-- Add Controls for Previewer Here -->
+			<Button Classes="topBarButton">X</Button>
+        </Border>
+    </Design.PreviewWith>
+
+	<Style Selector="Button.topBarButton">
+		<Setter Property="HorizontalAlignment" Value="Right"/>
+		<Setter Property="VerticalAlignment" Value="Stretch"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Width" Value="30"/>
+		<Setter Property="FontSize" Value="10"/>
+		<Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+	</Style>
+</Styles>

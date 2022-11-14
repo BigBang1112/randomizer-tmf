@@ -5,6 +5,7 @@ namespace RandomizerTMF.ViewModels;
 public class TopBarViewModel : ViewModelBase
 {
     public event Action? CloseClick;
+    public event Action? MinimizeClick;
 
     public TopBarViewModel()
     {
@@ -18,6 +19,6 @@ public class TopBarViewModel : ViewModelBase
 
     public void OnMinimizeClick()
     {
-        
+        MinimizeClick?.Invoke();
     }
 }

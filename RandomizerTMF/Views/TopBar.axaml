@@ -10,7 +10,11 @@
 		<vm:TopBarViewModel/>
 	</Design.DataContext>
 
-	<Border DockPanel.Dock="Top" BorderThickness="0 0 0 2" Padding="4 4 0 4" Margin="6 0">
+	<UserControl.Styles>
+		<StyleInclude Source="/Styles/ButtonStyles.axaml"/>
+	</UserControl.Styles>
+
+	<Border DockPanel.Dock="Top" BorderThickness="0 0 0 2" Padding="4 4 0 4" Margin="6 0" Height="36">
 		<Border.BorderBrush>
 			<LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
 				<GradientStop Color="Transparent" Offset="0.1" />
@@ -19,10 +23,8 @@
 		</Border.BorderBrush>
 		<Panel>
 			<Label IsHitTestVisible="False" Content="Randomizer TMF - Random Map Challenge for TMNF/TMUF" VerticalContentAlignment="Center"/>
-			<Button HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0 0 32 0"
-					Width="30" FontSize="10" Command="{Binding OnMinimizeClick}">_</Button>
-			<Button HorizontalAlignment="Right" HorizontalContentAlignment="Center"
-					Width="30" FontSize="10" Background="DarkRed" Command="{Binding OnCloseClick}">X</Button>
+			<Button Classes="topBarButton" Margin="0 0 32 0" Command="{Binding OnMinimizeClick}"></Button>
+			<Button Classes="topBarButton" Background="DarkRed" Command="{Binding OnCloseClick}"></Button>
 		</Panel>
 	</Border>
 </UserControl>
