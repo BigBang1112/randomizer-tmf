@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+        mc:Ignorable="d"
+		d:DesignWidth="500"
+		d:DesignHeight="450"
+		Width="500"
+		Height="450"
+        x:Class="RandomizerTMF.Views.DashboardWindow"
+		WindowStartupLocation="CenterScreen"
+		Title="Randomizer TMF - Random Map Challenge for TMNF/TMUF">
+	
+	<Design.DataContext>
+		<vm:DashboardWindowViewModel/>
+	</Design.DataContext>
+	
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+	
+	<DockPanel>
+		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+		<Grid>
+			
+		</Grid>
+	</DockPanel>
+</Window>
