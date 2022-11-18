@@ -143,6 +143,17 @@
 						</ListBox.ItemTemplate>
 					</ListBox>
 				</Border>
+
+				<StackPanel Grid.Row="1"
+							Orientation="Horizontal"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Opacity="0.7">
+					<TextBlock IsVisible="{Binding !HasAutosavesScanned}" Text="{Binding AutosaveScanCount}"/>
+					<TextBlock IsVisible="{Binding !HasAutosavesScanned}" Text=" autosaves found"/>
+				</StackPanel>
+
+
 				<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 3" Orientation="Horizontal">
 					<TextBlock FontSize="10" VerticalAlignment="Center" Text="{Binding Autosaves.Count}"/>
 					<TextBlock FontSize="10" VerticalAlignment="Center" Text=" autosave details loaded. Try double click!"/>

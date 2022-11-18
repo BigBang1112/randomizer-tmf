@@ -25,27 +25,50 @@ public static class RandomizerEngine
             
             AutosavesDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, "Tracks", "Replays", "Autosaves");
             DownloadedDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, "Tracks", "Challenges", "Downloaded", string.IsNullOrWhiteSpace(Config.DownloadedMapsDirectory) ? Constants.DownloadedMapsDirectory : Config.DownloadedMapsDirectory);
+
+            AutosaveWatcher.Path = AutosavesDirectoryPath ?? "";
         }
     }
 
     public static string? AutosavesDirectoryPath { get; private set; }
     public static string? DownloadedDirectoryPath { get; private set; }
 
-    public static Task? Session { get; private set; }
-    public static CancellationTokenSource? SessionTokenSource { get; private set; }
+    public static Task? CurrentSession { get; private set; }
+    public static CancellationTokenSource? CurrentSessionTokenSource { get; private set; }
+    public static CancellationTokenSource? SkipTokenSource { get; private set; }
+    public static CGameCtnChallenge? CurrentSessionMap { get; private set; }
 
-    public static bool HasSessionRunning => Session is not null;
+    public static bool HasSessionRunning => CurrentSession is not null;
     public static bool HasAutosavesScanned { get; private set; }
 
     public static ConcurrentDictionary<string, CGameCtnReplayRecord> Autosaves { get; } = new();
     public static ConcurrentDictionary<string, string> AutosavePaths { get; } = new();
     public static ConcurrentDictionary<string, AutosaveDetails> AutosaveDetails { get; } = new();
 
+    public static FileSystemWatcher AutosaveWatcher { get; }
+
+    public static event Action? MapStarted;
+    public static event Action? MapEnded;
+
     static RandomizerEngine()
     {
         GBX.NET.Lzo.SetLzo(typeof(GBX.NET.LZO.MiniLZO));
         
         Config = GetOrCreateConfig();
+
+        AutosaveWatcher = new FileSystemWatcher
+        {
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+            Filter = "*.Replay.gbx"
+        };
+
+        AutosaveWatcher.Created += AutosaveCreatedOrChanged;
+        AutosaveWatcher.Changed += AutosaveCreatedOrChanged;
+    }
+
+    private static void AutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
+    {
+        
     }
 
     private static RandomizerConfig GetOrCreateConfig()
@@ -144,7 +167,7 @@ public static class RandomizerEngine
 
         var anythingChanged = false;
         
-        foreach (var file in Directory.EnumerateFiles(AutosavesDirectoryPath))
+        foreach (var file in Directory.EnumerateFiles(AutosavesDirectoryPath).AsParallel())
         {
             if (GameBox.ParseNodeHeader(file) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
             {
@@ -214,25 +237,27 @@ public static class RandomizerEngine
         }
     }
 
-    public static Task StartSessionAsync()
+    public static Task StartSessionAsync(Rules rules)
     {
         if (Config.GameDirectory is null)
         {
             return Task.CompletedTask;
         }
 
-        SessionTokenSource = new CancellationTokenSource();
-        Session = Task.Run(() => RunSessionAsync(SessionTokenSource.Token), SessionTokenSource.Token);
+        CurrentSessionTokenSource = new CancellationTokenSource();
+        CurrentSession = Task.Run(() => RunSessionAsync(rules, CurrentSessionTokenSource.Token), CurrentSessionTokenSource.Token);
         
         return Task.CompletedTask;
     }
 
-    private static async Task RunSessionAsync(CancellationToken cancellationToken)
+    private static async Task RunSessionAsync(Rules rules, CancellationToken cancellationToken)
     {
         if (Config.GameDirectory is null)
         {
             throw new Exception("Game directory is null");
         }
+        
+        ///////// validate rules
 
         using var http = new HttpClient();
         
@@ -242,6 +267,8 @@ public static class RandomizerEngine
 
             try
             {
+                /////////// create urls based on rules
+
                 using var randomResponse = await http.HeadAsync("https://tmuf.exchange/trackrandom", cancellationToken);
 
                 randomResponse.EnsureSuccessStatusCode();
@@ -262,7 +289,7 @@ public static class RandomizerEngine
                     throw new Exception();
                 }
 
-                ////////////// ...
+                ////////////// validate the map
 
                 var downloadedDir = DownloadedDirectoryPath;
 
@@ -283,6 +310,8 @@ public static class RandomizerEngine
                 mapSavePath = Path.Combine(downloadedDir, fileName);
 
                 File.WriteAllBytes(mapSavePath, await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken));
+
+                CurrentSessionMap = map;
             }
             catch (HttpRequestException)
             {
@@ -297,30 +326,58 @@ public static class RandomizerEngine
 
             OpenFileIngame(mapSavePath);
 
-            await Task.Delay(30000, cancellationToken);
+            AutosaveWatcher.EnableRaisingEvents = true;
+            SkipTokenSource = new CancellationTokenSource();
+            MapStarted?.Invoke();
+
+            while (true)
+            {
+                await Task.Delay(50, cancellationToken);
+
+                try
+                {
+                    await Task.Delay(50, SkipTokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+            }
+
+            StopTrackingCurrentSessionMap();
         }
+    }
+
+    private static void StopTrackingCurrentSessionMap()
+    {
+        SkipTokenSource = null;
+        AutosaveWatcher.EnableRaisingEvents = false;
+        CurrentSessionMap = null;
+        MapEnded?.Invoke();
     }
         
     public static async Task EndSessionAsync()
     {
-        SessionTokenSource?.Cancel();
+        CurrentSessionTokenSource?.Cancel();
 
-        if (Session is not null)
+        if (CurrentSession is not null)
         {
             try
             {
-                await Session;
+                await CurrentSession;
             }
             catch (TaskCanceledException)
             {
-                Session = null;
+                StopTrackingCurrentSessionMap();
+                CurrentSession = null;
             }
         }
     }
 
     public static Task SkipMapAsync()
     {
-        throw new NotImplementedException();
+        SkipTokenSource?.Cancel();
+        return Task.CompletedTask;
     }
 
     public static void OpenFileIngame(string filePath)

@@ -50,7 +50,8 @@
 				FontWeight="Bold"
 				Background="{Binding PrimaryButtonBackground}"
 				Command="{Binding PrimaryButtonClick}"
-				Content="{Binding PrimaryButtonText}"/>
+				Content="{Binding PrimaryButtonText}"
+				IsEnabled="{Binding PrimaryButtonEnabled}"/>
 		
 		<Button Grid.Row="5" Grid.Column="1"
 				HorizontalAlignment="Stretch"

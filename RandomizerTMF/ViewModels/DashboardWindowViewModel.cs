@@ -24,6 +24,7 @@ public class DashboardWindowViewModel : WindowViewModelBase
     }
 
     public bool HasAutosavesScanned => RandomizerEngine.HasAutosavesScanned;
+    public int AutosaveScanCount => RandomizerEngine.Autosaves.Count;
 
     public DashboardWindowViewModel()
     {
@@ -58,6 +59,7 @@ public class DashboardWindowViewModel : WindowViewModelBase
             while (true)
             {
                 Autosaves = new(GetAutosaveModels());
+                this.RaisePropertyChanged(nameof(AutosaveScanCount));
                 await Task.Delay(20, cts.Token);
             }
         }));
@@ -121,6 +123,11 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
     public void AutosaveDoubleClick(int selectedIndex)
     {
+        if (selectedIndex < 0)
+        {
+            return;
+        }
+
         if (!RandomizerEngine.AutosavePaths.TryGetValue(Autosaves[selectedIndex].MapUid, out string? fileName))
         {
             return;
