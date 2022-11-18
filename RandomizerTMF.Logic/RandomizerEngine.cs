@@ -294,15 +294,8 @@ public static class RandomizerEngine
             {
                 continue;
             }
-            
-            var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, "TmForever.exe"), $"/useexedir /singleinst /file=\"{mapSavePath}\"");
 
-            var process = new Process
-            {
-                StartInfo = startInfo
-            };
-
-            process.Start();
+            OpenFileIngame(mapSavePath);
 
             await Task.Delay(30000, cancellationToken);
         }
@@ -328,6 +321,33 @@ public static class RandomizerEngine
     public static Task SkipMapAsync()
     {
         throw new NotImplementedException();
+    }
+
+    public static void OpenFileIngame(string filePath)
+    {
+        if (Config.GameDirectory is null)
+        {
+            throw new Exception("Game directory is null");
+        }
+
+        var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /singleinst /file=\"{filePath}\"");
+
+        var process = new Process
+        {
+            StartInfo = startInfo
+        };
+
+        process.Start();
+    }
+
+    public static void OpenAutosaveIngame(string fileName)
+    {
+        if (AutosavesDirectoryPath is null)
+        {
+            throw new Exception("Cannot open an autosave ingame without a valid user data directory path.");
+        }
+
+        OpenFileIngame(Path.Combine(AutosavesDirectoryPath, fileName));
     }
 
     public static void Exit()

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using RandomizerTMF.ViewModels;
 
 namespace RandomizerTMF.Views
 {
@@ -7,6 +8,11 @@ namespace RandomizerTMF.Views
         public DashboardWindow()
         {
             InitializeComponent();
+        }
+
+        private void AutosavesDoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            (DataContext as DashboardWindowViewModel)?.AutosaveDoubleClick(((ListBox)(sender ?? throw new Exception())).SelectedIndex);
         }
     }
 }

@@ -113,7 +113,7 @@
 					<Border.BorderBrush>
 						<SolidColorBrush Color="Gray" Opacity="0.5"/>
 					</Border.BorderBrush>
-					<ListBox Items="{Binding Autosaves, Mode=OneWay}">
+					<ListBox DoubleTapped="AutosavesDoubleTapped" Items="{Binding Autosaves, Mode=OneWay}">
 						<ListBox.Background>
 							<SolidColorBrush Color="#222222" Opacity="0.5"/>
 						</ListBox.Background>

@@ -118,4 +118,14 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
         Window.Close();
     }
+
+    public void AutosaveDoubleClick(int selectedIndex)
+    {
+        if (!RandomizerEngine.AutosavePaths.TryGetValue(Autosaves[selectedIndex].MapUid, out string? fileName))
+        {
+            return;
+        }
+
+        RandomizerEngine.OpenAutosaveIngame(fileName);
+    }
 }
