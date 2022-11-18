@@ -2,6 +2,8 @@
 
 public class RandomizationRules
 {
+    public required ESite Site { get; init; }
+
     public string? Author { get; init; }
     public EEnvironment[]? Environment { get; init; }
     public string? Name { get; init; }
