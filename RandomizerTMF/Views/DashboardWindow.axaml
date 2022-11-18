@@ -5,9 +5,10 @@
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
         mc:Ignorable="d"
-		d:DesignWidth="500"
+		d:DesignWidth="1000"
 		d:DesignHeight="450"
-		Width="500"
+		Width="1000"
+		MinWidth="750"
 		Height="450"
         x:Class="RandomizerTMF.Views.DashboardWindow"
 		WindowStartupLocation="CenterScreen"
@@ -23,8 +24,131 @@
 	
 	<DockPanel>
 		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
-		<Grid>
+		<Grid Margin="10 5">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="35"/>
+					<RowDefinition Height="*"/>
+					<RowDefinition Height="5"/>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="5"/>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="5"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+					Your challenge sessions:
+				</TextBlock>
+				<Border Grid.Row="1" Width="250" BorderThickness="2">
+					<Border.BorderBrush>
+						<SolidColorBrush Color="Gray" Opacity="0.5"/>
+					</Border.BorderBrush>
+					<ListBox>
+						<ListBox.Background>
+							<SolidColorBrush Color="#222222" Opacity="0.5"/>
+						</ListBox.Background>
+					</ListBox>
+				</Border>
+
+				<Button Grid.Row="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Open sessions folder</Button>
+				<Button Grid.Row="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Configure Randomizer TMF</Button>
+			</Grid>
 			
+			<Grid ShowGridLines="False" Grid.Column="1">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="35"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="5"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="*"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="5"/>
+					<RowDefinition Height="50"/>
+					<RowDefinition Height="5"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="10"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="5"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="10"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+					Session settings:
+				</TextBlock>
+
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GameDirectory}" IsEnabled="False"/>
+				<Button Grid.Row="1" Grid.Column="3"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						Command="{Binding ChangeClick}">Change</Button>
+
+				<CheckBox Grid.Row="3" Grid.Column="1" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
+
+				<Button Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						FontSize="16" FontWeight="Bold"
+						Command="{Binding StartModulesClick}"
+						IsEnabled="{Binding HasAutosavesScanned}">OPEN MODULES</Button>
+			</Grid>
+			<Grid Grid.Column="2">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="35"/>
+					<RowDefinition Height="*"/>
+					<RowDefinition Height="25"/>
+					<RowDefinition Height="5"/>
+				</Grid.RowDefinitions>
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Already played maps:"/>
+				<Border Grid.Row="1" Width="250" BorderThickness="2">
+					<Border.BorderBrush>
+						<SolidColorBrush Color="Gray" Opacity="0.5"/>
+					</Border.BorderBrush>
+					<ListBox Items="{Binding Autosaves, Mode=OneWay}">
+						<ListBox.Background>
+							<SolidColorBrush Color="#222222" Opacity="0.5"/>
+						</ListBox.Background>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid Margin="-6" VerticalAlignment="Center">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="20"/>
+										<ColumnDefinition Width="*"/>
+									</Grid.ColumnDefinitions>
+									<Image Width="20" Height="20" Source="{Binding EnvIconBitmap}"/>
+									<TextBlock Grid.Column="1" Text="{Binding Text}" Margin="5 1 0 0" Width="200" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+									<Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 5 0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="5"/>
+											<ColumnDefinition Width="5"/>
+											<ColumnDefinition Width="5"/>
+											<ColumnDefinition Width="5"/>
+										</Grid.ColumnDefinitions>
+										<Image Grid.Column="3" Width="20" Source="/Assets/Images/Medals/BronzeMedal.png" IsVisible="{Binding Autosave.HasBronzeMedal}"/>
+										<Image Grid.Column="2" Width="20" Source="/Assets/Images/Medals/SilverMedal.png" IsVisible="{Binding Autosave.HasSilverMedal}"/>
+										<Image Grid.Column="1" Width="20" Source="/Assets/Images/Medals/GoldMedal.png" IsVisible="{Binding Autosave.HasGoldMedal}"/>
+										<Image Width="20" Source="/Assets/Images/Medals/NadeoMedal.png" IsVisible="{Binding Autosave.HasAuthorMedal}"/>
+									</Grid>
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</Border>
+				<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 3" Orientation="Horizontal">
+					<TextBlock FontSize="10" VerticalAlignment="Center" Text="{Binding Autosaves.Count}"/>
+					<TextBlock FontSize="10" VerticalAlignment="Center" Text=" autosave details loaded. Try double click!"/>
+				</StackPanel>
+			</Grid>
 		</Grid>
+		
 	</DockPanel>
 </Window>

@@ -1,18 +1,17 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
+using GBX.NET.Engines.Game;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Views;
 using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public class MainWindowViewModel : WindowViewModelBase
 {
     private string? gameDirectory;
     private string? userDirectory;
     private GameDirInspectResult? nadeoIni;
-
-    public required Window Window { get; init; }
 
     public TopBarViewModel TopBarViewModel { get; set; }
 
@@ -34,7 +33,7 @@ public class MainWindowViewModel : ViewModelBase
         set
         {
             this.RaiseAndSetIfChanged(ref nadeoIni, value);
-            
+
             this.RaisePropertyChanged(nameof(OpacityNadeoIni));
             this.RaisePropertyChanged(nameof(OpacityTmForever));
             this.RaisePropertyChanged(nameof(OpacityTmUnlimiter));
@@ -54,11 +53,11 @@ public class MainWindowViewModel : ViewModelBase
     public bool ValidNadeoIni => NadeoIni is not null && NadeoIni.NadeoIniException is null;
     public bool ValidTmForever => NadeoIni is not null && NadeoIni.TmForeverException is null;
     public bool ValidTmUnlimiter => NadeoIni is not null && NadeoIni.TmUnlimiterException is null;
-    
+
     public double OpacityNadeoIni => NadeoIni is null ? 0.25 : 0.9;
     public double OpacityTmForever => NadeoIni is null ? 0.25 : 0.9;
     public double OpacityTmUnlimiter => NadeoIni is null || NadeoIni.TmUnlimiterException is FileNotFoundException ? 0.25 : 0.9;
-    
+
     public IBrush ColorNadeoIni => NadeoIni is null ? Brushes.Gray : (NadeoIni.NadeoIniException is null ? Brushes.DarkGreen : Brushes.DarkRed);
     public IBrush ColorTmForever => NadeoIni is null ? Brushes.Gray : (NadeoIni.TmForeverException is null ? Brushes.DarkGreen : Brushes.DarkRed);
     public IBrush ColorTmUnlimiter => NadeoIni is null ? Brushes.Gray : (NadeoIni.TmUnlimiterException is null ? Brushes.DarkGreen : (NadeoIni.TmUnlimiterException is FileNotFoundException ? Brushes.Gray : Brushes.DarkRed));
@@ -66,7 +65,7 @@ public class MainWindowViewModel : ViewModelBase
     public string? TooltipNadeoIni => NadeoIni?.NadeoIniException?.Message;
     public string? TooltipTmForever => NadeoIni?.TmForeverException?.Message;
     public string? TooltipTmUnlimiter => NadeoIni?.TmUnlimiterException?.Message;
-    
+
     public bool IsSaveAndProceedEnabled => NadeoIni is not null && NadeoIni.NadeoIniException is null && NadeoIni.TmForeverException is null && NadeoIni.TmUnlimiterException is null or FileNotFoundException;
 
     public MainWindowViewModel()
@@ -106,7 +105,7 @@ public class MainWindowViewModel : ViewModelBase
         GameDirectory = dir;
 
         NadeoIni = RandomizerEngine.UpdateGameDirectory(dir);
-        
+
         UserDirectory = NadeoIni.NadeoIniException is null ? RandomizerEngine.UserDataDirectoryPath : null;
     }
 
@@ -114,9 +113,6 @@ public class MainWindowViewModel : ViewModelBase
     {
         RandomizerEngine.SaveConfig();
 
-        var dashboardWindow = new DashboardWindow();
-        dashboardWindow.DataContext = new DashboardWindowViewModel { Window = dashboardWindow };
-        dashboardWindow.Show();
-        Window.Close();
+        SwitchWindowTo<DashboardWindow, DashboardWindowViewModel>();
     }
 }

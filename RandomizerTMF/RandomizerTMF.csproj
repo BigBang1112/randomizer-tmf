@@ -14,9 +14,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<Folder Include="Models\" />
 		<AvaloniaResource Include="Assets\**" />
-		<None Remove=".gitignore" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -41,5 +39,5 @@
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</ProjectReference>
 	</ItemGroup>
-
+	
 </Project>

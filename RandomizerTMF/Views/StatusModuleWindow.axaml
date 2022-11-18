@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="220" d:DesignHeight="200"
+        x:Class="RandomizerTMF.Views.StatusModuleWindow"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+		Width="350"
+		Height="200"
+		MinWidth="350"
+		MinHeight="200"
+		Topmost="True"
+        Title="Status Module">
+
+	<Design.DataContext>
+		<vm:StatusModuleWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+
+	<Grid ShowGridLines="False">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="5"/>
+			<RowDefinition Height="30"/>
+			<RowDefinition Height="5"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="5"/>
+			<RowDefinition Height="25"/>
+			<RowDefinition Height="10"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="10"/>
+		</Grid.ColumnDefinitions>
+
+		<Border Grid.Row="1" Grid.Column="1" BorderThickness="2" BorderBrush="Gray" Opacity="0.3" IsHitTestVisible="False">
+			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="Gray">MOVE ME</TextBlock>
+		</Border>
+
+		<TextBlock Grid.Row="3" Grid.Column="1"
+			HorizontalAlignment="Center"
+			VerticalAlignment="Center"
+			FontSize="56"
+			Width="252"
+			FontWeight="Bold">
+			01:00:00
+		</TextBlock>
+
+
+		<TextBlock Grid.Row="5" Grid.Column="1"
+				HorizontalAlignment="Center"
+				FontSize="16">
+			Downloading...
+		</TextBlock>
+	</Grid>
+</Window>

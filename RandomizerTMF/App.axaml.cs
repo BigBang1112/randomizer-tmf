@@ -12,6 +12,8 @@ namespace RandomizerTMF
     {
         public static Window MainWindow { get; private set; } = default!;
 
+        public static Window[] Modules { get; set; } = Array.Empty<Window>();
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -24,12 +26,20 @@ namespace RandomizerTMF
                 if (IsValidGameDirectory(RandomizerEngine.Config.GameDirectory))
                 {
                     desktop.MainWindow = new DashboardWindow();
-                    desktop.MainWindow.DataContext = new DashboardWindowViewModel { Window = desktop.MainWindow };
+
+                    var viewModel = new DashboardWindowViewModel { Window = desktop.MainWindow };
+                    desktop.MainWindow.DataContext = viewModel;
+
+                    viewModel.OnInit();
                 }
                 else
                 {
                     desktop.MainWindow = new MainWindow();
-                    desktop.MainWindow.DataContext = new MainWindowViewModel { Window = desktop.MainWindow };
+
+                    var viewModel = new MainWindowViewModel { Window = desktop.MainWindow };
+                    desktop.MainWindow.DataContext = viewModel;
+
+                    viewModel.OnInit();
                 }
 
                 MainWindow = desktop.MainWindow;
