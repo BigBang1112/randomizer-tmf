@@ -114,9 +114,21 @@ public class DashboardWindowViewModel : WindowViewModelBase
     public void StartModulesClick()
     {
         var controlModuleWindow = OpenWindow<ControlModuleWindow, ControlModuleWindowViewModel>();
-        var statusModuleWindow = OpenWindow<StatusModuleWindow, StatusModuleWindowViewModel>();
+        controlModuleWindow.Position = new(RandomizerEngine.Config.Modules.Control.X, RandomizerEngine.Config.Modules.Control.Y);
+        controlModuleWindow.Width = RandomizerEngine.Config.Modules.Control.Width;
+        controlModuleWindow.Height = RandomizerEngine.Config.Modules.Control.Height;
 
-        App.Modules = new[] { controlModuleWindow, statusModuleWindow };
+        var statusModuleWindow = OpenWindow<StatusModuleWindow, StatusModuleWindowViewModel>();
+        statusModuleWindow.Position = new(RandomizerEngine.Config.Modules.Status.X, RandomizerEngine.Config.Modules.Status.Y);
+        statusModuleWindow.Width = RandomizerEngine.Config.Modules.Status.Width;
+        statusModuleWindow.Height = RandomizerEngine.Config.Modules.Status.Height;
+        
+        var progressModuleWindow = OpenWindow<ProgressModuleWindow, ProgressModuleWindowViewModel>();
+        progressModuleWindow.Position = new(RandomizerEngine.Config.Modules.Progress.X, RandomizerEngine.Config.Modules.Progress.Y);
+        progressModuleWindow.Width = RandomizerEngine.Config.Modules.Progress.Width;
+        progressModuleWindow.Height = RandomizerEngine.Config.Modules.Progress.Height;
+
+        App.Modules = new[] { controlModuleWindow, statusModuleWindow, progressModuleWindow };
 
         Window.Close();
     }

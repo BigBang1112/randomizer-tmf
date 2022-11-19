@@ -73,14 +73,16 @@ public static class RandomizerEngine
 
     private static RandomizerConfig GetOrCreateConfig()
     {
+        var config = default(RandomizerConfig);
+
         if (File.Exists(Constants.ConfigYml))
         {
             using var reader = new StreamReader(Constants.ConfigYml);
             var deserializer = new YamlDotNet.Serialization.Deserializer();
-            return deserializer.Deserialize<RandomizerConfig>(reader);
+            config = deserializer.Deserialize<RandomizerConfig>(reader);
         }
 
-        var config = new RandomizerConfig();
+        config ??= new RandomizerConfig();
         SaveConfig(config);
 
         return config;

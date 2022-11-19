@@ -8,8 +8,8 @@
 		xmlns:vm="using:RandomizerTMF.ViewModels"
 		Width="250"
 		Height="250"
-		MinWidth="250"
-		MinHeight="250"
+		MinWidth="150"
+		MinHeight="150"
 		Topmost="True"
         Title="Control Module">
 
@@ -23,8 +23,7 @@
 
 	<Grid ShowGridLines="False">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="5"/>
-			<RowDefinition Height="30"/>
+			<RowDefinition Height="35"/>
 			<RowDefinition Height="5"/>
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="5"/>
@@ -36,12 +35,10 @@
 			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="10"/>
 		</Grid.ColumnDefinitions>
+		
+		<views:MoveMe Grid.Column="1"/>
 
-		<Border Grid.Row="1" Grid.Column="1" BorderThickness="2" BorderBrush="Gray" Opacity="0.3" IsHitTestVisible="False">
-			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="Gray">MOVE ME</TextBlock>
-		</Border>
-
-		<Button Grid.Row="3" Grid.Column="1"
+		<Button Grid.Row="2" Grid.Column="1"
 				HorizontalAlignment="Stretch"
 				VerticalAlignment="Stretch"
 				HorizontalContentAlignment="Center"
@@ -53,7 +50,7 @@
 				Content="{Binding PrimaryButtonText}"
 				IsEnabled="{Binding PrimaryButtonEnabled}"/>
 		
-		<Button Grid.Row="5" Grid.Column="1"
+		<Button Grid.Row="4" Grid.Column="1"
 				HorizontalAlignment="Stretch"
 				HorizontalContentAlignment="Center"
 				FontSize="24"
