@@ -12,6 +12,12 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<PublishSingleFile>true</PublishSingleFile>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<PublishReadyToRun>true</PublishReadyToRun>
+	</PropertyGroup>
 	
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
