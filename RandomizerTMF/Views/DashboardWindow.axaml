@@ -5,11 +5,9 @@
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
         mc:Ignorable="d"
-		d:DesignWidth="1000"
-		d:DesignHeight="450"
-		Width="1000"
+		Width="1250"
 		MinWidth="750"
-		Height="450"
+		Height="650"
         x:Class="RandomizerTMF.Views.DashboardWindow"
 		WindowStartupLocation="CenterScreen"
 		Title="Randomizer TMF - Random Map Challenge for TMNF/TMUF">
@@ -57,7 +55,7 @@
 				</Border>
 
 				<Button Grid.Row="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Open sessions folder</Button>
-				<Button Grid.Row="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Configure Randomizer TMF</Button>
+				<Button Grid.Row="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding ChangeClick}">Configure Randomizer TMF</Button>
 			</Grid>
 			
 			<Grid ShowGridLines="False" Grid.Column="1">
@@ -65,18 +63,13 @@
 					<RowDefinition Height="35"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="5"/>
-					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="*"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="5"/>
 					<RowDefinition Height="50"/>
 					<RowDefinition Height="5"/>
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="10"/>
 					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="5"/>
-					<ColumnDefinition Width="Auto"/>
 					<ColumnDefinition Width="10"/>
 				</Grid.ColumnDefinitions>
 
@@ -84,15 +77,11 @@
 					Session settings:
 				</TextBlock>
 
-				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding GameDirectory}" IsEnabled="False"/>
-				<Button Grid.Row="1" Grid.Column="3"
-						HorizontalAlignment="Stretch"
-						HorizontalContentAlignment="Center"
-						Command="{Binding ChangeClick}">Change</Button>
+				<views:RequestRulesControl Grid.Row="1" Grid.Column="1">
+					
+				</views:RequestRulesControl>
 
-				<CheckBox Grid.Row="3" Grid.Column="1" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
-
-				<Button Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3"
+				<Button Grid.Row="4" Grid.Column="1"
 						HorizontalAlignment="Stretch"
 						VerticalAlignment="Stretch"
 						HorizontalContentAlignment="Center"

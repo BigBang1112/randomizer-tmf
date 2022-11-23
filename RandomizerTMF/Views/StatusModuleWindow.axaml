@@ -39,19 +39,17 @@
 		<views:MoveMe Grid.Column="1"/>
 
 		<TextBlock Grid.Row="2" Grid.Column="1"
-			HorizontalAlignment="Center"
-			VerticalAlignment="Center"
-			FontSize="56"
-			Width="252"
-			FontWeight="Bold">
-			01:00:00
-		</TextBlock>
+				   HorizontalAlignment="Center"
+				   VerticalAlignment="Center"
+				   FontSize="64"
+				   FontWeight="Bold"
+				   Opacity="{Binding TimeOpacity}"
+				   Text="{Binding TimeText}" />
 
 
 		<TextBlock Grid.Row="4" Grid.Column="1"
-				HorizontalAlignment="Center"
-				FontSize="16">
-			Downloading...
-		</TextBlock>
+				   HorizontalAlignment="Center"
+				   FontSize="16"
+				   Text="{Binding StatusText}"/>
 	</Grid>
 </Window>

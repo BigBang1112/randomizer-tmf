@@ -7,7 +7,7 @@ namespace RandomizerTMF.Models;
 
 public class AutosaveModel
 {
-    private static Dictionary<string, Bitmap> envBitmaps = new();
+    private static readonly Dictionary<string, Bitmap> envBitmaps = new();
 
     public string MapUid { get; }
     public AutosaveDetails Autosave { get; }

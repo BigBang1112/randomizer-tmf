@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
@@ -20,5 +21,14 @@ public class TopBarViewModel : ViewModelBase
     public void OnMinimizeClick()
     {
         MinimizeClick?.Invoke();
+    }
+
+    public void DonateClick()
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://paypal.me/bigbang1112",
+            UseShellExecute = true
+        });
     }
 }

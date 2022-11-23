@@ -39,7 +39,7 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
             return;
         }
         
-        await RandomizerEngine.StartSessionAsync(new Rules());
+        await RandomizerEngine.StartSessionAsync(new RandomizerRules());
 
         this.RaisePropertyChanged(nameof(PrimaryButtonText));
         this.RaisePropertyChanged(nameof(SecondaryButtonText));
@@ -51,6 +51,8 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
     public async Task SecondaryButtonClick()
     {
         // TODO: Prompt "Are you sure?"
+
+        // If yes, freeze the button
 
         if (RandomizerEngine.HasSessionRunning)
         {

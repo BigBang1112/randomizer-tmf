@@ -2,10 +2,10 @@
 
 namespace RandomizerTMF.Logic;
 
-public class Rules
+public class RandomizerRules
 {
     public TimeSpan TimeLimit { get; init; } = TimeSpan.FromHours(1);
-    public RandomizationRules Randomization { get; init; }
+    public RequestRules RequestRules { get; init; }
     public Func<CGameCtnChallenge, bool> TrackCompletionCondition { get; init; }
-    public Func<Rules, bool> ChallengeCompletionCondition { get; init; }
+    public Func<RandomizerRules, bool> ChallengeCompletionCondition { get; init; }
 }

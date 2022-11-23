@@ -1,6 +1,8 @@
-﻿namespace RandomizerTMF.Logic;
+﻿using TmEssentials;
 
-public class RandomizationRules
+namespace RandomizerTMF.Logic;
+
+public class RequestRules
 {
     public required ESite Site { get; init; }
 
@@ -26,6 +28,8 @@ public class RandomizationRules
     public bool InLatestAuthor { get; init; }
     public bool InLatestAwardedAuthor { get; init; }
     public bool InScreenshot { get; init; }
-    public DateTimeOffset UploadedBefore { get; init; }
-    public DateTimeOffset UploadedAfter { get; init; }
+    public DateTimeOffset? UploadedBefore { get; init; }
+    public DateTimeOffset? UploadedAfter { get; init; }
+    public TimeInt32? AuthorTimeMin { get; init; }
+    public TimeInt32? AuthorTimeMax { get; init; }
 }

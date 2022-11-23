@@ -2,14 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="250"
+        mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="350"
         x:Class="RandomizerTMF.Views.ProgressModuleWindow"
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
-		Width="350"
-		Height="250"
-		MinWidth="350"
-		MinHeight="250"
+		Width="320"
+		Height="300"
+		MinWidth="320"
+		MinHeight="300"
 		Topmost="True"
         Title="Progress Module">
 
@@ -35,19 +35,34 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="35"/>
 			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="10"/>
 			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="10"/>
+			<RowDefinition Height="60"/>
+			<RowDefinition Height="50"/>
+			<RowDefinition Height="40"/>
 			<RowDefinition Height="*"/>
-			<RowDefinition Height="10"/>
 		</Grid.RowDefinitions>
 
 		<views:MoveMe Grid.Column="1" Grid.ColumnSpan="5"/>
 
-		<Image Grid.Column="2" Grid.Row="2" Width="128" Height="128" Source="/Assets/Images/Medals/NadeoMedal.png"/>
-		<Image Grid.Column="4" Grid.Row="2" Width="128" Height="128" Source="/Assets/Images/Medals/GoldMedal.png"/>
+		<Image Grid.Column="2" Grid.Row="3" Width="128" Height="128" Source="/Assets/Images/Medals/NadeoMedal.png"/>
+		<Image Grid.Column="4" Grid.Row="3" Width="128" Height="128" Source="/Assets/Images/Medals/GoldMedal.png"/>
 
-		<TextBlock Grid.Column="2" Grid.Row="4" FontSize="46" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">10</TextBlock>
-		<TextBlock Grid.Column="4" Grid.Row="4" FontSize="46" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">10</TextBlock>
+		<TextBlock Grid.Column="2" Grid.Row="5" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">0</TextBlock>
+		<TextBlock Grid.Column="4" Grid.Row="5" FontSize="64" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">0</TextBlock>
+
+		<TextBlock Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="6"
+				   HorizontalAlignment="Center"
+				   VerticalAlignment="Bottom"
+				   FontSize="42"
+				   FontWeight="Bold"
+				   Foreground="LightGreen">0</TextBlock>
+		<TextBlock Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="7"
+				   HorizontalAlignment="Center"
+				   VerticalAlignment="Top"
+				   FontSize="24"
+				   FontWeight="Bold"
+				   Foreground="LightGreen">SKIPS</TextBlock>
 	</Grid>
 </Window>

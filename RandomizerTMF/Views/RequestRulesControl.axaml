@@ -1,0 +1,146 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
+             x:Class="RandomizerTMF.Views.RequestRulesControl">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="3" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		
+		<Grid Grid.Row="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMNF</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMUF</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Nations</ToggleButton>
+			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
+			<ToggleButton Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Original</ToggleButton>
+		</Grid>
+
+		<Grid Grid.Row="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Race</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Platform</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Stunts</ToggleButton>
+			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Puzzle</ToggleButton>
+		</Grid>
+
+		<Grid Grid.Row="3">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Snow</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Desert</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Rally</ToggleButton>
+			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Island</ToggleButton>
+			<ToggleButton Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Coast</ToggleButton>
+			<ToggleButton Grid.Column="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Bay</ToggleButton>
+			<ToggleButton Grid.Column="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Stadium</ToggleButton>
+		</Grid>
+
+		<Grid Grid.Row="4">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">SnowCar</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">DesertCar</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">RallyCar</ToggleButton>
+			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">IslandCar</ToggleButton>
+			<ToggleButton Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">CoastCar</ToggleButton>
+			<ToggleButton Grid.Column="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">BayCar</ToggleButton>
+			<ToggleButton Grid.Column="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">StadiumCar</ToggleButton>
+		</Grid>
+
+		<Border Grid.Row="5" BorderThickness="2" Margin="2 3" BorderBrush="#444" Opacity="0.7">
+			
+		</Border>
+
+		<Grid Grid.Row="6">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Beginner</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Intermediate</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Expert</ToggleButton>
+			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Lunatic</ToggleButton>
+		</Grid>
+
+		<Grid Grid.Row="7">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Single</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Multi</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Symmetric</ToggleButton>
+		</Grid>
+
+		<Grid Grid.Row="8">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
+			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Day</ToggleButton>
+			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunset</ToggleButton>
+			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Night</ToggleButton>
+		</Grid>
+
+		<TextBlock Grid.Row="9" Margin="8"
+				   HorizontalAlignment="Center"
+				   VerticalAlignment="Center"
+				   Opacity="0.5">If any horizontal layer above has no buttons toggled, it simply means "any of those".</TextBlock>
+
+
+		<CheckBox Grid.Row="10" IsChecked="True" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
+	</Grid>
+	
+</UserControl>
