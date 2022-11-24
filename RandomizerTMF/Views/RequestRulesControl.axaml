@@ -3,7 +3,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
-             x:Class="RandomizerTMF.Views.RequestRulesControl">
+			 xmlns:views="using:RandomizerTMF.Views"
+		     xmlns:vm="using:RandomizerTMF.ViewModels"
+			 x:Class="RandomizerTMF.Views.RequestRulesControl">
+
+	<Design.DataContext>
+		<vm:RequestRulesControlViewModel/>
+	</Design.DataContext>
+	
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
@@ -29,11 +36,11 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMNF</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMUF</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Nations</ToggleButton>
-			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
-			<ToggleButton Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Original</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsSiteTMNFChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMNF</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsSiteTMUFChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMUF</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsSiteNationsChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Nations</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsSiteSunriseChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsSiteOriginalChecked}" Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Original</ToggleButton>
 		</Grid>
 
 		<Grid Grid.Row="2">
@@ -44,10 +51,10 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Race</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Platform</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Stunts</ToggleButton>
-			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Puzzle</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsPrimaryTypeRaceChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Race</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsPrimaryTypePlatformChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Platform</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsPrimaryTypeStuntsChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Stunts</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsPrimaryTypePuzzleChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Puzzle</ToggleButton>
 		</Grid>
 
 		<Grid Grid.Row="3">
@@ -61,13 +68,13 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Snow</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Desert</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Rally</ToggleButton>
-			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Island</ToggleButton>
-			<ToggleButton Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Coast</ToggleButton>
-			<ToggleButton Grid.Column="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Bay</ToggleButton>
-			<ToggleButton Grid.Column="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Stadium</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentSnowChecked}"  Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Snow</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentDesertChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Desert</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentRallyChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Rally</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentIslandChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Island</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentCoastChecked}" Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Coast</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentBayChecked}" Grid.Column="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Bay</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsEnvironmentStadiumChecked}" Grid.Column="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Stadium</ToggleButton>
 		</Grid>
 
 		<Grid Grid.Row="4">
@@ -81,13 +88,13 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">SnowCar</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">DesertCar</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">RallyCar</ToggleButton>
-			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">IslandCar</ToggleButton>
-			<ToggleButton Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">CoastCar</ToggleButton>
-			<ToggleButton Grid.Column="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">BayCar</ToggleButton>
-			<ToggleButton Grid.Column="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">StadiumCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleSnowChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">SnowCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleDesertChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">DesertCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleRallyChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">RallyCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleIslandChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">IslandCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleCoastChecked}" Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">CoastCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleBayChecked}" Grid.Column="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">BayCar</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsVehicleStadiumChecked}" Grid.Column="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">StadiumCar</ToggleButton>
 		</Grid>
 
 		<Border Grid.Row="5" BorderThickness="2" Margin="2 3" BorderBrush="#444" Opacity="0.7">
@@ -102,10 +109,10 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Beginner</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Intermediate</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Expert</ToggleButton>
-			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Lunatic</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsDifficultyBeginnerChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Beginner</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsDifficultyIntermediateChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Intermediate</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsDifficultyExpertChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Expert</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsDifficultyLunaticChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Lunatic</ToggleButton>
 		</Grid>
 
 		<Grid Grid.Row="7">
@@ -115,9 +122,9 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Single</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Multi</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Symmetric</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsRouteSingleChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Single</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsRouteMultiChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Multi</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsRouteSymmetricChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Symmetric</ToggleButton>
 		</Grid>
 
 		<Grid Grid.Row="8">
@@ -128,10 +135,10 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<ToggleButton Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
-			<ToggleButton Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Day</ToggleButton>
-			<ToggleButton Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunset</ToggleButton>
-			<ToggleButton Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Night</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsMoodSunriseChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsMoodDayChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Day</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsMoodSunsetChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunset</ToggleButton>
+			<ToggleButton IsChecked="{Binding IsMoodNightChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Night</ToggleButton>
 		</Grid>
 
 		<TextBlock Grid.Row="9" Margin="8"

@@ -1,10 +1,8 @@
 ﻿using Avalonia.Controls;
-using GBX.NET.Engines.Game;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
-using System;
 using System.Collections.ObjectModel;
 
 namespace RandomizerTMF.ViewModels;
@@ -14,6 +12,7 @@ public class DashboardWindowViewModel : WindowViewModelBase
     private ObservableCollection<AutosaveModel> autosaves = new();
 
     public TopBarViewModel TopBarViewModel { get; set; }
+    public RequestRulesControlViewModel RequestRulesControlViewModel { get; set; }
 
     public string? GameDirectory => RandomizerEngine.Config.GameDirectory;
 
@@ -31,6 +30,8 @@ public class DashboardWindowViewModel : WindowViewModelBase
         TopBarViewModel = new();
         TopBarViewModel.CloseClick += CloseClick;
         TopBarViewModel.MinimizeClick += MinimizeClick;
+
+        RequestRulesControlViewModel = new();
     }
 
     protected internal override void OnInit()

@@ -28,7 +28,7 @@ public class StatusModuleWindowViewModel : WindowViewModelBase
 
     public StatusModuleWindowViewModel()
     {
-        Time = RandomizerEngine.Rules.TimeLimit;
+        Time = RandomizerEngine.Config.Rules.TimeLimit;
 
         RandomizerEngine.MapStarted += RandomizerMapStarted;
         RandomizerEngine.MapEnded += RandomizerMapEnded;
@@ -49,7 +49,7 @@ public class StatusModuleWindowViewModel : WindowViewModelBase
             {
                 if (RandomizerEngine.CurrentSessionWatch is not null)
                 {
-                    Time = RandomizerEngine.Rules.TimeLimit - RandomizerEngine.CurrentSessionWatch.Elapsed;
+                    Time = RandomizerEngine.Config.Rules.TimeLimit - RandomizerEngine.CurrentSessionWatch.Elapsed;
                     this.RaisePropertyChanged(nameof(TimeText));
                 }
 

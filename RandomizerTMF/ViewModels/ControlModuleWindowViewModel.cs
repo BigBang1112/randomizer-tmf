@@ -10,6 +10,7 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
     public string PrimaryButtonText => RandomizerEngine.HasSessionRunning ? "SKIP" : "START";
     public string SecondaryButtonText => RandomizerEngine.HasSessionRunning ? "END SESSION" : "CLOSE";
     public bool PrimaryButtonEnabled => !RandomizerEngine.HasSessionRunning || (RandomizerEngine.HasSessionRunning && CanSkip);
+    public bool ReloadMapButtonEnabled => RandomizerEngine.HasSessionRunning && CanSkip; // CanSkip is mostly a hack
 
     public IBrush PrimaryButtonBackground => RandomizerEngine.HasSessionRunning ? new SolidColorBrush(new Color(255, 127, 96, 0)) : Brushes.DarkGreen;
 
@@ -24,11 +25,13 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
     private void RandomizerMapStarted()
     {
         this.RaisePropertyChanged(nameof(PrimaryButtonEnabled));
+        this.RaisePropertyChanged(nameof(ReloadMapButtonEnabled));
     }
 
     private void RandomizerMapEnded()
     {
         this.RaisePropertyChanged(nameof(PrimaryButtonEnabled));
+        this.RaisePropertyChanged(nameof(ReloadMapButtonEnabled));
     }
 
     public async Task PrimaryButtonClick()
@@ -39,15 +42,21 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
             return;
         }
         
-        await RandomizerEngine.StartSessionAsync(new RandomizerRules());
+        await RandomizerEngine.StartSessionAsync();
 
         this.RaisePropertyChanged(nameof(PrimaryButtonText));
         this.RaisePropertyChanged(nameof(SecondaryButtonText));
         this.RaisePropertyChanged(nameof(PrimaryButtonBackground));
         
         this.RaisePropertyChanged(nameof(PrimaryButtonEnabled)); // HasSessionRunning changed from false to true here
+        this.RaisePropertyChanged(nameof(ReloadMapButtonEnabled));
     }
-    
+
+    public void ReloadMapButtonClick()
+    {
+        RandomizerEngine.ReloadMap();
+    }
+
     public async Task SecondaryButtonClick()
     {
         // TODO: Prompt "Are you sure?"

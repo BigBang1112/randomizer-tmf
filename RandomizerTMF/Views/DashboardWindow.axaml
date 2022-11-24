@@ -77,7 +77,7 @@
 					Session settings:
 				</TextBlock>
 
-				<views:RequestRulesControl Grid.Row="1" Grid.Column="1">
+				<views:RequestRulesControl Grid.Row="1" Grid.Column="1" DataContext="{Binding RequestRulesControlViewModel}">
 					
 				</views:RequestRulesControl>
 

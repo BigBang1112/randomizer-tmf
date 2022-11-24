@@ -3,6 +3,7 @@
 [Flags]
 public enum ESite
 {
+    Any = 0,
     TMNF = 1,
     TMUF = 2,
     Nations = 4,
