@@ -1,5 +1,6 @@
 ﻿using GBX.NET;
 using GBX.NET.Engines.Game;
+using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -12,19 +13,23 @@ public static class RandomizerEngine
 {
     private static bool isActualSkipCancellation;
     private static string? userDataDirectoryPath;
+    private static bool hasAutosavesScanned;
 
     public static RandomizerConfig Config { get; }
 
     public static string? TmForeverExeFilePath { get; set; }
     public static string? TmUnlimiterExeFilePath { get; set; }
 
+    /// <summary>
+    /// General directory of the user data. It also sets the <see cref="AutosavesDirectoryPath"/>, <see cref="DownloadedDirectoryPath"/>, and <see cref="AutosaveWatcher"/> path with it.
+    /// </summary>
     public static string? UserDataDirectoryPath
     {
         get => userDataDirectoryPath;
         set
         {
             userDataDirectoryPath = value;
-            
+
             AutosavesDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, "Tracks", "Replays", "Autosaves");
             DownloadedDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, "Tracks", "Challenges", "Downloaded", string.IsNullOrWhiteSpace(Config.DownloadedMapsDirectory) ? Constants.DownloadedMapsDirectory : Config.DownloadedMapsDirectory);
 
@@ -42,12 +47,27 @@ public static class RandomizerEngine
     public static string? CurrentSessionMapSavePath { get; private set; }
     public static Stopwatch? CurrentSessionWatch { get; private set; }
 
+    // This "trilogy" handles the storage of played maps. If the player didn't receive at least gold and didn't skip it, it is not counted in the progress.
+    // It may (?) be better to wrap the CGameCtnChallenge into "CompletedMap" and have status of it being "gold", "author", or "skipped", and better handle that to make it script-friendly.
     public static Dictionary<string, CGameCtnChallenge> CurrentSessionGoldMaps { get; } = new();
     public static Dictionary<string, CGameCtnChallenge> CurrentSessionAuthorMaps { get; } = new();
     public static Dictionary<string, CGameCtnChallenge> CurrentSessionSkippedMaps { get; } = new();
 
     public static bool HasSessionRunning => CurrentSession is not null;
-    public static bool HasAutosavesScanned { get; private set; }
+
+    /// <summary>
+    /// If the map UIDs of the autosaves have been fully stored to the <see cref="Autosaves"/> and <see cref="AutosavePaths"/> dictionaries.
+    /// This property is required to be true in order to start a new session. It also handles the state of <see cref="AutosaveWatcher"/>, to catch other autosaves that might be created while the program is running.
+    /// </summary>
+    public static bool HasAutosavesScanned
+    {
+        get => hasAutosavesScanned;
+        private set
+        {
+            hasAutosavesScanned = value;
+            AutosaveWatcher.EnableRaisingEvents = value;
+        }
+    }
 
     public static ConcurrentDictionary<string, CGameCtnReplayRecord> Autosaves { get; } = new();
     public static ConcurrentDictionary<string, string> AutosavePaths { get; } = new();
@@ -61,10 +81,12 @@ public static class RandomizerEngine
     public static event Action<string> Status;
     public static event Action? MedalUpdate;
 
+    public static ILogger Logger { get; }
+
     static RandomizerEngine()
     {
         GBX.NET.Lzo.SetLzo(typeof(GBX.NET.LZO.MiniLZO));
-        
+
         Config = GetOrCreateConfig();
 
         AutosaveWatcher = new FileSystemWatcher
@@ -81,20 +103,45 @@ public static class RandomizerEngine
 
     private static void RandomizerEngineStatus(string obj)
     {
-        // logging
+        // Status kind of logging
+        // Unlike regular logs, these are shown to the user in a module, while also written to the log file in its own way
     }
 
     private static void AutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
     {
+        CGameCtnReplayRecord replay;
+
         try
         {
-            if (CurrentSessionMap is null)
+            // Any kind of autosaves update section
+
+            if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
             {
                 // log warning
                 return;
             }
 
-            if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord replay)
+            if (r.MapInfo is null)
+            {
+                // log warning
+                return;
+            }
+
+            Autosaves.TryAdd(r.MapInfo.Id, r);
+            AutosavePaths.TryAdd(r.MapInfo.Id, Path.GetFileName(e.FullPath));
+
+            replay = r;
+        }
+        catch
+        {
+            return;
+        }
+        
+        try
+        { 
+            // Current session map autosave update section
+
+            if (CurrentSessionMap is null)
             {
                 // log warning
                 return;
@@ -106,12 +153,13 @@ public static class RandomizerEngine
                 return;
             }
 
-            Status("Storing the autosave...");
+            Status("Checking the autosave...");
 
-            Autosaves.TryAdd(CurrentSessionMap.MapUid, replay);
-            AutosavePaths.TryAdd(CurrentSessionMap.MapUid, Path.GetFileName(e.FullPath));
+            // New autosave from the current map, save it into session for progression reasons
 
-            // New autosave from the current map, save it into session
+            // The following part has a scriptable potential
+            // There are different medal rules for each gamemode (and where to look for validating)
+            // So that's why the code looks like this for the time being
 
             if (CurrentSessionMap.ChallengeParameters?.AuthorTime is null)
             {
@@ -126,9 +174,9 @@ public static class RandomizerEngine
                 {
                     CurrentSessionGoldMaps.Remove(CurrentSessionMap.MapUid);
                     CurrentSessionAuthorMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
-                    
+
                     MedalUpdate?.Invoke();
-                    
+
                     SkipTokenSource?.Cancel();
                 }
                 else if ((CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= CurrentSessionMap.ChallengeParameters.GoldTime)
@@ -140,15 +188,19 @@ public static class RandomizerEngine
                     MedalUpdate?.Invoke();
                 }
             }
-            
+
             Status("Playing the map...");
         }
         catch
         {
-            
+            Status("Error when checking the autosave...");
         }
     }
 
+    /// <summary>
+    /// This method should be ran only at the start of the randomizer engine.
+    /// </summary>
+    /// <returns></returns>
     private static RandomizerConfig GetOrCreateConfig()
     {
         var config = default(RandomizerConfig);
@@ -218,6 +270,9 @@ public static class RandomizerEngine
         return new GameDirInspectResult(nadeoIniException, tmForeverExeException, tmUnlimiterExeException);
     }
 
+    /// <summary>
+    /// Cleans up the autosave storage and, most importantly, restricts the engine from functionalities that require the autosaves (<see cref="HasAutosavesScanned"/>).
+    /// </summary>
     public static void ResetAutosaves()
     {
         Autosaves.Clear();
@@ -238,6 +293,11 @@ public static class RandomizerEngine
         File.WriteAllText(Constants.ConfigYml, serializer.Serialize(config));
     }
 
+    /// <summary>
+    /// Scans the autosaves, which is required before running the session, to avoid already played maps.
+    /// </summary>
+    /// <returns>True if anything changed.</returns>
+    /// <exception cref="Exception"></exception>
     public static bool ScanAutosaves()
     {
         if (AutosavesDirectoryPath is null)
@@ -246,7 +306,7 @@ public static class RandomizerEngine
         }
 
         var anythingChanged = false;
-        
+
         foreach (var file in Directory.EnumerateFiles(AutosavesDirectoryPath).AsParallel())
         {
             if (GameBox.ParseNodeHeader(file) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
@@ -261,6 +321,7 @@ public static class RandomizerEngine
                 continue;
             }
 
+            // These two should probably merge under an AutosaveHeader class (different from AutosaveDetails).
             Autosaves.TryAdd(mapUid, replay);
             AutosavePaths.TryAdd(mapUid, Path.GetFileName(file));
 
@@ -272,6 +333,10 @@ public static class RandomizerEngine
         return anythingChanged;
     }
 
+    /// <summary>
+    /// Scans autosave details (mostly the map inside the replay and getting its info) that are then used to display more detailed information about a list of maps. Only some replay properties are stored to value memory.
+    /// </summary>
+    /// <exception cref="Exception"></exception>
     public static void ScanDetailsFromAutosaves()
     {
         if (AutosavesDirectoryPath is null)
@@ -287,7 +352,7 @@ public static class RandomizerEngine
 
     private static void UpdateAutosaveDetail(string autosaveFileName)
     {
-        var autosavePath = Path.Combine(AutosavesDirectoryPath!, AutosavePaths[autosaveFileName]);
+        var autosavePath = Path.Combine(AutosavesDirectoryPath!, AutosavePaths[autosaveFileName]); // Forgive because it's a private method
 
         if (GameBox.ParseNode(autosavePath) is not CGameCtnReplayRecord { Time: not null } replay)
         {
@@ -313,10 +378,14 @@ public static class RandomizerEngine
         }
         catch
         {
-            
+
         }
     }
 
+    /// <summary>
+    /// Starts the randomizer session by creating a new watch and <see cref="Task"/> for <see cref="CurrentSession"/> (+ <see cref="CurrentSessionTokenSource"/>) that will handle randomization on different thread from the UI thread.
+    /// </summary>
+    /// <returns></returns>
     public static Task StartSessionAsync()
     {
         if (Config.GameDirectory is null)
@@ -327,10 +396,16 @@ public static class RandomizerEngine
         CurrentSessionWatch = new Stopwatch();
         CurrentSessionTokenSource = new CancellationTokenSource();
         CurrentSession = Task.Run(() => RunSessionAsync(CurrentSessionTokenSource.Token), CurrentSessionTokenSource.Token);
-        
+
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Does the actual work during a running session. That this method ends means the session also ends.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     private static async Task RunSessionAsync(CancellationToken cancellationToken)
     {
         if (Config.GameDirectory is null)
@@ -361,6 +436,10 @@ public static class RandomizerEngine
         ClearCurrentSession();
     }
 
+    /// <summary>
+    /// Validates the session rules. This should be called right before the session start and after loading the modules.
+    /// </summary>
+    /// <exception cref="InvalidDataException"></exception>
     private static void ValidateRules()
     {
         if (Config.Rules.TimeLimit > new TimeSpan(9, 59, 59))
@@ -369,6 +448,9 @@ public static class RandomizerEngine
         }
     }
 
+    /// <summary>
+    /// Does the cleanup of the session so that the new one can be instantiated without issues.
+    /// </summary>
     private static void ClearCurrentSession()
     {
         StopTrackingCurrentSessionMap();
@@ -384,24 +466,39 @@ public static class RandomizerEngine
         CurrentSessionTokenSource = null;
     }
 
+    /// <summary>
+    /// Does the work behind individual maps played throughout the session. Network exceptions are handled within the method. Throws cancellation exception on session end (not the map end). It may get reworked though.
+    /// </summary>
+    /// <param name="http"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidSessionException"></exception>
+    /// <exception cref="UnreachableException"></exception>
     private static async Task PlayNewMapAsync(HttpClient http, CancellationToken cancellationToken)
     {
+        // This try block is used to handle HTTP errors mostly. It may be changed in the future how it's handled.
+
         try
         {
-            /////////// create urls based on rules
-            
             Status("Fetching random track...");
 
+            // Randomized URL is constructed with the ToUrl() method.
             var requestUrl = Config.Rules.RequestRules.ToUrl();
 
+            // HEAD request ensures least overhead
             using var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
 
             if (randomResponse.StatusCode == HttpStatusCode.NotFound)
             {
+                // The session is ALWAYS invalid if there's no map that can be found.
+                // This DOES NOT relate to the lack of maps left that the user hasn't played.
                 throw new InvalidSessionException();
             }
 
-            randomResponse.EnsureSuccessStatusCode();
+            randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
+
+
+            // Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
 
             if (randomResponse.RequestMessage is null)
             {
@@ -423,12 +520,20 @@ public static class RandomizerEngine
                 return;
             }
 
+
+            // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
+
             Status($"Downloading track {trackId}...");
 
             using var trackGbxResponse = await http.GetAsync($"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}", cancellationToken);
 
+            trackGbxResponse.EnsureSuccessStatusCode();
+
             using var stream = await trackGbxResponse.Content.ReadAsStreamAsync(cancellationToken);
-            
+
+
+            // The map is gonna be parsed as it is downloading throughout
+
             Status("Parsing the map...");
 
             if (GameBox.ParseNode(stream) is not CGameCtnChallenge map)
@@ -436,37 +541,46 @@ public static class RandomizerEngine
                 // log warning
                 return;
             }
-            
+
+
+            // Map validation ensures that the player won't receive duplicate maps
+            // + ensures some additional filters like "No Unlimiter", which cannot be filtered on TMX
+
             Status("Validating the map...");
 
             if (!ValidateMap(map))
             {
                 return; // Attempt another track if invalid
             }
-            
+
+
+            // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
+
             Status("Saving the map...");
 
-            var downloadedDir = DownloadedDirectoryPath;
-
-            if (downloadedDir is null)
+            if (DownloadedDirectoryPath is null)
             {
                 throw new Exception("Cannot update autosaves without a valid user data directory path.");
             }
 
-            Directory.CreateDirectory(downloadedDir);
+            Directory.CreateDirectory(DownloadedDirectoryPath); // Ensures the directory really exists
 
+            // Extracts the file name, and if it fails, it uses the MapUid as a fallback
             var fileName = trackGbxResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? $"{map.MapUid}.Challenge.Gbx";
 
+            // Validates the file name and fixes it if needed
             foreach (var c in Path.GetInvalidFileNameChars())
             {
                 fileName = fileName.Replace(c, '_');
             }
-            
-            CurrentSessionMapSavePath = Path.Combine(downloadedDir, fileName);
 
-            File.WriteAllBytes(CurrentSessionMapSavePath, await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken));
+            CurrentSessionMapSavePath = Path.Combine(DownloadedDirectoryPath, fileName);
 
-            CurrentSessionMap = map;
+            // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
+            var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
+            await File.WriteAllBytesAsync(CurrentSessionMapSavePath, trackData, cancellationToken);
+
+            CurrentSessionMap = map; // The map should be ready to be played now
         }
         catch (HttpRequestException)
         {
@@ -484,6 +598,8 @@ public static class RandomizerEngine
             return;
         }
 
+        // Hacky last moment validations
+
         if (CurrentSessionMapSavePath is null)
         {
             return;
@@ -494,44 +610,59 @@ public static class RandomizerEngine
             throw new UnreachableException("CurrentSessionWatch is null");
         }
 
-        Status("Starting the map...");
+        // Map starts here
 
-        CurrentSessionWatch.Start();
+        Status("Starting the map...");
 
         OpenFileIngame(CurrentSessionMapSavePath);
 
-        AutosaveWatcher.EnableRaisingEvents = true;
+        CurrentSessionWatch.Start();
+
         SkipTokenSource = new CancellationTokenSource();
         MapStarted?.Invoke();
-        
+
         Status("Playing the map...");
+
+        // This loop either softly stops when the map is skipped by the player
+        // or hardly stops when author medal is received / time limit is reached, End Session was clicked or an exception was thrown in general
+
+        // SkipTokenSource is used within the session to skip a map, while CurrentSessionTokenSource handles the whole session cancellation
 
         while (!SkipTokenSource.IsCancellationRequested)
         {
-            if (CurrentSessionWatch.Elapsed >= Config.Rules.TimeLimit)
+            if (CurrentSessionWatch.Elapsed >= Config.Rules.TimeLimit) // Time limit reached case
             {
                 if (CurrentSessionTokenSource is null)
                 {
                     throw new UnreachableException("CurrentSessionTokenSource is null");
                 }
 
+                // Will cause the Task.Delay below to throw a cancellation exception
+                // Code outside of the while loop wont be reached
                 CurrentSessionTokenSource.Cancel();
             }
 
             await Task.Delay(20, cancellationToken);
         }
 
-        CurrentSessionWatch.Stop();
+        CurrentSessionWatch.Stop(); // Time is paused until the next map starts
 
         if (isActualSkipCancellation) // When its a manual skip and not an automated skip by author medal receive
         {
             Status("Skipping the map...");
 
+            // Apply the rules related to manual map skip
+            // This part has a scripting potential too if properly implmented
+
+            // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
             if (!CurrentSessionGoldMaps.ContainsKey(CurrentSessionMap.MapUid))
             {
                 CurrentSessionSkippedMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
             }
-            
+
+            // In other words, if the player received at least a gold medal, the skip is forgiven
+
+            // MapSkip event is thrown to update the UI
             MapSkip?.Invoke();
             isActualSkipCancellation = false;
         }
@@ -539,8 +670,15 @@ public static class RandomizerEngine
         Status("Ending the map...");
 
         StopTrackingCurrentSessionMap();
+        
+        // Map is no longer tracked at this point
     }
 
+    /// <summary>
+    /// Checks if the map hasn't been already played or if it follows current session rules.
+    /// </summary>
+    /// <param name="map"></param>
+    /// <returns>True if valid, false if not valid.</returns>
     private static bool ValidateMap(CGameCtnChallenge map)
     {
         if (Autosaves.ContainsKey(map.MapUid))
@@ -559,12 +697,15 @@ public static class RandomizerEngine
     private static void StopTrackingCurrentSessionMap()
     {
         SkipTokenSource = null;
-        AutosaveWatcher.EnableRaisingEvents = false;
         CurrentSessionMap = null;
         CurrentSessionMapSavePath = null;
         MapEnded?.Invoke();
     }
-        
+
+    /// <summary>
+    /// MANUAL end of session.
+    /// </summary>
+    /// <returns></returns>
     public static async Task EndSessionAsync()
     {
         Status("Ending the session...");
@@ -575,14 +716,14 @@ public static class RandomizerEngine
         {
             return;
         }
-        
+
         try
         {
-            await CurrentSession;
+            await CurrentSession; // Kindly waits until the session considers it was cancelled. ClearCurrentSession is called within it.
         }
         catch (TaskCanceledException)
         {
-            ClearCurrentSession();
+            ClearCurrentSession(); // Just an ensure
         }
     }
 
@@ -609,6 +750,7 @@ public static class RandomizerEngine
         };
 
         process.Start();
+        process.WaitForInputIdle();
     }
 
     public static void OpenAutosaveIngame(string fileName)
