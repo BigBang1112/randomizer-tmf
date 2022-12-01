@@ -4,6 +4,7 @@ using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
@@ -147,5 +148,25 @@ public class DashboardWindowViewModel : WindowViewModelBase
         }
 
         RandomizerEngine.OpenAutosaveIngame(fileName);
+    }
+
+    public void OpenDownloadedMapsFolderClick()
+    {
+        if (RandomizerEngine.DownloadedDirectoryPath is null)
+        {
+            return;
+        }
+
+        OpenFolder(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+    }
+
+    private static void OpenFolder(string folderPath)
+    {
+        Process.Start(new ProcessStartInfo()
+        {
+            FileName = folderPath,
+            UseShellExecute = true,
+            Verb = "open"
+        });
     }
 }
