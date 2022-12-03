@@ -6,6 +6,7 @@
         x:Class="RandomizerTMF.Views.StatusModuleWindow"
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
+		Icon="/Assets/icon.ico"
 		Width="350"
 		Height="200"
 		MinWidth="300"

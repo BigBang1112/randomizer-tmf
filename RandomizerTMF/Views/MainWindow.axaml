@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="RandomizerTMF.Views.MainWindow"
+		Icon="/Assets/icon.ico"
 		WindowStartupLocation="CenterScreen"
 		Width="800"
 		Height="230"

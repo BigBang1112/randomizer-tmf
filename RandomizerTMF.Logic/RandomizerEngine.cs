@@ -2,6 +2,7 @@
 using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
+using RandomizerTMF.Logic.TypeConverters;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
@@ -43,15 +44,15 @@ public static class RandomizerEngine
     public static Task? CurrentSession { get; private set; }
     public static CancellationTokenSource? CurrentSessionTokenSource { get; private set; }
     public static CancellationTokenSource? SkipTokenSource { get; private set; }
-    public static CGameCtnChallenge? CurrentSessionMap { get; private set; }
+    public static SessionMap? CurrentSessionMap { get; private set; }
     public static string? CurrentSessionMapSavePath { get; private set; }
     public static Stopwatch? CurrentSessionWatch { get; private set; }
 
     // This "trilogy" handles the storage of played maps. If the player didn't receive at least gold and didn't skip it, it is not counted in the progress.
     // It may (?) be better to wrap the CGameCtnChallenge into "CompletedMap" and have status of it being "gold", "author", or "skipped", and better handle that to make it script-friendly.
-    public static Dictionary<string, CGameCtnChallenge> CurrentSessionGoldMaps { get; } = new();
-    public static Dictionary<string, CGameCtnChallenge> CurrentSessionAuthorMaps { get; } = new();
-    public static Dictionary<string, CGameCtnChallenge> CurrentSessionSkippedMaps { get; } = new();
+    public static Dictionary<string, SessionMap> CurrentSessionGoldMaps { get; } = new();
+    public static Dictionary<string, SessionMap> CurrentSessionAuthorMaps { get; } = new();
+    public static Dictionary<string, SessionMap> CurrentSessionSkippedMaps { get; } = new();
 
     public static bool HasSessionRunning => CurrentSession is not null;
 
@@ -174,6 +175,7 @@ public static class RandomizerEngine
                 {
                     CurrentSessionGoldMaps.Remove(CurrentSessionMap.MapUid);
                     CurrentSessionAuthorMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
+                    CurrentSessionMap.LastChangeAt = CurrentSessionWatch?.Elapsed;
 
                     MedalUpdate?.Invoke();
 
@@ -184,6 +186,7 @@ public static class RandomizerEngine
                       || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && replay.GetGhosts().First().StuntScore >= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
                 {
                     CurrentSessionGoldMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
+                    CurrentSessionMap.LastChangeAt = CurrentSessionWatch?.Elapsed;
 
                     MedalUpdate?.Invoke();
                 }
@@ -207,9 +210,22 @@ public static class RandomizerEngine
 
         if (File.Exists(Constants.ConfigYml))
         {
-            using var reader = new StreamReader(Constants.ConfigYml);
-            var deserializer = new YamlDotNet.Serialization.Deserializer();
-            config = deserializer.Deserialize<RandomizerConfig>(reader);
+            try
+            {
+                using var reader = new StreamReader(Constants.ConfigYml);
+                
+                var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+                    .WithTypeConverter(new DateTimeOffsetConverter())
+                    .WithTypeConverter(new TimeInt32Converter())
+                    .Build();
+
+                config = deserializer.Deserialize<RandomizerConfig>(reader);
+            }
+            catch (Exception ex)
+            {
+                // log warning
+                Debug.WriteLine(ex);
+            }
         }
 
         config ??= new RandomizerConfig();
@@ -288,7 +304,10 @@ public static class RandomizerEngine
 
     private static void SaveConfig(RandomizerConfig config)
     {
-        var serializer = new YamlDotNet.Serialization.Serializer();
+        var serializer = new YamlDotNet.Serialization.SerializerBuilder()
+            .WithTypeConverter(new DateTimeOffsetConverter())
+            .WithTypeConverter(new TimeInt32Converter())
+            .Build();
 
         File.WriteAllText(Constants.ConfigYml, serializer.Serialize(config));
     }
@@ -367,14 +386,40 @@ public static class RandomizerEngine
             }
 
             var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
-            var mapEnv = replay.Challenge.Collection;
+            var mapEnv = (string)replay.Challenge.Collection;
             var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new Exception("Bronze time is null.");
             var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new Exception("Silver time is null.");
             var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new Exception("Gold time is null.");
             var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new Exception("Author time is null.");
+            var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new Exception("AuthorScore is null.");
             var mapMode = replay.Challenge.Mode;
+            var mapCarPure = replay.Challenge.PlayerModel?.Id;
+            var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
 
-            AutosaveDetails[autosaveFileName] = new(replay.Time.Value, mapName, mapEnv, mapBronzeTime, mapSilverTime, mapGoldTime, mapAuthorTime, mapMode);
+            mapCar = mapCar switch
+            {
+                "AlpineCar" => "SnowCar",
+                "American" or "SpeedCar" => "DesertCar",
+                "Rally" => "RallyCar",
+                "SportCar" => "IslandCar",
+                _ => mapCar
+            };
+
+            var ghost = replay.GetGhosts().FirstOrDefault();
+
+            AutosaveDetails[autosaveFileName] = new(
+                replay.Time.Value,
+                Score: ghost?.StuntScore,
+                Respawns: ghost?.Respawns,
+                mapName,
+                mapEnv,
+                mapCar,
+                mapBronzeTime,
+                mapSilverTime,
+                mapGoldTime,
+                mapAuthorTime,
+                mapAuthorScore,
+                mapMode);
         }
         catch
         {
@@ -440,8 +485,13 @@ public static class RandomizerEngine
     /// Validates the session rules. This should be called right before the session start and after loading the modules.
     /// </summary>
     /// <exception cref="InvalidDataException"></exception>
-    private static void ValidateRules()
+    public static void ValidateRules()
     {
+        if (Config.Rules.TimeLimit == TimeSpan.Zero)
+        {
+            throw new InvalidDataException("Time limit cannot be 0:00:00");
+        }
+
         if (Config.Rules.TimeLimit > new TimeSpan(9, 59, 59))
         {
             throw new InvalidDataException("Time limit cannot be above 9:59:59");
@@ -580,10 +630,12 @@ public static class RandomizerEngine
             var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
             await File.WriteAllBytesAsync(CurrentSessionMapSavePath, trackData, cancellationToken);
 
-            CurrentSessionMap = map; // The map should be ready to be played now
+            CurrentSessionMap = new SessionMap(map, trackId, randomResponse.Headers.Date ?? DateTimeOffset.Now); // The map should be ready to be played now
         }
         catch (HttpRequestException)
         {
+            // log warning
+            Status("Failed to fetch a track. Retrying...");
             await Task.Delay(1000, cancellationToken);
             return;
         }
@@ -594,6 +646,7 @@ public static class RandomizerEngine
         catch
         {
             // log error
+            Status("Error! Check the log for more details.");
             await Task.Delay(1000, cancellationToken);
             return;
         }
@@ -658,6 +711,7 @@ public static class RandomizerEngine
             if (!CurrentSessionGoldMaps.ContainsKey(CurrentSessionMap.MapUid))
             {
                 CurrentSessionSkippedMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
+                CurrentSessionMap.LastChangeAt = CurrentSessionWatch?.Elapsed;
             }
 
             // In other words, if the player received at least a gold medal, the skip is forgiven

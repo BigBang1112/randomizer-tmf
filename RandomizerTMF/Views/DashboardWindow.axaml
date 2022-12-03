@@ -5,10 +5,12 @@
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
         mc:Ignorable="d"
-		Width="1250"
-		MinWidth="750"
-		Height="650"
         x:Class="RandomizerTMF.Views.DashboardWindow"
+		Icon="/Assets/icon.ico"
+		Width="1250"
+		MinWidth="1180"
+		Height="680"
+		MinHeight="640"
 		WindowStartupLocation="CenterScreen"
 		Title="Randomizer TMF - Random Map Challenge for TMNF/TMUF">
 	
@@ -29,9 +31,11 @@
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 
-			<Grid>
+			<Grid ShowGridLines="False">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="35"/>
+					<RowDefinition Height="*"/>
+					<RowDefinition Height="35" />
 					<RowDefinition Height="*"/>
 					<RowDefinition Height="5"/>
 					<RowDefinition Height="Auto" />
@@ -43,7 +47,7 @@
 				</Grid.RowDefinitions>
 
 				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
-					Your challenge sessions:
+					Your presets:
 				</TextBlock>
 				<Border Grid.Row="1" Width="250" BorderThickness="2">
 					<Border.BorderBrush>
@@ -56,15 +60,29 @@
 					</ListBox>
 				</Border>
 
-				<Button Grid.Row="3"
-						HorizontalAlignment="Stretch"
-						HorizontalContentAlignment="Center"
-						Command="{Binding OpenSessionsFolderClick}">Open sessions folder</Button>
+				<TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+					Your sessions:
+				</TextBlock>
+				<Border Grid.Row="3" Width="250" BorderThickness="2">
+					<Border.BorderBrush>
+						<SolidColorBrush Color="Gray" Opacity="0.5"/>
+					</Border.BorderBrush>
+					<ListBox>
+						<ListBox.Background>
+							<SolidColorBrush Color="#222222" Opacity="0.5"/>
+						</ListBox.Background>
+					</ListBox>
+				</Border>
+
 				<Button Grid.Row="5"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
-						Command="{Binding OpenDownloadedMapsFolderClick}">Open downloaded maps folder</Button>
+						Command="{Binding OpenSessionsFolderClick}">Open sessions folder</Button>
 				<Button Grid.Row="7"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						Command="{Binding OpenDownloadedMapsFolderClick}">Open downloaded maps folder</Button>
+				<Button Grid.Row="9"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding ChangeClick}">Configure Randomizer TMF</Button>

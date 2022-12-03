@@ -22,7 +22,7 @@
 			</LinearGradientBrush>
 		</Border.BorderBrush>
 		<Panel>
-			<Label IsHitTestVisible="False" Content="Randomizer TMF - Random Map Challenge for TMNF/TMUF (by BigBang1112)" VerticalContentAlignment="Center"/>
+			<Label IsHitTestVisible="False" Content="{Binding Title}" VerticalContentAlignment="Center"/>
 
 			<Button HorizontalAlignment="Right" Margin="0 5 120 5" Command="{Binding DonateClick}">
 				<Button.Template>
@@ -32,7 +32,28 @@
 				</Button.Template>
 			</Button>
 
-			<Button Classes="topBarButton" Margin="0 0 68 0" Width="40" Command="{Binding VersionClick}">1.0.0</Button>
+			<Button Classes="topBarButton" Margin="0 0 68 0"
+					Width="40"
+					Content="{Binding Version}"
+					Command="{Binding VersionClick}">
+				<Button.Styles>
+					<Style Selector="Button">
+						<Style.Animations>
+							<Animation Duration="0:0:0.5" Easing="CubicEaseOut" RepeatCount="INFINITE">
+								<KeyFrame Cue="0%">
+									<Setter Property="Background" Value="#555"></Setter>
+								</KeyFrame>
+								<KeyFrame Cue="50%">
+									<Setter Property="Background" Value="#A80"></Setter>
+								</KeyFrame>
+								<KeyFrame Cue="100%">
+									<Setter Property="Background" Value="#555"></Setter>
+								</KeyFrame>
+							</Animation>
+						</Style.Animations>
+					</Style>
+				</Button.Styles>
+			</Button>
 			<Button Classes="topBarButton" Margin="0 0 32 0" Command="{Binding OnMinimizeClick}"></Button>
 			<Button Classes="topBarButton" Background="DarkRed" Command="{Binding OnCloseClick}"></Button>
 		</Panel>

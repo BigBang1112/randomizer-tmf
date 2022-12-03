@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using TmEssentials;
+using YamlDotNet.Serialization;
 
 namespace RandomizerTMF.Logic;
 
@@ -74,7 +75,7 @@ public class RequestRules
             b.Append(prop.Name.ToLower());
             b.Append('=');
 
-            var genericType = prop.PropertyType.GetGenericTypeDefinition();
+            var genericType = prop.PropertyType.IsGenericType ? prop.PropertyType.GetGenericTypeDefinition() : null;
 
             if (genericType == typeof(Nullable<>))
             {
@@ -89,7 +90,7 @@ public class RequestRules
         return b.ToString();
     }
 
-    private string GetSiteUrl(ESite[] matchingSites)
+    private static string GetSiteUrl(ESite[] matchingSites)
     {
         var randomSite = matchingSites[Random.Shared.Next(matchingSites.Length)];
 
@@ -111,6 +112,10 @@ public class RequestRules
         else if (val is bool boolVal)
         {
             b.Append(boolVal ? '1' : '0');
+        }
+        else if (val is DateTimeOffset dateTime)
+        {
+            b.Append(dateTime.ToString("yyyy-MM-dd"));
         }
         else if (genericType == typeof(HashSet<>))
         {

@@ -11,6 +11,7 @@
 		<ImplicitUsings>true</ImplicitUsings>
 		<InvariantGlobalization>true</InvariantGlobalization>
 
+		<ApplicationIcon>Assets/icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -21,6 +22,19 @@
 	
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Remove="Assets\Images\Vehicles\BayCar.png" />
+	  <None Remove="Assets\Images\Vehicles\CanyonCar2.png" />
+	  <None Remove="Assets\Images\Vehicles\CoastCar.png" />
+	  <None Remove="Assets\Images\Vehicles\DesertCar.png" />
+	  <None Remove="Assets\Images\Vehicles\IslandCar.png" />
+	  <None Remove="Assets\Images\Vehicles\LagoonCar2.png" />
+	  <None Remove="Assets\Images\Vehicles\RallyCar.png" />
+	  <None Remove="Assets\Images\Vehicles\SnowCar.png" />
+	  <None Remove="Assets\Images\Vehicles\StadiumCar2.png" />
+	  <None Remove="Assets\Images\Vehicles\ValleyCar2.png" />
 	</ItemGroup>
 	
 	<ItemGroup>

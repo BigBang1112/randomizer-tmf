@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="35"
              x:Class="RandomizerTMF.Views.MoveMe">
-	<Border BorderThickness="0 0 0 2" BorderBrush="Gray" Opacity="0.3" IsHitTestVisible="False">
+	<Border BorderThickness="0 0 0 2" BorderBrush="Gray" Opacity="0.3" IsHitTestVisible="False" Height="35">
 		<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="Gray">MOVE ME</TextBlock>
 	</Border>
 </UserControl>

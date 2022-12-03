@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="530"
 			 xmlns:views="using:RandomizerTMF.Views"
 		     xmlns:vm="using:RandomizerTMF.ViewModels"
 			 x:Class="RandomizerTMF.Views.RequestRulesControl">
@@ -11,7 +11,7 @@
 		<vm:RequestRulesControlViewModel/>
 	</Design.DataContext>
 	
-	<Grid>
+	<Grid ShowGridLines="False">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
@@ -23,6 +23,7 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
+			<RowDefinition Height="3" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 
@@ -146,8 +147,88 @@
 				   VerticalAlignment="Center"
 				   Opacity="0.5">If any horizontal layer above has no buttons toggled, it simply means "any of those".</TextBlock>
 
+		<Grid Grid.Row="11" ShowGridLines="False">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="140" />
+				<ColumnDefinition Width="10" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="10" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="25" />
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="5" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="5" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="5" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="15" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="5" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
 
-		<CheckBox Grid.Row="10" IsChecked="True" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
+			<TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" ToolTip.Tip="Time limit of the session in hours, minutes, and seconds.">Time limit:</TextBlock>
+
+			<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+				<NumericUpDown Value="{Binding TimeLimitHour}" Maximum="9" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+				<NumericUpDown Value="{Binding TimeLimitMinute}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+				<NumericUpDown Value="{Binding TimeLimitSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+			</StackPanel>
+
+			<TextBlock Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Center">Min. AT:</TextBlock>
+
+			<StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMinute}" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<TextBlock Text="." VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<CheckBox IsChecked="{Binding MinATEnabled}"/>
+			</StackPanel>
+
+			<TextBlock Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Center">Max. AT:</TextBlock>
+
+			<StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="8">
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMinute}" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<TextBlock Text="." VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<CheckBox IsChecked="{Binding MaxATEnabled}"/>
+			</StackPanel>
+
+			<CheckBox Grid.Row="6" Grid.Column="2" IsChecked="True" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
+
+			<TextBlock Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">Map name:</TextBlock>
+			<TextBox Grid.Column="5" Text="{Binding MapName}"/>
+
+			<TextBlock Grid.Row="2" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">Map author:</TextBlock>
+			<TextBox Grid.Row="2" Grid.Column="5" Text="{Binding MapAuthor}"/>
+
+			<TextBlock Grid.Row="4" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">Tag:</TextBlock>
+			<ComboBox Grid.Row="4" Grid.Column="5" Items="{Binding TagValues}" SelectedIndex="{Binding TagIndex}" HorizontalAlignment="Stretch"/>
+
+			<TextBlock Grid.Row="6" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">Leaderboard type:</TextBlock>
+			<ComboBox Grid.Row="6" Grid.Column="5" Items="{Binding LbTypeValues}" SelectedIndex="{Binding LbTypeIndex}" HorizontalAlignment="Stretch"/>
+
+			<TextBlock Grid.Row="8" Text="Uploaded after:" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 10 0 5"/>
+			<StackPanel Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="5">
+				<DatePicker SelectedDate="{Binding UploadedAfter}" />
+				<Button Content="Reset" Margin="0 3 0 0" Command="{Binding UploadedAfterReset}"/>
+			</StackPanel>
+			
+			<TextBlock Grid.Row="10" Text="Uploaded before:" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 10 0 5"/>
+			<StackPanel Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="5">
+				<DatePicker SelectedDate="{Binding UploadedBefore}" />
+				<Button Content="Reset" Margin="0 3 0 0" Command="{Binding UploadedBeforeReset}"/>
+			</StackPanel>
+		</Grid>
 	</Grid>
 	
 </UserControl>

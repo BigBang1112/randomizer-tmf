@@ -1,0 +1,75 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="270"
+        x:Class="RandomizerTMF.Views.AutosaveDetailsWindow"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+		Icon="/Assets/icon.ico"
+		Width="500"
+		MinWidth="380"
+		Height="280"
+		MinHeight="235"
+		Title="Autosave details">
+
+	<Design.DataContext>
+		<vm:AutosaveDetailsWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+
+	<DockPanel>
+		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+		<Grid ShowGridLines="False">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="15"/>
+				<ColumnDefinition Width="65"/>
+				<ColumnDefinition Width="10"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="15"/>
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="10"/>
+				<RowDefinition Height="55"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="30"/>
+				<RowDefinition Height="30"/>
+				<RowDefinition Height="30"/>
+				<RowDefinition Height="30"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="40"/>
+				<RowDefinition Height="10"/>
+			</Grid.RowDefinitions>
+
+			<Image Grid.Column="1" Grid.Row="1" Source="{Binding AutosaveModel.EnvIconBitmap}" ToolTip.Tip="{Binding AutosaveModel.Autosave.MapEnvironment}"/>
+
+			<StackPanel Grid.Column="3" Grid.ColumnSpan="2" Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
+				<TextBlock FontSize="24" Text="{Binding MapName}" VerticalAlignment="Center"/>
+				<Image Width="35" Height="35" Margin="15 0 0 0" Source="{Binding AutosaveModel.CarIconBitmap}" ToolTip.Tip="{Binding AutosaveModel.Autosave.MapCar}"/>
+			</StackPanel>
+
+
+			<Image Margin="0 2" Grid.Column="1" Grid.Row="3" Source="/Assets/Images/Medals/NadeoMedal.png" HorizontalAlignment="Right" />
+			<TextBlock Grid.Column="3" Grid.Row="3" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding MapAuthorTime}"/>
+
+			<Image Margin="0 2" Grid.Column="1" Grid.Row="4" Source="/Assets/Images/Medals/GoldMedal.png" HorizontalAlignment="Right" />
+			<TextBlock Grid.Column="3" Grid.Row="4" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding MapGoldTime}"/>
+
+			<Image Margin="0 2" Grid.Column="1" Grid.Row="5" Source="/Assets/Images/Medals/SilverMedal.png" HorizontalAlignment="Right" />
+			<TextBlock Grid.Column="3" Grid.Row="5" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding MapSilverTime}"/>
+
+			<Image Margin="0 2" Grid.Column="1" Grid.Row="6" Source="/Assets/Images/Medals/BronzeMedal.png" HorizontalAlignment="Right" />
+			<TextBlock Grid.Column="3" Grid.Row="6" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding MapBronzeTime}"/>
+
+			<TextBlock Grid.Column="1" Grid.Row="8" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Text="PB:" HorizontalAlignment="Right"/>
+			<TextBlock Grid.Column="3" Grid.Row="8" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Text="{Binding PersonalBest}"/>
+
+			<Button Grid.Column="4" Grid.Row="8" Command="{Binding OpenAutosaveIngame}" Content="Open autosave ingame"/>
+
+		</Grid>
+	</DockPanel>
+</Window>

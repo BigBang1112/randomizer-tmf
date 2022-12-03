@@ -6,6 +6,7 @@
         x:Class="RandomizerTMF.Views.ProgressModuleWindow"
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
+		Icon="/Assets/icon.ico"
 		Width="320"
 		Height="300"
 		MinWidth="320"

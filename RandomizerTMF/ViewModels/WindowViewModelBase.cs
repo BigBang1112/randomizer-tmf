@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using RandomizerTMF.Views;
 
 namespace RandomizerTMF.ViewModels;
 
@@ -14,7 +15,7 @@ public class WindowViewModelBase : ViewModelBase
         Window.Close();
     }
 
-    public static Window OpenWindow<TWindow, TViewModel>()
+    public static TWindow OpenWindow<TWindow, TViewModel>()
         where TWindow : Window, new()
         where TViewModel : WindowViewModelBase, new()
     {
@@ -23,6 +24,39 @@ public class WindowViewModelBase : ViewModelBase
         viewModel.OnInit();
         window.DataContext = viewModel;
         window.Show();
+        return window;
+    }
+
+    public TWindow OpenDialog<TWindow, TViewModel>()
+        where TWindow : Window, new()
+        where TViewModel : WindowViewModelBase, new()
+    {
+        var window = new TWindow();
+        var viewModel = new TViewModel() { Window = window };
+        viewModel.OnInit();
+        window.DataContext = viewModel;
+        window.ShowDialog(Window); // The parent window
+        return window;
+    }
+
+    public TWindow OpenDialog<TWindow>(Func<TWindow, WindowViewModelBase> viewModelFunc)
+        where TWindow : Window, new()
+    {
+        var window = new TWindow();
+        var viewModel = viewModelFunc(window);
+        viewModel.OnInit();
+        window.DataContext = viewModel;
+        window.ShowDialog(Window); // The parent window
+        return window;
+    }
+
+    public MessageWindow OpenMessageBox(string title, string content)
+    {
+        var window = new MessageWindow() { Title = title };
+        var viewModel = new MessageWindowViewModel() { Window = window, Content = content };
+        viewModel.OnInit();
+        window.DataContext = viewModel;
+        window.ShowDialog(Window); // The parent window
         return window;
     }
 

@@ -4,6 +4,7 @@ using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
@@ -115,24 +116,48 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
     public void StartModulesClick()
     {
-        var controlModuleWindow = OpenWindow<ControlModuleWindow, ControlModuleWindowViewModel>();
-        controlModuleWindow.Position = new(RandomizerEngine.Config.Modules.Control.X, RandomizerEngine.Config.Modules.Control.Y);
-        controlModuleWindow.Width = RandomizerEngine.Config.Modules.Control.Width;
-        controlModuleWindow.Height = RandomizerEngine.Config.Modules.Control.Height;
+        try
+        {
+            RandomizerEngine.ValidateRules();
+        }
+        catch (Exception ex)
+        {
+            OpenMessageBox("Validation problem", ex.Message);
+            return;
+        }
 
-        var statusModuleWindow = OpenWindow<StatusModuleWindow, StatusModuleWindowViewModel>();
-        statusModuleWindow.Position = new(RandomizerEngine.Config.Modules.Status.X, RandomizerEngine.Config.Modules.Status.Y);
-        statusModuleWindow.Width = RandomizerEngine.Config.Modules.Status.Width;
-        statusModuleWindow.Height = RandomizerEngine.Config.Modules.Status.Height;
-        
-        var progressModuleWindow = OpenWindow<ProgressModuleWindow, ProgressModuleWindowViewModel>();
-        progressModuleWindow.Position = new(RandomizerEngine.Config.Modules.Progress.X, RandomizerEngine.Config.Modules.Progress.Y);
-        progressModuleWindow.Width = RandomizerEngine.Config.Modules.Progress.Width;
-        progressModuleWindow.Height = RandomizerEngine.Config.Modules.Progress.Height;
-
-        App.Modules = new[] { controlModuleWindow, statusModuleWindow, progressModuleWindow };
+        App.Modules = new Window[]
+        {
+            OpenModule<ControlModuleWindow, ControlModuleWindowViewModel>(RandomizerEngine.Config.Modules.Control),
+            OpenModule<StatusModuleWindow, StatusModuleWindowViewModel>(RandomizerEngine.Config.Modules.Status),
+            OpenModule<ProgressModuleWindow, ProgressModuleWindowViewModel>(RandomizerEngine.Config.Modules.Progress),
+            OpenModule<HistoryModuleWindow, HistoryModuleWindowViewModel>(RandomizerEngine.Config.Modules.History)
+        };
 
         Window.Close();
+    }
+
+    private static TWindow OpenModule<TWindow, TViewModel>(ModuleConfig config)
+        where TWindow : Window, new()
+        where TViewModel : WindowViewModelBase, new()
+    {
+        var window = OpenWindow<TWindow, TViewModel>();
+
+        if (config.X < 0)
+        {
+            config.X += window.Screens.Primary.WorkingArea.Width - config.Width;
+        }
+
+        if (config.Y < 0)
+        {
+            config.Y += window.Screens.Primary.WorkingArea.Height - config.Height;
+        }
+
+        window.Position = new(config.X, config.Y);
+        window.Width = config.Width;
+        window.Height = config.Height;
+
+        return window;
     }
 
     public void AutosaveDoubleClick(int selectedIndex)
@@ -142,22 +167,25 @@ public class DashboardWindowViewModel : WindowViewModelBase
             return;
         }
 
-        if (!RandomizerEngine.AutosavePaths.TryGetValue(Autosaves[selectedIndex].MapUid, out string? fileName))
+        var autosaveModel = Autosaves[selectedIndex];
+
+        if (!RandomizerEngine.AutosavePaths.TryGetValue(autosaveModel.MapUid, out string? fileName))
         {
             return;
         }
 
-        RandomizerEngine.OpenAutosaveIngame(fileName);
+        OpenDialog<AutosaveDetailsWindow>(window => new AutosaveDetailsWindowViewModel(autosaveModel, fileName)
+        {
+            Window = window
+        });
     }
 
     public void OpenDownloadedMapsFolderClick()
     {
-        if (RandomizerEngine.DownloadedDirectoryPath is null)
+        if (RandomizerEngine.DownloadedDirectoryPath is not null)
         {
-            return;
+            OpenFolder(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
         }
-
-        OpenFolder(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
     }
 
     private static void OpenFolder(string folderPath)

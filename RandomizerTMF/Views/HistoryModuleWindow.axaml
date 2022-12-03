@@ -2,8 +2,64 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="300"
         x:Class="RandomizerTMF.Views.HistoryModuleWindow"
-        Title="HistoryModuleWindow">
-  Welcome to Avalonia!
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+		Icon="/Assets/icon.ico"
+		Width="250"
+		Height="300"
+		MinWidth="200"
+		MinHeight="250"
+		Topmost="True"
+        Title="History Module">
+
+	<Design.DataContext>
+		<vm:HistoryModuleWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+
+	<Grid Margin="10 0 10 10">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<views:MoveMe />
+		<Border Grid.Row="1" BorderThickness="2" Margin="0 5 0 0" DockPanel.Dock="Top">
+			<Border.BorderBrush>
+				<SolidColorBrush Color="Gray" Opacity="0.5"/>
+			</Border.BorderBrush>
+			<ListBox Items="{Binding PlayedMaps, Mode=OneWay}">
+				<ListBox.Background>
+					<SolidColorBrush Color="#222222" Opacity="0.5"/>
+				</ListBox.Background>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid Margin="-6" VerticalAlignment="Center">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="20"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<Image Width="20" Height="20" Source="{Binding EnvIconBitmap}"/>
+							<TextBlock Grid.Column="1" Text="{Binding MapName}" Margin="5 1 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+							<TextBlock Grid.Column="1" Text="{Binding TimestampText}" HorizontalAlignment="Right" Foreground="{Binding TimestampColor}" Margin="0 1 5 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Border>
+
+
+		<StackPanel Grid.Row="1"
+					Orientation="Horizontal"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Opacity="0.7">
+			<TextBlock IsVisible="{Binding !HasFinishedMaps}" Text="No maps finished"/>
+		</StackPanel>
+	</Grid>
+	
 </Window>

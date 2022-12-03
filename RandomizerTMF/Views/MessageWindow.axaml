@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        Width="400" Height="200"
+		x:Class="RandomizerTMF.Views.MessageWindow"
+		Icon="/Assets/icon.ico"
+        Title="Message box"
+		WindowStartupLocation="CenterScreen">
+
+	<Design.DataContext>
+		<vm:MessageWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+	
+	<DockPanel>
+		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+		<Grid Margin="10">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
+
+			<TextBlock Grid.ColumnSpan="2" Margin="10 10 10 5" TextWrapping="WrapWithOverflow" Text="{Binding Content}"/>
+			
+			<Button Grid.Column="1" Grid.Row="1" Content="Ok" Width="100" HorizontalContentAlignment="Center" Command="{Binding OkClick}"/>
+		</Grid>
+	</DockPanel>
+</Window>
