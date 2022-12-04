@@ -188,6 +188,14 @@ public class DashboardWindowViewModel : WindowViewModelBase
         }
     }
 
+    public void OpenSessionsFolderClick()
+    {
+        if (RandomizerEngine.SessionsDirectoryPath is not null)
+        {
+            OpenFolder(RandomizerEngine.SessionsDirectoryPath + Path.DirectorySeparatorChar);
+        }
+    }
+
     private static void OpenFolder(string folderPath)
     {
         Process.Start(new ProcessStartInfo()

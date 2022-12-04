@@ -32,8 +32,8 @@ public class RequestRules
     public bool? InLatestAuthor { get; set; }
     public bool? InLatestAwardedAuthor { get; set; }
     public bool? InScreenshot { get; set; }
-    public DateTimeOffset? UploadedBefore { get; set; }
-    public DateTimeOffset? UploadedAfter { get; set; }
+    public DateOnly? UploadedBefore { get; set; }
+    public DateOnly? UploadedAfter { get; set; }
     public TimeInt32? AuthorTimeMin { get; set; }
     public TimeInt32? AuthorTimeMax { get; set; }
 
@@ -113,9 +113,9 @@ public class RequestRules
         {
             b.Append(boolVal ? '1' : '0');
         }
-        else if (val is DateTimeOffset dateTime)
+        else if (val is DateOnly date)
         {
-            b.Append(dateTime.ToString("yyyy-MM-dd"));
+            b.Append(date.ToString("yyyy-MM-dd"));
         }
         else if (genericType == typeof(HashSet<>))
         {

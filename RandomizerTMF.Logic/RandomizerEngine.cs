@@ -3,10 +3,14 @@ using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.TypeConverters;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using TmEssentials;
+using YamlDotNet.Serialization;
+using static GBX.NET.Engines.Game.CGamePlayerScore;
+using static GBX.NET.Engines.Hms.CHmsLightMapCache;
 
 namespace RandomizerTMF.Logic;
 
@@ -15,6 +19,18 @@ public static class RandomizerEngine
     private static bool isActualSkipCancellation;
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
+    
+    private static ISerializer YamlSerializer { get; } = new SerializerBuilder()
+        .WithTypeConverter(new DateOnlyConverter())
+        .WithTypeConverter(new DateTimeOffsetConverter())
+        .WithTypeConverter(new TimeInt32Converter())
+        .Build();
+
+    private static IDeserializer YamlDeserializer { get; } = new DeserializerBuilder()
+        .WithTypeConverter(new DateOnlyConverter())
+        .WithTypeConverter(new DateTimeOffsetConverter())
+        .WithTypeConverter(new TimeInt32Converter())
+        .Build();
 
     public static RandomizerConfig Config { get; }
 
@@ -40,6 +56,7 @@ public static class RandomizerEngine
 
     public static string? AutosavesDirectoryPath { get; private set; }
     public static string? DownloadedDirectoryPath { get; private set; }
+    public static string SessionsDirectoryPath => Constants.Sessions;
 
     public static Task? CurrentSession { get; private set; }
     public static CancellationTokenSource? CurrentSessionTokenSource { get; private set; }
@@ -47,6 +64,9 @@ public static class RandomizerEngine
     public static SessionMap? CurrentSessionMap { get; private set; }
     public static string? CurrentSessionMapSavePath { get; private set; }
     public static Stopwatch? CurrentSessionWatch { get; private set; }
+
+    public static SessionData? CurrentSessionData { get; private set; }
+    public static string? CurrentSessionDataDirectoryPath => CurrentSessionData is null ? null : Path.Combine(SessionsDirectoryPath, CurrentSessionData.StartedAtText);
 
     // This "trilogy" handles the storage of played maps. If the player didn't receive at least gold and didn't skip it, it is not counted in the progress.
     // It may (?) be better to wrap the CGameCtnChallenge into "CompletedMap" and have status of it being "gold", "author", or "skipped", and better handle that to make it script-friendly.
@@ -82,13 +102,35 @@ public static class RandomizerEngine
     public static event Action<string> Status;
     public static event Action? MedalUpdate;
 
-    public static ILogger Logger { get; }
+    public static ILogger Logger { get; private set; }
+    public static StreamWriter LogWriter { get; private set; }
+    public static StreamWriter? CurrentSessionLogWriter { get; private set; }
+    public static bool SessionEnding { get; private set; }
+
+    private static int RequestAttempt { get; set; }
+    private static int RequestMaxAttempts { get; } = 10;
 
     static RandomizerEngine()
     {
+        LogWriter = new StreamWriter("RandomizerTMF.log", append: true)
+        {
+            AutoFlush = true
+        };
+
+        Logger = new LoggerToFile(LogWriter);
+        
+        Logger.LogInformation("Starting Randomizer Engine...");
+        Logger.LogInformation("Predefining LZO algorithm...");
+
+        Directory.CreateDirectory(SessionsDirectoryPath);
+
         GBX.NET.Lzo.SetLzo(typeof(GBX.NET.LZO.MiniLZO));
 
+        Logger.LogInformation("Loading config...");
+
         Config = GetOrCreateConfig();
+
+        Logger.LogInformation("Preparing general events...");
 
         AutosaveWatcher = new FileSystemWatcher
         {
@@ -96,35 +138,49 @@ public static class RandomizerEngine
             Filter = "*.Replay.gbx"
         };
 
-        AutosaveWatcher.Created += AutosaveCreatedOrChanged;
         AutosaveWatcher.Changed += AutosaveCreatedOrChanged;
 
         Status += RandomizerEngineStatus;
     }
 
-    private static void RandomizerEngineStatus(string obj)
+    private static void RandomizerEngineStatus(string status)
     {
         // Status kind of logging
         // Unlike regular logs, these are shown to the user in a module, while also written to the log file in its own way
+        Logger.LogInformation("STATUS: {status}", status);
     }
+    
+    private static DateTime lastAutosaveUpdate = DateTime.MinValue;
 
     private static void AutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
     {
+        // Hack to fix the issue of this event sometimes running twice
+        var lastWriteTime = File.GetLastWriteTime(e.FullPath);
+
+        if (lastWriteTime == lastAutosaveUpdate)
+        {
+            return;
+        }
+        
+        lastAutosaveUpdate = lastWriteTime;
+        //
+
         CGameCtnReplayRecord replay;
 
         try
         {
             // Any kind of autosaves update section
+            Logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
 
             if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
             {
-                // log warning
+                Logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
                 return;
             }
 
             if (r.MapInfo is null)
             {
-                // log warning
+                Logger.LogWarning("Found replay {file} that has no map info.", e.FullPath);
                 return;
             }
 
@@ -133,26 +189,29 @@ public static class RandomizerEngine
 
             replay = r;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error while analyzing a new file {autosavePath} in autosaves folder.", e.FullPath);
             return;
         }
-        
+
         try
-        { 
+        {
             // Current session map autosave update section
 
             if (CurrentSessionMap is null)
             {
-                // log warning
+                Logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while no session is running.", e.FullPath, replay.MapInfo.Id);
                 return;
             }
 
             if (CurrentSessionMap.MapInfo != replay.MapInfo)
             {
-                // log warning
+                Logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while the current session map is {currentSessionMapUid}.", e.FullPath, replay.MapInfo.Id, CurrentSessionMap.MapInfo.Id);
                 return;
             }
+            
+            UpdateSessionDataFromAutosave(e.FullPath, CurrentSessionMap, replay);
 
             Status("Checking the autosave...");
 
@@ -164,7 +223,11 @@ public static class RandomizerEngine
 
             if (CurrentSessionMap.ChallengeParameters?.AuthorTime is null)
             {
-                // log warning
+                Logger.LogWarning("Found autosave {autosavePath} for map {mapName} ({mapUid}) that has no author time.",
+                    e.FullPath,
+                    TextFormatter.Deformat(CurrentSessionMap.Map.MapName).Trim(),
+                    replay.MapInfo.Id);
+
                 SkipTokenSource?.Cancel();
             }
             else
@@ -173,11 +236,7 @@ public static class RandomizerEngine
                  || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && replay.GetGhosts().First().Respawns <= CurrentSessionMap.ChallengeParameters.AuthorScore && replay.Time <= CurrentSessionMap.ChallengeParameters.AuthorTime)
                  || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && replay.GetGhosts().First().StuntScore >= CurrentSessionMap.ChallengeParameters.AuthorScore))
                 {
-                    CurrentSessionGoldMaps.Remove(CurrentSessionMap.MapUid);
-                    CurrentSessionAuthorMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
-                    CurrentSessionMap.LastChangeAt = CurrentSessionWatch?.Elapsed;
-
-                    MedalUpdate?.Invoke();
+                    AuthorMedalReceived(CurrentSessionMap);
 
                     SkipTokenSource?.Cancel();
                 }
@@ -185,19 +244,106 @@ public static class RandomizerEngine
                       || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && replay.GetGhosts().First().Respawns <= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
                       || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && replay.GetGhosts().First().StuntScore >= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
                 {
-                    CurrentSessionGoldMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
-                    CurrentSessionMap.LastChangeAt = CurrentSessionWatch?.Elapsed;
-
-                    MedalUpdate?.Invoke();
+                    GoldMedalReceived(CurrentSessionMap);
                 }
             }
 
             Status("Playing the map...");
         }
-        catch
+        catch (Exception ex)
         {
             Status("Error when checking the autosave...");
+            Logger.LogError(ex, "Error when checking the autosave {autosavePath}.", e.FullPath);
         }
+    }
+
+    private static void UpdateSessionDataFromAutosave(string fullPath, SessionMap map, CGameCtnReplayRecord replay)
+    {
+        if (CurrentSessionDataDirectoryPath is null)
+        {
+            return;
+        }
+
+        Status("Copying the autosave...");
+
+        var score = map.Map.Mode switch
+        {
+            CGameCtnChallenge.PlayMode.Stunts => replay.GetGhosts().First().StuntScore + "_",
+            CGameCtnChallenge.PlayMode.Platform => replay.GetGhosts().First().Respawns + "_",
+            _ => ""
+        } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
+
+        var mapName = TextFormatter.Deformat(map.Map.MapName).Trim();
+        var replayFileName = $"{mapName}_{score}.Replay.Gbx";
+
+        var replaysDir = Path.Combine(CurrentSessionDataDirectoryPath, "Replays");
+        var replayFilePath = Path.Combine(replaysDir, replayFileName);
+
+        Directory.CreateDirectory(replaysDir);
+        File.Copy(fullPath, replayFilePath, overwrite: true);
+
+        if (CurrentSessionWatch is null)
+        {
+            return;
+        }
+        
+        CurrentSessionData?.Maps
+            .FirstOrDefault(x => x.Uid == map.MapUid)?
+            .Replays
+            .Add(new()
+            {
+                FileName = replayFileName,
+                Timestamp = CurrentSessionWatch.Elapsed
+            });
+        
+        SaveSessionData();
+    }
+
+    private static void GoldMedalReceived(SessionMap map)
+    {
+        CurrentSessionGoldMaps.TryAdd(map.MapUid, map);
+        map.LastChangeAt = CurrentSessionWatch?.Elapsed;
+        SetMapResult(map, "GoldMedal");
+
+        MedalUpdate?.Invoke();
+    }
+
+    private static void AuthorMedalReceived(SessionMap map)
+    {
+        CurrentSessionGoldMaps.Remove(map.MapUid);
+        CurrentSessionAuthorMaps.TryAdd(map.MapUid, map);
+        map.LastChangeAt = CurrentSessionWatch?.Elapsed;
+        SetMapResult(map, "AuthorMedal");
+
+        MedalUpdate?.Invoke();
+    }
+
+    private static void Skipped(SessionMap map)
+    {
+        // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
+        if (!CurrentSessionGoldMaps.ContainsKey(map.MapUid))
+        {
+            CurrentSessionSkippedMaps.TryAdd(map.MapUid, map);
+            map.LastChangeAt = CurrentSessionWatch?.Elapsed;
+            SetMapResult(map, "Skipped");
+        }
+
+        // In other words, if the player received at least a gold medal, the skip is forgiven
+
+        // MapSkip event is thrown to update the UI
+        MapSkip?.Invoke();
+    }
+
+    private static void SetMapResult(SessionMap map, string result)
+    {
+        var dataMap = CurrentSessionData?.Maps.FirstOrDefault(x => x.Uid == map.MapUid);
+
+        if (dataMap is not null)
+        {
+            dataMap.Result = result;
+        }
+        
+        SaveSessionData();
     }
 
     /// <summary>
@@ -210,25 +356,25 @@ public static class RandomizerEngine
 
         if (File.Exists(Constants.ConfigYml))
         {
+            Logger.LogInformation("Config file found, loading...");
+
             try
             {
                 using var reader = new StreamReader(Constants.ConfigYml);
-                
-                var deserializer = new YamlDotNet.Serialization.DeserializerBuilder()
-                    .WithTypeConverter(new DateTimeOffsetConverter())
-                    .WithTypeConverter(new TimeInt32Converter())
-                    .Build();
-
-                config = deserializer.Deserialize<RandomizerConfig>(reader);
+                config = YamlDeserializer.Deserialize<RandomizerConfig>(reader);
             }
             catch (Exception ex)
             {
-                // log warning
-                Debug.WriteLine(ex);
+                Logger.LogWarning(ex, "Error while deserializing the config file ({configPath}).", Constants.ConfigYml);
             }
         }
 
-        config ??= new RandomizerConfig();
+        if (config is null)
+        {
+            Logger.LogInformation("Config file not found or is corrupted, creating a new one...");
+            config = new RandomizerConfig();
+        }
+
         SaveConfig(config);
 
         return config;
@@ -304,12 +450,24 @@ public static class RandomizerEngine
 
     private static void SaveConfig(RandomizerConfig config)
     {
-        var serializer = new YamlDotNet.Serialization.SerializerBuilder()
-            .WithTypeConverter(new DateTimeOffsetConverter())
-            .WithTypeConverter(new TimeInt32Converter())
-            .Build();
+        Logger.LogInformation("Saving the config file...");
+        File.WriteAllText(Constants.ConfigYml, YamlSerializer.Serialize(config));
 
-        File.WriteAllText(Constants.ConfigYml, serializer.Serialize(config));
+        Logger.LogInformation("Config file saved.");
+    }
+
+    private static void SaveSessionData()
+    {
+        if (CurrentSessionData is null || CurrentSessionDataDirectoryPath is null)
+        {
+            return;
+        }
+
+        Logger.LogInformation("Saving the session data into file...");
+        
+        File.WriteAllText(Path.Combine(CurrentSessionDataDirectoryPath, Constants.SessionYml), YamlSerializer.Serialize(CurrentSessionData));
+
+        Logger.LogInformation("Session data saved.");
     }
 
     /// <summary>
@@ -362,7 +520,7 @@ public static class RandomizerEngine
         {
             throw new Exception("Cannot update autosaves without a valid user data directory path.");
         }
-        
+
         foreach (var autosave in Autosaves.Keys)
         {
             UpdateAutosaveDetail(autosave);
@@ -460,7 +618,10 @@ public static class RandomizerEngine
 
         ValidateRules();
 
+        InitializeSessionData();
+
         using var http = new HttpClient();
+        http.DefaultRequestHeaders.Add("User-Agent", "Randomizer TMF (beta)");
 
         try
         {
@@ -479,6 +640,29 @@ public static class RandomizerEngine
         }
 
         ClearCurrentSession();
+    }
+
+    private static void InitializeSessionData()
+    {
+        var startedAt = DateTimeOffset.Now;
+
+        CurrentSessionData = new SessionData(startedAt);
+
+        if (CurrentSessionDataDirectoryPath is null)
+        {
+            throw new UnreachableException("CurrentSessionDataDirectoryPath is null");
+        }
+
+        Directory.CreateDirectory(CurrentSessionDataDirectoryPath);
+
+        CurrentSessionLogWriter = new StreamWriter(Path.Combine(CurrentSessionDataDirectoryPath, Constants.SessionLog))
+        {
+            AutoFlush = true
+        };
+
+        Logger = new LoggerToFile(CurrentSessionLogWriter, LogWriter);
+
+        SaveSessionData();
     }
 
     /// <summary>
@@ -514,6 +698,13 @@ public static class RandomizerEngine
 
         CurrentSession = null;
         CurrentSessionTokenSource = null;
+
+        CurrentSessionData = null;
+
+        CurrentSessionLogWriter?.Dispose();
+        CurrentSessionLogWriter = null;
+
+        Logger = new LoggerToFile(LogWriter);
     }
 
     /// <summary>
@@ -535,6 +726,8 @@ public static class RandomizerEngine
             // Randomized URL is constructed with the ToUrl() method.
             var requestUrl = Config.Rules.RequestRules.ToUrl();
 
+            Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
+
             // HEAD request ensures least overhead
             using var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
 
@@ -542,6 +735,9 @@ public static class RandomizerEngine
             {
                 // The session is ALWAYS invalid if there's no map that can be found.
                 // This DOES NOT relate to the lack of maps left that the user hasn't played.
+
+                Logger.LogWarning("No map fulfills the randomization filter.");
+
                 throw new InvalidSessionException();
             }
 
@@ -552,21 +748,21 @@ public static class RandomizerEngine
 
             if (randomResponse.RequestMessage is null)
             {
-                // log warning
+                Logger.LogWarning("Response from the HEAD request does not contain information about the request message. This is odd...");
                 return;
             }
 
             if (randomResponse.RequestMessage.RequestUri is null)
             {
-                // log warning
+                Logger.LogWarning("Response from the HEAD request does not contain information about the request URI. This is odd...");
                 return;
             }
 
-            var trackId = randomResponse.RequestMessage.RequestUri.Segments.Last();
+            var trackId = randomResponse.RequestMessage.RequestUri.Segments.LastOrDefault();
 
             if (trackId is null)
             {
-                // log warning
+                Logger.LogWarning("Request URI does not contain any segments. This is very odd...");
                 return;
             }
 
@@ -575,7 +771,11 @@ public static class RandomizerEngine
 
             Status($"Downloading track {trackId}...");
 
-            using var trackGbxResponse = await http.GetAsync($"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}", cancellationToken);
+            var trackGbxUrl = $"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}";
+
+            Logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
+
+            using var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
 
             trackGbxResponse.EnsureSuccessStatusCode();
 
@@ -588,7 +788,7 @@ public static class RandomizerEngine
 
             if (GameBox.ParseNode(stream) is not CGameCtnChallenge map)
             {
-                // log warning
+                Logger.LogWarning("Downloaded file is not a valid Gbx map file!");
                 return;
             }
 
@@ -600,9 +800,21 @@ public static class RandomizerEngine
 
             if (!ValidateMap(map))
             {
-                return; // Attempt another track if invalid
-            }
+                // Attempts another track if invalid
+                RequestAttempt++;
+                Status($"Map choice is invalid (attempt {RequestAttempt}/{RequestMaxAttempts}).");
 
+                if (RequestAttempt >= RequestMaxAttempts)
+                {
+                    Logger.LogWarning("Map choice is invalid after {RequestMaxAttempts} attempts. Cancelling the session...", RequestMaxAttempts);
+                    RequestAttempt = 0;
+                    throw new InvalidSessionException();
+                }
+
+                Logger.LogInformation("Map has not passed the validator, attempting another one...");
+                await Task.Delay(500, cancellationToken);
+                return;
+            }
 
             // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
 
@@ -613,7 +825,10 @@ public static class RandomizerEngine
                 throw new Exception("Cannot update autosaves without a valid user data directory path.");
             }
 
+            Logger.LogDebug("Ensuring {dir} exists...", DownloadedDirectoryPath);
             Directory.CreateDirectory(DownloadedDirectoryPath); // Ensures the directory really exists
+
+            Logger.LogDebug("Preparing the file name...");
 
             // Extracts the file name, and if it fails, it uses the MapUid as a fallback
             var fileName = trackGbxResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? $"{map.MapUid}.Challenge.Gbx";
@@ -626,28 +841,47 @@ public static class RandomizerEngine
 
             CurrentSessionMapSavePath = Path.Combine(DownloadedDirectoryPath, fileName);
 
+            Logger.LogInformation("Saving the map as {fileName}...", CurrentSessionMapSavePath);
+
             // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
             var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
             await File.WriteAllBytesAsync(CurrentSessionMapSavePath, trackData, cancellationToken);
 
-            CurrentSessionMap = new SessionMap(map, trackId, randomResponse.Headers.Date ?? DateTimeOffset.Now); // The map should be ready to be played now
+            Logger.LogInformation("Map saved successfully!");
+
+            CurrentSessionMap = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now); // The map should be ready to be played now
+
+            CurrentSessionData?.Maps.Add(new()
+            {
+                Name = TextFormatter.Deformat(map.MapName),
+                Uid = map.MapUid,
+                TmxLink = randomResponse.RequestMessage.RequestUri.ToString()
+            });
+            SaveSessionData(); // May not be super necessary?
         }
         catch (HttpRequestException)
         {
-            // log warning
             Status("Failed to fetch a track. Retrying...");
             await Task.Delay(1000, cancellationToken);
             return;
         }
         catch (InvalidSessionException)
         {
+            Logger.LogWarning("Session is invalid.");
             throw;
         }
-        catch
+        catch (TaskCanceledException)
         {
-            // log error
+            Logger.LogInformation("Session terminated during map request.");
+            throw;
+        }
+        catch (Exception ex)
+        {
             Status("Error! Check the log for more details.");
+            Logger.LogError(ex, "An error occurred during map request.");
+            
             await Task.Delay(1000, cancellationToken);
+
             return;
         }
 
@@ -707,24 +941,15 @@ public static class RandomizerEngine
             // Apply the rules related to manual map skip
             // This part has a scripting potential too if properly implmented
 
-            // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
-            if (!CurrentSessionGoldMaps.ContainsKey(CurrentSessionMap.MapUid))
-            {
-                CurrentSessionSkippedMaps.TryAdd(CurrentSessionMap.MapUid, CurrentSessionMap);
-                CurrentSessionMap.LastChangeAt = CurrentSessionWatch?.Elapsed;
-            }
+            Skipped(CurrentSessionMap);
 
-            // In other words, if the player received at least a gold medal, the skip is forgiven
-
-            // MapSkip event is thrown to update the UI
-            MapSkip?.Invoke();
             isActualSkipCancellation = false;
         }
 
         Status("Ending the map...");
 
         StopTrackingCurrentSessionMap();
-        
+
         // Map is no longer tracked at this point
     }
 
@@ -762,6 +987,13 @@ public static class RandomizerEngine
     /// <returns></returns>
     public static async Task EndSessionAsync()
     {
+        if (SessionEnding)
+        {
+            return;
+        }
+
+        SessionEnding = true;
+
         Status("Ending the session...");
 
         CurrentSessionTokenSource?.Cancel();
@@ -779,6 +1011,8 @@ public static class RandomizerEngine
         {
             ClearCurrentSession(); // Just an ensure
         }
+
+        SessionEnding = false;
     }
 
     public static Task SkipMapAsync()
@@ -795,6 +1029,8 @@ public static class RandomizerEngine
         {
             throw new Exception("Game directory is null");
         }
+
+        Logger.LogInformation("Opening {filePath} in TMForever...", filePath);
 
         var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /singleinst /file=\"{filePath}\"");
 
@@ -819,14 +1055,28 @@ public static class RandomizerEngine
 
     public static void Exit()
     {
+        Logger.LogInformation("Exiting...");
+        FlushLog();
         Environment.Exit(0);
     }
 
     public static void ReloadMap()
     {
+        Logger.LogInformation("Reloading the map...");
+
         if (CurrentSessionMapSavePath is not null)
         {
             OpenFileIngame(CurrentSessionMapSavePath);
         }
+    }
+
+    public static void FlushLog()
+    {
+        LogWriter.Flush();
+    }
+
+    public static async Task FlushLogAsync()
+    {
+        await LogWriter.FlushAsync();
     }
 }

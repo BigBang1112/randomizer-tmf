@@ -37,11 +37,11 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			
-			<ToggleButton IsChecked="{Binding IsSiteTMNFChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMNF</ToggleButton>
-			<ToggleButton IsChecked="{Binding IsSiteTMUFChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMUF</ToggleButton>
-			<ToggleButton IsChecked="{Binding IsSiteNationsChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Nations</ToggleButton>
-			<ToggleButton IsChecked="{Binding IsSiteSunriseChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
-			<ToggleButton IsChecked="{Binding IsSiteOriginalChecked}" Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Original</ToggleButton>
+			<ToggleButton ToolTip.Tip="Take maps from 'tmnf.exchange'" IsChecked="{Binding IsSiteTMNFChecked}" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMNF</ToggleButton>
+			<ToggleButton ToolTip.Tip="Take maps from 'tmuf.exchange'" IsChecked="{Binding IsSiteTMUFChecked}" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">TMUF</ToggleButton>
+			<ToggleButton ToolTip.Tip="Take maps from 'nations.tm-exchange.com'" IsChecked="{Binding IsSiteNationsChecked}" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Nations</ToggleButton>
+			<ToggleButton ToolTip.Tip="Take maps from 'sunrise.tm-exchange.com'" IsChecked="{Binding IsSiteSunriseChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Sunrise</ToggleButton>
+			<ToggleButton ToolTip.Tip="Take maps from 'original.tm-exchange.com'" IsChecked="{Binding IsSiteOriginalChecked}" Grid.Column="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Original</ToggleButton>
 		</Grid>
 
 		<Grid Grid.Row="2">
@@ -142,7 +142,7 @@
 			<ToggleButton IsChecked="{Binding IsMoodNightChecked}" Grid.Column="3" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2">Night</ToggleButton>
 		</Grid>
 
-		<TextBlock Grid.Row="9" Margin="8"
+		<TextBlock Grid.Row="9" Margin="0 8 0 12"
 				   HorizontalAlignment="Center"
 				   VerticalAlignment="Center"
 				   Opacity="0.5">If any horizontal layer above has no buttons toggled, it simply means "any of those".</TextBlock>
@@ -174,33 +174,33 @@
 			<TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" ToolTip.Tip="Time limit of the session in hours, minutes, and seconds.">Time limit:</TextBlock>
 
 			<StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-				<NumericUpDown Value="{Binding TimeLimitHour}" Maximum="9" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown Value="{Binding TimeLimitHour}" Maximum="9" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hours"/>
 				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown Value="{Binding TimeLimitMinute}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown Value="{Binding TimeLimitMinute}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Minutes"/>
 				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown Value="{Binding TimeLimitSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown Value="{Binding TimeLimitSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Seconds"/>
 			</StackPanel>
 
-			<TextBlock Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Center">Min. AT:</TextBlock>
+			<TextBlock Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip.Tip="Minimal author time in minutes, seconds, and hundredths.">Min. AT:</TextBlock>
 
 			<StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="8">
-				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMinute}" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMinute}" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Minutes"/>
 				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Seconds"/>
 				<TextBlock Text="." VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
-				<CheckBox IsChecked="{Binding MinATEnabled}"/>
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hundredths"/>
+				<CheckBox IsChecked="{Binding MinATEnabled}" ToolTip.Tip="Enable/disable minimal author time filter."/>
 			</StackPanel>
 
-			<TextBlock Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Center">Max. AT:</TextBlock>
+			<TextBlock Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip.Tip="Maximal author time in minutes, seconds, and hundredths.">Max. AT:</TextBlock>
 
 			<StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="8">
-				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMinute}" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMinute}" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Minutes"/>
 				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Seconds"/>
 				<TextBlock Text="." VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False"/>
-				<CheckBox IsChecked="{Binding MaxATEnabled}"/>
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hundredths"/>
+				<CheckBox IsChecked="{Binding MaxATEnabled}" ToolTip.Tip="Enable/disable maximal author time filter."/>
 			</StackPanel>
 
 			<CheckBox Grid.Row="6" Grid.Column="2" IsChecked="True" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>

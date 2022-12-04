@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="36"
+             mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="36"
              x:Class="RandomizerTMF.Views.TopBar">
 	
 	<Design.DataContext>
@@ -22,7 +22,8 @@
 			</LinearGradientBrush>
 		</Border.BorderBrush>
 		<Panel>
-			<Label IsHitTestVisible="False" Content="{Binding Title}" VerticalContentAlignment="Center"/>
+			<Image IsHitTestVisible="False" HorizontalAlignment="Left" Source="/Assets/icon.ico"/>
+			<Label IsHitTestVisible="False" Margin="30 0 0 0" Content="{Binding Title}" VerticalContentAlignment="Center"/>
 
 			<Button HorizontalAlignment="Right" Margin="0 5 120 5" Command="{Binding DonateClick}">
 				<Button.Template>

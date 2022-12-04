@@ -900,10 +900,10 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
     public DateTimeOffset? UploadedAfter
     {
-        get => RandomizerEngine.Config.Rules.RequestRules.UploadedAfter;
+        get => RandomizerEngine.Config.Rules.RequestRules.UploadedAfter?.ToDateTime(new());
         set
         {
-            RandomizerEngine.Config.Rules.RequestRules.UploadedAfter = value;
+            RandomizerEngine.Config.Rules.RequestRules.UploadedAfter = value.HasValue ? DateOnly.FromDateTime(value.Value.DateTime) : null;
 
             this.RaisePropertyChanged(nameof(UploadedAfter));
 
@@ -915,10 +915,10 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
     public DateTimeOffset? UploadedBefore
     {
-        get => RandomizerEngine.Config.Rules.RequestRules.UploadedBefore;
+        get => RandomizerEngine.Config.Rules.RequestRules.UploadedBefore?.ToDateTime(new());
         set
         {
-            RandomizerEngine.Config.Rules.RequestRules.UploadedBefore = value;
+            RandomizerEngine.Config.Rules.RequestRules.UploadedBefore = value.HasValue ? DateOnly.FromDateTime(value.Value.DateTime) : null;
 
             this.RaisePropertyChanged(nameof(UploadedBefore));
 

@@ -1,0 +1,13 @@
+﻿namespace RandomizerTMF.Logic;
+
+/// <summary>
+/// Serialized session map object
+/// </summary>
+public class SessionDataMap
+{
+    public required string Name { get; init; }
+    public required string Uid { get; init; }
+    public required string TmxLink { get; init; }
+    public List<SessionDataReplay> Replays { get; } = new();
+    public string? Result { get; set; }
+}

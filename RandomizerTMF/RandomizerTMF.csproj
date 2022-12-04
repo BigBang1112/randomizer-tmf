@@ -15,6 +15,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<Version>0.1.0</Version>
 		<PublishSingleFile>true</PublishSingleFile>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 		<PublishReadyToRun>true</PublishReadyToRun>
