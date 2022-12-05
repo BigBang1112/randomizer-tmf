@@ -169,12 +169,12 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
         var autosaveModel = Autosaves[selectedIndex];
 
-        if (!RandomizerEngine.AutosavePaths.TryGetValue(autosaveModel.MapUid, out string? fileName))
+        if (!RandomizerEngine.Autosaves.TryGetValue(autosaveModel.MapUid, out Autosave? autosave))
         {
             return;
         }
 
-        OpenDialog<AutosaveDetailsWindow>(window => new AutosaveDetailsWindowViewModel(autosaveModel, fileName)
+        OpenDialog<AutosaveDetailsWindow>(window => new AutosaveDetailsWindowViewModel(autosaveModel, autosave.FilePath)
         {
             Window = window
         });

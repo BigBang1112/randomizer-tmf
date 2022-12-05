@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.Net;
 using TmEssentials;
 using YamlDotNet.Serialization;
-using static GBX.NET.Engines.Game.CGamePlayerScore;
-using static GBX.NET.Engines.Hms.CHmsLightMapCache;
 
 namespace RandomizerTMF.Logic;
 
@@ -90,8 +88,7 @@ public static class RandomizerEngine
         }
     }
 
-    public static ConcurrentDictionary<string, CGameCtnReplayRecord> Autosaves { get; } = new();
-    public static ConcurrentDictionary<string, string> AutosavePaths { get; } = new();
+    public static ConcurrentDictionary<string, Autosave> Autosaves { get; } = new();
     public static ConcurrentDictionary<string, AutosaveDetails> AutosaveDetails { get; } = new();
 
     public static FileSystemWatcher AutosaveWatcher { get; }
@@ -184,8 +181,7 @@ public static class RandomizerEngine
                 return;
             }
 
-            Autosaves.TryAdd(r.MapInfo.Id, r);
-            AutosavePaths.TryAdd(r.MapInfo.Id, Path.GetFileName(e.FullPath));
+            Autosaves.TryAdd(r.MapInfo.Id, new Autosave(Path.GetFileName(e.FullPath), r));
 
             replay = r;
         }
@@ -445,7 +441,6 @@ public static class RandomizerEngine
     public static void ResetAutosaves()
     {
         Autosaves.Clear();
-        AutosavePaths.Clear();
         AutosaveDetails.Clear();
         HasAutosavesScanned = false;
     }
@@ -506,8 +501,7 @@ public static class RandomizerEngine
             }
 
             // These two should probably merge under an AutosaveHeader class (different from AutosaveDetails).
-            Autosaves.TryAdd(mapUid, replay);
-            AutosavePaths.TryAdd(mapUid, Path.GetFileName(file));
+            Autosaves.TryAdd(mapUid, new Autosave(Path.GetFileName(file), replay));
 
             anythingChanged = true;
         }
@@ -536,7 +530,7 @@ public static class RandomizerEngine
 
     private static void UpdateAutosaveDetail(string autosaveFileName)
     {
-        var autosavePath = Path.Combine(AutosavesDirectoryPath!, AutosavePaths[autosaveFileName]); // Forgive because it's a private method
+        var autosavePath = Path.Combine(AutosavesDirectoryPath!, Autosaves[autosaveFileName].FilePath); // Forgive because it's a private method
 
         if (GameBox.ParseNode(autosavePath) is not CGameCtnReplayRecord { Time: not null } replay)
         {
