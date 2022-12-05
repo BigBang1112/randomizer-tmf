@@ -8,8 +8,15 @@ on:
 
 jobs:
   build:
+  
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest ]
+        runtime: [ win-x64, linux-x64 ]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    
+    name: Publish on ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
@@ -19,19 +26,11 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Publish win-x64
-      run: dotnet publish RandomizerTMF -c Release -f net7.0 -r win-x64 -o RandomizerTMF.win-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true --self-contained
-    - name: Publish linux-x64
-      run: dotnet publish RandomizerTMF -c Release -f net7.0 -r linux-x64 -o RandomizerTMF.linux-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true --self-contained
-    - name: Upload win-x64 Build Artifact
+    - name: Publish ${{ matrix.runtime }}
+      run: dotnet publish RandomizerTMF -c Release -f net7.0 -r ${{ matrix.runtime }} -o RandomizerTMF.${{ matrix.runtime }} --self-contained
+    - name: Upload ${{ matrix.runtime }} Build Artifact
       uses: actions/upload-artifact@v3.1.1
       with:
-        name: RandomizerTMF.win-x64
-        path: RandomizerTMF.win-x64
-        retention-days: 7
-    - name: Upload linux-x64 Build Artifact
-      uses: actions/upload-artifact@v3.1.1
-      with:
-        name: RandomizerTMF.linux-x64
-        path: RandomizerTMF.linux-x64
+        name: RandomizerTMF.${{ matrix.runtime }}
+        path: RandomizerTMF.${{ matrix.runtime }}
         retention-days: 7
