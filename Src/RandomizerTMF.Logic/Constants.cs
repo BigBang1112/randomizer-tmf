@@ -11,4 +11,5 @@ public static class Constants
     public const string Sessions = "Sessions";
     public const string SessionYml = "Session.yml";
     public const string SessionLog = "Session.log";
+    public const string RandomizerTmfLog = "RandomizerTMF.log";
 }

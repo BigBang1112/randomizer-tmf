@@ -3,7 +3,6 @@ using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.TypeConverters;
-using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
@@ -14,6 +13,9 @@ namespace RandomizerTMF.Logic;
 
 public static class RandomizerEngine
 {
+    private static readonly int requestMaxAttempts = 10;
+    private static int requestAttempt;
+
     private static bool isActualSkipCancellation;
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
@@ -75,7 +77,7 @@ public static class RandomizerEngine
     public static bool HasSessionRunning => CurrentSession is not null;
 
     /// <summary>
-    /// If the map UIDs of the autosaves have been fully stored to the <see cref="Autosaves"/> and <see cref="AutosavePaths"/> dictionaries.
+    /// If the map UIDs of the autosaves have been fully stored to the <see cref="AutosaveHeaders"/> and <see cref="AutosavePaths"/> dictionaries.
     /// This property is required to be true in order to start a new session. It also handles the state of <see cref="AutosaveWatcher"/>, to catch other autosaves that might be created while the program is running.
     /// </summary>
     public static bool HasAutosavesScanned
@@ -88,7 +90,7 @@ public static class RandomizerEngine
         }
     }
 
-    public static ConcurrentDictionary<string, Autosave> Autosaves { get; } = new();
+    public static ConcurrentDictionary<string, AutosaveHeader> AutosaveHeaders { get; } = new();
     public static ConcurrentDictionary<string, AutosaveDetails> AutosaveDetails { get; } = new();
 
     public static FileSystemWatcher AutosaveWatcher { get; }
@@ -104,12 +106,9 @@ public static class RandomizerEngine
     public static StreamWriter? CurrentSessionLogWriter { get; private set; }
     public static bool SessionEnding { get; private set; }
 
-    private static int RequestAttempt { get; set; }
-    private static int RequestMaxAttempts { get; } = 10;
-
     static RandomizerEngine()
     {
-        LogWriter = new StreamWriter("RandomizerTMF.log", append: true)
+        LogWriter = new StreamWriter(Constants.RandomizerTmfLog, append: true)
         {
             AutoFlush = true
         };
@@ -117,9 +116,10 @@ public static class RandomizerEngine
         Logger = new LoggerToFile(LogWriter);
         
         Logger.LogInformation("Starting Randomizer Engine...");
-        Logger.LogInformation("Predefining LZO algorithm...");
 
         Directory.CreateDirectory(SessionsDirectoryPath);
+        
+        Logger.LogInformation("Predefining LZO algorithm...");
 
         GBX.NET.Lzo.SetLzo(typeof(GBX.NET.LZO.MiniLZO));
 
@@ -181,7 +181,7 @@ public static class RandomizerEngine
                 return;
             }
 
-            Autosaves.TryAdd(r.MapInfo.Id, new Autosave(Path.GetFileName(e.FullPath), r));
+            AutosaveHeaders.TryAdd(r.MapInfo.Id, new AutosaveHeader(Path.GetFileName(e.FullPath), r));
 
             replay = r;
         }
@@ -398,7 +398,8 @@ public static class RandomizerEngine
         try
         {
             var nadeoIni = NadeoIni.Parse(nadeoIniFilePath);
-            var newUserDataDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), nadeoIni.UserSubDir);
+            var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var newUserDataDirectoryPath = Path.Combine(myDocuments, nadeoIni.UserSubDir);
 
             if (UserDataDirectoryPath != newUserDataDirectoryPath)
             {
@@ -440,7 +441,7 @@ public static class RandomizerEngine
     /// </summary>
     public static void ResetAutosaves()
     {
-        Autosaves.Clear();
+        AutosaveHeaders.Clear();
         AutosaveDetails.Clear();
         HasAutosavesScanned = false;
     }
@@ -453,6 +454,7 @@ public static class RandomizerEngine
     private static void SaveConfig(RandomizerConfig config)
     {
         Logger.LogInformation("Saving the config file...");
+        
         File.WriteAllText(Constants.ConfigYml, YamlSerializer.Serialize(config));
 
         Logger.LogInformation("Config file saved.");
@@ -495,13 +497,12 @@ public static class RandomizerEngine
 
             var mapUid = replay.MapInfo.Id;
 
-            if (Autosaves.ContainsKey(mapUid))
+            if (AutosaveHeaders.ContainsKey(mapUid))
             {
                 continue;
             }
-
-            // These two should probably merge under an AutosaveHeader class (different from AutosaveDetails).
-            Autosaves.TryAdd(mapUid, new Autosave(Path.GetFileName(file), replay));
+            
+            AutosaveHeaders.TryAdd(mapUid, new AutosaveHeader(Path.GetFileName(file), replay));
 
             anythingChanged = true;
         }
@@ -522,74 +523,74 @@ public static class RandomizerEngine
             throw new Exception("Cannot update autosaves without a valid user data directory path.");
         }
 
-        foreach (var autosave in Autosaves.Keys)
+        foreach (var autosave in AutosaveHeaders.Keys)
         {
-            UpdateAutosaveDetail(autosave);
+            try
+            {
+                UpdateAutosaveDetail(autosave);
+            }
+            catch (Exception ex)
+            {
+                // this happens in async context, logger may not be safe for that, some errors may get lost
+                Debug.WriteLine("Exception during autosave detail scan: " + ex);
+            }
         }
     }
 
     private static void UpdateAutosaveDetail(string autosaveFileName)
     {
-        var autosavePath = Path.Combine(AutosavesDirectoryPath!, Autosaves[autosaveFileName].FilePath); // Forgive because it's a private method
+        var autosavePath = Path.Combine(AutosavesDirectoryPath!, AutosaveHeaders[autosaveFileName].FilePath); // Forgive because it's a private method
 
         if (GameBox.ParseNode(autosavePath) is not CGameCtnReplayRecord { Time: not null } replay)
         {
             return;
         }
-
-        try
+        
+        if (replay.Challenge is null)
         {
-            if (replay.Challenge is null)
-            {
-                return;
-            }
-
-            var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
-            var mapEnv = (string)replay.Challenge.Collection;
-            var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new Exception("Bronze time is null.");
-            var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new Exception("Silver time is null.");
-            var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new Exception("Gold time is null.");
-            var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new Exception("Author time is null.");
-            var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new Exception("AuthorScore is null.");
-            var mapMode = replay.Challenge.Mode;
-            var mapCarPure = replay.Challenge.PlayerModel?.Id;
-            var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
-
-            mapCar = mapCar switch
-            {
-                "AlpineCar" => "SnowCar",
-                "American" or "SpeedCar" => "DesertCar",
-                "Rally" => "RallyCar",
-                "SportCar" => "IslandCar",
-                _ => mapCar
-            };
-
-            var ghost = replay.GetGhosts().FirstOrDefault();
-
-            AutosaveDetails[autosaveFileName] = new(
-                replay.Time.Value,
-                Score: ghost?.StuntScore,
-                Respawns: ghost?.Respawns,
-                mapName,
-                mapEnv,
-                mapCar,
-                mapBronzeTime,
-                mapSilverTime,
-                mapGoldTime,
-                mapAuthorTime,
-                mapAuthorScore,
-                mapMode);
+            return;
         }
-        catch
+
+        var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
+        var mapEnv = (string)replay.Challenge.Collection;
+        var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new Exception("Bronze time is null.");
+        var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new Exception("Silver time is null.");
+        var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new Exception("Gold time is null.");
+        var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new Exception("Author time is null.");
+        var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new Exception("AuthorScore is null.");
+        var mapMode = replay.Challenge.Mode;
+        var mapCarPure = replay.Challenge.PlayerModel?.Id;
+        var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
+
+        mapCar = mapCar switch
         {
+            "AlpineCar" => "SnowCar",
+            "American" or "SpeedCar" => "DesertCar",
+            "Rally" => "RallyCar",
+            "SportCar" => "IslandCar",
+            _ => mapCar
+        };
 
-        }
+        var ghost = replay.GetGhosts().FirstOrDefault();
+
+        AutosaveDetails[autosaveFileName] = new(
+            replay.Time.Value,
+            Score: ghost?.StuntScore,
+            Respawns: ghost?.Respawns,
+            mapName,
+            mapEnv,
+            mapCar,
+            mapBronzeTime,
+            mapSilverTime,
+            mapGoldTime,
+            mapAuthorTime,
+            mapAuthorScore,
+            mapMode);
     }
 
     /// <summary>
     /// Starts the randomizer session by creating a new watch and <see cref="Task"/> for <see cref="CurrentSession"/> (+ <see cref="CurrentSessionTokenSource"/>) that will handle randomization on different thread from the UI thread.
     /// </summary>
-    /// <returns></returns>
     public static Task StartSessionAsync()
     {
         if (Config.GameDirectory is null)
@@ -599,17 +600,47 @@ public static class RandomizerEngine
 
         CurrentSessionWatch = new Stopwatch();
         CurrentSessionTokenSource = new CancellationTokenSource();
-        CurrentSession = Task.Run(() => RunSessionAsync(CurrentSessionTokenSource.Token), CurrentSessionTokenSource.Token);
+        CurrentSession = Task.Run(() => RunSessionSafeAsync(CurrentSessionTokenSource.Token), CurrentSessionTokenSource.Token);
 
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Does the actual work during a running session. That this method ends means the session also ends.
+    /// Runs the session in a way it won't ever throw an exception. Clears the session after its end as well.
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="Exception"></exception>
+    private static async Task RunSessionSafeAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await RunSessionAsync(cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            Status("Session ended.");
+        }
+        catch (InvalidSessionException)
+        {
+            Status("Session ended. No maps found.");
+        }
+        catch (Exception ex)
+        {
+            Status("Session ended due to error.");
+            Logger.LogError(ex, "Error during session.");
+        }
+        finally
+        {
+            ClearCurrentSession();
+        }
+    }
+
+    /// <summary>
+    /// Does the actual work during a running session. That this method ends means the session also ends. It does NOT clean up the session after its end.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="TaskCanceledException"></exception>
     private static async Task RunSessionAsync(CancellationToken cancellationToken)
     {
         if (Config.GameDirectory is null)
@@ -622,25 +653,44 @@ public static class RandomizerEngine
         InitializeSessionData();
 
         using var http = new HttpClient();
-        http.DefaultRequestHeaders.Add("User-Agent", "Randomizer TMF (beta)");
+        http.DefaultRequestHeaders.UserAgent.TryParseAdd("Randomizer TMF (beta)");
 
-        try
+        while (true)
         {
-            while (true)
+            // This try block is used to handle map requests and their HTTP errors, mostly.
+
+            try
             {
-                await PlayNewMapAsync(http, cancellationToken);
+                await PrepareNewMapAsync(http, cancellationToken);
             }
-        }
-        catch (TaskCanceledException)
-        {
-            Status("Session ended.");
-        }
-        catch (InvalidSessionException)
-        {
-            Status("Session ended. No maps found.");
-        }
+            catch (HttpRequestException)
+            {
+                Status("Failed to fetch a track. Retrying...");
+                await Task.Delay(1000, cancellationToken);
+                continue;
+            }
+            catch (InvalidSessionException)
+            {
+                Logger.LogWarning("Session is invalid.");
+                throw;
+            }
+            catch (TaskCanceledException)
+            {
+                Logger.LogInformation("Session terminated during map request.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Status("Error! Check the log for more details.");
+                Logger.LogError(ex, "An error occurred during map request.");
 
-        ClearCurrentSession();
+                await Task.Delay(1000, cancellationToken);
+
+                continue;
+            }
+
+            await PlayCurrentSessionMapAsync(cancellationToken);
+        }
     }
 
     private static void InitializeSessionData()
@@ -669,17 +719,17 @@ public static class RandomizerEngine
     /// <summary>
     /// Validates the session rules. This should be called right before the session start and after loading the modules.
     /// </summary>
-    /// <exception cref="InvalidDataException"></exception>
+    /// <exception cref="RuleValidationException"></exception>
     public static void ValidateRules()
     {
         if (Config.Rules.TimeLimit == TimeSpan.Zero)
         {
-            throw new InvalidDataException("Time limit cannot be 0:00:00");
+            throw new RuleValidationException("Time limit cannot be 0:00:00");
         }
 
         if (Config.Rules.TimeLimit > new TimeSpan(9, 59, 59))
         {
-            throw new InvalidDataException("Time limit cannot be above 9:59:59");
+            throw new RuleValidationException("Time limit cannot be above 9:59:59");
         }
     }
 
@@ -708,189 +758,165 @@ public static class RandomizerEngine
         Logger = new LoggerToFile(LogWriter);
     }
 
-    /// <summary>
-    /// Does the work behind individual maps played throughout the session. Network exceptions are handled within the method. Throws cancellation exception on session end (not the map end). It may get reworked though.
-    /// </summary>
-    /// <param name="http"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidSessionException"></exception>
-    /// <exception cref="UnreachableException"></exception>
-    private static async Task PlayNewMapAsync(HttpClient http, CancellationToken cancellationToken)
+    private static async Task PrepareNewMapAsync(HttpClient http, CancellationToken cancellationToken)
     {
-        // This try block is used to handle HTTP errors mostly. It may be changed in the future how it's handled.
+        Status("Fetching random track...");
 
-        try
+        // Randomized URL is constructed with the ToUrl() method.
+        var requestUrl = Config.Rules.RequestRules.ToUrl();
+
+        Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
+
+        // HEAD request ensures least overhead
+        using var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
+
+        if (randomResponse.StatusCode == HttpStatusCode.NotFound)
         {
-            Status("Fetching random track...");
+            // The session is ALWAYS invalid if there's no map that can be found.
+            // This DOES NOT relate to the lack of maps left that the user hasn't played.
 
-            // Randomized URL is constructed with the ToUrl() method.
-            var requestUrl = Config.Rules.RequestRules.ToUrl();
+            Logger.LogWarning("No map fulfills the randomization filter.");
 
-            Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
+            throw new InvalidSessionException();
+        }
 
-            // HEAD request ensures least overhead
-            using var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
+        randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
 
-            if (randomResponse.StatusCode == HttpStatusCode.NotFound)
+
+        // Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
+
+        if (randomResponse.RequestMessage is null)
+        {
+            Logger.LogWarning("Response from the HEAD request does not contain information about the request message. This is odd...");
+            return;
+        }
+
+        if (randomResponse.RequestMessage.RequestUri is null)
+        {
+            Logger.LogWarning("Response from the HEAD request does not contain information about the request URI. This is odd...");
+            return;
+        }
+
+        var trackId = randomResponse.RequestMessage.RequestUri.Segments.LastOrDefault();
+
+        if (trackId is null)
+        {
+            Logger.LogWarning("Request URI does not contain any segments. This is very odd...");
+            return;
+        }
+
+
+        // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
+
+        Status($"Downloading track {trackId}...");
+
+        var trackGbxUrl = $"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}";
+
+        Logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
+        using var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
+        trackGbxResponse.EnsureSuccessStatusCode();
+
+        using var stream = await trackGbxResponse.Content.ReadAsStreamAsync(cancellationToken);
+
+
+        // The map is gonna be parsed as it is downloading throughout
+
+        Status("Parsing the map...");
+
+        if (GameBox.ParseNode(stream) is not CGameCtnChallenge map)
+        {
+            Logger.LogWarning("Downloaded file is not a valid Gbx map file!");
+            return;
+        }
+
+
+        // Map validation ensures that the player won't receive duplicate maps
+        // + ensures some additional filters like "No Unlimiter", which cannot be filtered on TMX
+
+        Status("Validating the map...");
+
+        if (!ValidateMap(map))
+        {
+            // Attempts another track if invalid
+            requestAttempt++;
+            Status($"Map choice is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");
+
+            if (requestAttempt >= requestMaxAttempts)
             {
-                // The session is ALWAYS invalid if there's no map that can be found.
-                // This DOES NOT relate to the lack of maps left that the user hasn't played.
-
-                Logger.LogWarning("No map fulfills the randomization filter.");
-
+                Logger.LogWarning("Map choice is invalid after {MaxAttempts} attempts. Cancelling the session...", requestMaxAttempts);
+                requestAttempt = 0;
                 throw new InvalidSessionException();
             }
 
-            randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
+            Logger.LogInformation("Map has not passed the validator, attempting another one...");
 
-
-            // Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
-
-            if (randomResponse.RequestMessage is null)
-            {
-                Logger.LogWarning("Response from the HEAD request does not contain information about the request message. This is odd...");
-                return;
-            }
-
-            if (randomResponse.RequestMessage.RequestUri is null)
-            {
-                Logger.LogWarning("Response from the HEAD request does not contain information about the request URI. This is odd...");
-                return;
-            }
-
-            var trackId = randomResponse.RequestMessage.RequestUri.Segments.LastOrDefault();
-
-            if (trackId is null)
-            {
-                Logger.LogWarning("Request URI does not contain any segments. This is very odd...");
-                return;
-            }
-
-
-            // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
-
-            Status($"Downloading track {trackId}...");
-
-            var trackGbxUrl = $"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}";
-
-            Logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
-
-            using var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
-
-            trackGbxResponse.EnsureSuccessStatusCode();
-
-            using var stream = await trackGbxResponse.Content.ReadAsStreamAsync(cancellationToken);
-
-
-            // The map is gonna be parsed as it is downloading throughout
-
-            Status("Parsing the map...");
-
-            if (GameBox.ParseNode(stream) is not CGameCtnChallenge map)
-            {
-                Logger.LogWarning("Downloaded file is not a valid Gbx map file!");
-                return;
-            }
-
-
-            // Map validation ensures that the player won't receive duplicate maps
-            // + ensures some additional filters like "No Unlimiter", which cannot be filtered on TMX
-
-            Status("Validating the map...");
-
-            if (!ValidateMap(map))
-            {
-                // Attempts another track if invalid
-                RequestAttempt++;
-                Status($"Map choice is invalid (attempt {RequestAttempt}/{RequestMaxAttempts}).");
-
-                if (RequestAttempt >= RequestMaxAttempts)
-                {
-                    Logger.LogWarning("Map choice is invalid after {RequestMaxAttempts} attempts. Cancelling the session...", RequestMaxAttempts);
-                    RequestAttempt = 0;
-                    throw new InvalidSessionException();
-                }
-
-                Logger.LogInformation("Map has not passed the validator, attempting another one...");
-                await Task.Delay(500, cancellationToken);
-                return;
-            }
-
-            // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
-
-            Status("Saving the map...");
-
-            if (DownloadedDirectoryPath is null)
-            {
-                throw new Exception("Cannot update autosaves without a valid user data directory path.");
-            }
-
-            Logger.LogDebug("Ensuring {dir} exists...", DownloadedDirectoryPath);
-            Directory.CreateDirectory(DownloadedDirectoryPath); // Ensures the directory really exists
-
-            Logger.LogDebug("Preparing the file name...");
-
-            // Extracts the file name, and if it fails, it uses the MapUid as a fallback
-            var fileName = trackGbxResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? $"{map.MapUid}.Challenge.Gbx";
-
-            // Validates the file name and fixes it if needed
-            foreach (var c in Path.GetInvalidFileNameChars())
-            {
-                fileName = fileName.Replace(c, '_');
-            }
-
-            CurrentSessionMapSavePath = Path.Combine(DownloadedDirectoryPath, fileName);
-
-            Logger.LogInformation("Saving the map as {fileName}...", CurrentSessionMapSavePath);
-
-            // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
-            var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
-            await File.WriteAllBytesAsync(CurrentSessionMapSavePath, trackData, cancellationToken);
-
-            Logger.LogInformation("Map saved successfully!");
-
-            CurrentSessionMap = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now); // The map should be ready to be played now
-
-            CurrentSessionData?.Maps.Add(new()
-            {
-                Name = TextFormatter.Deformat(map.MapName),
-                Uid = map.MapUid,
-                TmxLink = randomResponse.RequestMessage.RequestUri.ToString()
-            });
-            SaveSessionData(); // May not be super necessary?
-        }
-        catch (HttpRequestException)
-        {
-            Status("Failed to fetch a track. Retrying...");
-            await Task.Delay(1000, cancellationToken);
-            return;
-        }
-        catch (InvalidSessionException)
-        {
-            Logger.LogWarning("Session is invalid.");
-            throw;
-        }
-        catch (TaskCanceledException)
-        {
-            Logger.LogInformation("Session terminated during map request.");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Status("Error! Check the log for more details.");
-            Logger.LogError(ex, "An error occurred during map request.");
-            
-            await Task.Delay(1000, cancellationToken);
+            await Task.Delay(500, cancellationToken);
 
             return;
         }
 
+        // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
+
+        Status("Saving the map...");
+
+        if (DownloadedDirectoryPath is null)
+        {
+            throw new Exception("Cannot update autosaves without a valid user data directory path.");
+        }
+
+        Logger.LogDebug("Ensuring {dir} exists...", DownloadedDirectoryPath);
+        Directory.CreateDirectory(DownloadedDirectoryPath); // Ensures the directory really exists
+
+        Logger.LogDebug("Preparing the file name...");
+
+        // Extracts the file name, and if it fails, it uses the MapUid as a fallback
+        var fileName = trackGbxResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? $"{map.MapUid}.Challenge.Gbx";
+
+        // Validates the file name and fixes it if needed
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
+            fileName = fileName.Replace(c, '_');
+        }
+
+        CurrentSessionMapSavePath = Path.Combine(DownloadedDirectoryPath, fileName);
+
+        Logger.LogInformation("Saving the map as {fileName}...", CurrentSessionMapSavePath);
+
+        // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
+        var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
+
+        await File.WriteAllBytesAsync(CurrentSessionMapSavePath, trackData, cancellationToken);
+
+        Logger.LogInformation("Map saved successfully!");
+
+        CurrentSessionMap = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now); // The map should be ready to be played now
+
+        CurrentSessionData?.Maps.Add(new()
+        {
+            Name = TextFormatter.Deformat(map.MapName),
+            Uid = map.MapUid,
+            TmxLink = randomResponse.RequestMessage.RequestUri.ToString()
+        });
+
+        SaveSessionData(); // May not be super necessary?
+    }
+
+    /// <summary>
+    /// Handles the play loop of a map. Throws cancellation exception on session end (not the map end).
+    /// </summary>
+    /// <exception cref="TaskCanceledException"></exception>
+    private static async Task PlayCurrentSessionMapAsync(CancellationToken cancellationToken)
+    {
         // Hacky last moment validations
 
         if (CurrentSessionMapSavePath is null)
         {
-            return;
+            throw new UnreachableException("CurrentSessionMapSavePath is null");
+        }
+
+        if (CurrentSessionMap is null)
+        {
+            throw new UnreachableException("CurrentSessionMap is null");
         }
 
         if (CurrentSessionWatch is null)
@@ -961,7 +987,7 @@ public static class RandomizerEngine
     /// <returns>True if valid, false if not valid.</returns>
     private static bool ValidateMap(CGameCtnChallenge map)
     {
-        if (Autosaves.ContainsKey(map.MapUid))
+        if (AutosaveHeaders.ContainsKey(map.MapUid))
         {
             return false;
         }

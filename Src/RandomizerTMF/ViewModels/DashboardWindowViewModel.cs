@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
@@ -25,7 +26,7 @@ public class DashboardWindowViewModel : WindowViewModelBase
     }
 
     public bool HasAutosavesScanned => RandomizerEngine.HasAutosavesScanned;
-    public int AutosaveScanCount => RandomizerEngine.Autosaves.Count;
+    public int AutosaveScanCount => RandomizerEngine.AutosaveHeaders.Count;
 
     public DashboardWindowViewModel()
     {
@@ -120,7 +121,7 @@ public class DashboardWindowViewModel : WindowViewModelBase
         {
             RandomizerEngine.ValidateRules();
         }
-        catch (Exception ex)
+        catch (RuleValidationException ex)
         {
             OpenMessageBox("Validation problem", ex.Message);
             return;
@@ -169,7 +170,7 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
         var autosaveModel = Autosaves[selectedIndex];
 
-        if (!RandomizerEngine.Autosaves.TryGetValue(autosaveModel.MapUid, out Autosave? autosave))
+        if (!RandomizerEngine.AutosaveHeaders.TryGetValue(autosaveModel.MapUid, out AutosaveHeader? autosave))
         {
             return;
         }
