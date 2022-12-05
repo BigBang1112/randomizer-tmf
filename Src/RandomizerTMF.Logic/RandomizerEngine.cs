@@ -166,7 +166,8 @@ public static class RandomizerEngine
 
         try
         {
-            // Any kind of autosaves update section
+            // Any kind of autosave update section
+            
             Logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
 
             if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
@@ -478,12 +479,12 @@ public static class RandomizerEngine
     /// Scans the autosaves, which is required before running the session, to avoid already played maps.
     /// </summary>
     /// <returns>True if anything changed.</returns>
-    /// <exception cref="Exception"></exception>
+    /// <exception cref="ImportantPropertyNullException"></exception>
     public static bool ScanAutosaves()
     {
         if (AutosavesDirectoryPath is null)
         {
-            throw new Exception("Cannot scan autosaves without a valid user data directory path.");
+            throw new ImportantPropertyNullException("Cannot scan autosaves without a valid user data directory path.");
         }
 
         var anythingChanged = false;
@@ -553,11 +554,11 @@ public static class RandomizerEngine
 
         var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
         var mapEnv = (string)replay.Challenge.Collection;
-        var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new Exception("Bronze time is null.");
-        var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new Exception("Silver time is null.");
-        var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new Exception("Gold time is null.");
-        var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new Exception("Author time is null.");
-        var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new Exception("AuthorScore is null.");
+        var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new ImportantPropertyNullException("Bronze time is null.");
+        var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new ImportantPropertyNullException("Silver time is null.");
+        var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new ImportantPropertyNullException("Gold time is null.");
+        var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new ImportantPropertyNullException("Author time is null.");
+        var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new ImportantPropertyNullException("AuthorScore is null.");
         var mapMode = replay.Challenge.Mode;
         var mapCarPure = replay.Challenge.PlayerModel?.Id;
         var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
@@ -645,7 +646,7 @@ public static class RandomizerEngine
     {
         if (Config.GameDirectory is null)
         {
-            throw new Exception("Game directory is null");
+            throw new UnreachableException("Game directory is null");
         }
 
         ValidateRules();
@@ -667,6 +668,12 @@ public static class RandomizerEngine
             {
                 Status("Failed to fetch a track. Retrying...");
                 await Task.Delay(1000, cancellationToken);
+                continue;
+            }
+            catch (MapValidationException)
+            {
+                Logger.LogInformation("Map has not passed the validator, attempting another one...");
+                await Task.Delay(500, cancellationToken);
                 continue;
             }
             catch (InvalidSessionException)
@@ -758,6 +765,13 @@ public static class RandomizerEngine
         Logger = new LoggerToFile(LogWriter);
     }
 
+    /// <summary>
+    /// Requests, downloads, and allocates the map.
+    /// </summary>
+    /// <param name="http"></param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="InvalidSessionException"></exception>
+    /// <exception cref="MapValidationException"></exception>
     private static async Task PrepareNewMapAsync(HttpClient http, CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
@@ -848,12 +862,10 @@ public static class RandomizerEngine
                 throw new InvalidSessionException();
             }
 
-            Logger.LogInformation("Map has not passed the validator, attempting another one...");
-
-            await Task.Delay(500, cancellationToken);
-
-            return;
+            throw new MapValidationException();
         }
+
+        requestAttempt = 0;
 
         // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
 
@@ -861,7 +873,7 @@ public static class RandomizerEngine
 
         if (DownloadedDirectoryPath is null)
         {
-            throw new Exception("Cannot update autosaves without a valid user data directory path.");
+            throw new UnreachableException("Cannot update autosaves without a valid user data directory path.");
         }
 
         Logger.LogDebug("Ensuring {dir} exists...", DownloadedDirectoryPath);
