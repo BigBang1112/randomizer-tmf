@@ -10,4 +10,5 @@ public class SessionDataMap
     public required string TmxLink { get; init; }
     public List<SessionDataReplay> Replays { get; } = new();
     public string? Result { get; set; }
+    public TimeSpan? LastTimestamp { get; set; }
 }
