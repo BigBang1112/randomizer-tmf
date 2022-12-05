@@ -1,6 +1,3 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: Publish (temporary)
 
 on:
@@ -11,12 +8,11 @@ jobs:
   
     strategy:
       matrix:
-        os: [ windows-latest, ubuntu-latest ]
-        runtime: [ win-x64, linux-x64 ]
+        os: [ { os: windows-latest, runtime: win-x64 }, { os: ubuntu-latest, runtime: linux-x64 } ]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.os }}
     
-    name: Publish on ${{ matrix.os }}
+    name: Publish on ${{ matrix.os.os }}
 
     steps:
     - uses: actions/checkout@v3
@@ -26,11 +22,11 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Publish ${{ matrix.runtime }}
-      run: dotnet publish RandomizerTMF -c Release -f net7.0 -r ${{ matrix.runtime }} -o RandomizerTMF.${{ matrix.runtime }} --self-contained
-    - name: Upload ${{ matrix.runtime }} Build Artifact
+    - name: Publish ${{ matrix.os.runtime }}
+      run: dotnet publish Src/RandomizerTMF -c Release -f net7.0 -r ${{ matrix.os.runtime }} -o RandomizerTMF.${{ matrix.os.runtime }} --self-contained
+    - name: Upload ${{ matrix.os.runtime }} Build Artifact
       uses: actions/upload-artifact@v3.1.1
       with:
-        name: RandomizerTMF.${{ matrix.runtime }}
-        path: RandomizerTMF.${{ matrix.runtime }}
+        name: RandomizerTMF.${{ matrix.os.runtime }}
+        path: RandomizerTMF.${{ matrix.os.runtime }}
         retention-days: 7
