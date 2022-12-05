@@ -275,6 +275,12 @@ public static class RandomizerEngine
 
         var mapName = TextFormatter.Deformat(map.Map.MapName).Trim();
         var replayFileName = $"{mapName}_{score}.Replay.Gbx";
+        
+        // Validates the file name and fixes it if needed
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
+            replayFileName = replayFileName.Replace(c, '_');
+        }
 
         var replaysDir = Path.Combine(CurrentSessionDataDirectoryPath, "Replays");
         var replayFilePath = Path.Combine(replaysDir, replayFileName);
