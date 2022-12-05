@@ -20,9 +20,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Publish win-x64
-      run: dotnet publish -c Release -f net7.0 -r win-x64 -o RandomizerTMF.win-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true --self-contained
+      run: dotnet publish RandomizerTMF -c Release -f net7.0 -r win-x64 -o RandomizerTMF.win-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true --self-contained
     - name: Publish linux-x64
-      run: dotnet publish -c Release -f net7.0 -r linux-x64 -o RandomizerTMF.linux-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true --self-contained
+      run: dotnet publish RandomizerTMF -c Release -f net7.0 -r linux-x64 -o RandomizerTMF.linux-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:PublishReadyToRun=true --self-contained
     - name: Upload win-x64 Build Artifact
       uses: actions/upload-artifact@v3.1.1
       with:
