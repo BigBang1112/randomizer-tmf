@@ -303,7 +303,7 @@ public static class RandomizerEngine
     {
         CurrentSessionGoldMaps.TryAdd(map.MapUid, map);
         map.LastChangeAt = CurrentSessionWatch?.Elapsed;
-        SetMapResult(map, "GoldMedal", map.LastChangeAt);
+        SetMapResult(map, "GoldMedal");
 
         MedalUpdate?.Invoke();
     }
@@ -313,7 +313,7 @@ public static class RandomizerEngine
         CurrentSessionGoldMaps.Remove(map.MapUid);
         CurrentSessionAuthorMaps.TryAdd(map.MapUid, map);
         map.LastChangeAt = CurrentSessionWatch?.Elapsed;
-        SetMapResult(map, "AuthorMedal", map.LastChangeAt);
+        SetMapResult(map, "AuthorMedal");
 
         MedalUpdate?.Invoke();
     }
@@ -325,7 +325,7 @@ public static class RandomizerEngine
         {
             CurrentSessionSkippedMaps.TryAdd(map.MapUid, map);
             map.LastChangeAt = CurrentSessionWatch?.Elapsed;
-            SetMapResult(map, "Skipped", map.LastChangeAt);
+            SetMapResult(map, "Skipped");
         }
 
         // In other words, if the player received at least a gold medal, the skip is forgiven
@@ -334,14 +334,14 @@ public static class RandomizerEngine
         MapSkip?.Invoke();
     }
 
-    private static void SetMapResult(SessionMap map, string result, TimeSpan? lastChangeAt)
+    private static void SetMapResult(SessionMap map, string result)
     {
         var dataMap = CurrentSessionData?.Maps.FirstOrDefault(x => x.Uid == map.MapUid);
 
         if (dataMap is not null)
         {
             dataMap.Result = result;
-            dataMap.LastTimestamp = lastChangeAt;
+            dataMap.LastTimestamp = map.LastChangeAt;
         }
         
         SaveSessionData();
