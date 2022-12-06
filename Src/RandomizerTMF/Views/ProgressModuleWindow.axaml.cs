@@ -18,6 +18,8 @@ namespace RandomizerTMF.Views
 
                 RandomizerEngine.SaveConfig();
             };
+
+            Deactivated += (_, _) => { Topmost = false; Topmost = true; };
         }
     }
 }
