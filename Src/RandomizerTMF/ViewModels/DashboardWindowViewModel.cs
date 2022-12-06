@@ -204,12 +204,26 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
         if (config.X < 0)
         {
-            config.X += window.Screens.Primary.WorkingArea.Width - config.Width;
+            if (config.X < -window.Screens.Primary.WorkingArea.Width)
+            {
+                config.X = 0;
+            }
+            else
+            {
+                config.X += window.Screens.Primary.WorkingArea.Width - config.Width;
+            }
         }
-
+        
         if (config.Y < 0)
         {
-            config.Y += window.Screens.Primary.WorkingArea.Height - config.Height;
+            if (config.Y < -window.Screens.Primary.WorkingArea.Height)
+            {
+                config.Y = 0;
+            }
+            else
+            {
+                config.Y += window.Screens.Primary.WorkingArea.Height - config.Height;
+            }
         }
 
         window.Position = new(config.X, config.Y);
