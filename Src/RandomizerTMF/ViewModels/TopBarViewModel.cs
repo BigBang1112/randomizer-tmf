@@ -1,4 +1,6 @@
-﻿using RandomizerTMF.Logic;
+﻿using Avalonia.Controls;
+using RandomizerTMF.Logic;
+using RandomizerTMF.Views;
 using ReactiveUI;
 using System.Diagnostics;
 
@@ -15,6 +17,8 @@ public class TopBarViewModel : ViewModelBase
     }
 
     public static string? Version { get; } = typeof(Program).Assembly.GetName().Version?.ToString(3);
+
+    public Window? WindowOwner { get; set; }
 
     public event Action? CloseClick;
     public event Action? MinimizeClick;
@@ -45,6 +49,10 @@ public class TopBarViewModel : ViewModelBase
 
     public void VersionClick()
     {
-
+        var window = new AboutWindow();
+        var viewModel = new AboutWindowViewModel() { Window = window };
+        viewModel.OnInit();
+        window.DataContext = viewModel;
+        window.ShowDialog(WindowOwner ?? App.MainWindow); // The parent window
     }
 }

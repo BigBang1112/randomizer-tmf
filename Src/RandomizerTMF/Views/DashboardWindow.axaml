@@ -49,7 +49,7 @@
 				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
 					Your presets:
 				</TextBlock>
-				<Border Grid.Row="1" Width="250" BorderThickness="2">
+				<Border Grid.Row="1" Width="250" Margin="0 0 0 5" BorderThickness="2">
 					<Border.BorderBrush>
 						<SolidColorBrush Color="Gray" Opacity="0.5"/>
 					</Border.BorderBrush>
@@ -59,6 +59,7 @@
 						</ListBox.Background>
 					</ListBox>
 				</Border>
+				<TextBlock Grid.Row="1" Margin="0 0 0 5" Text="Presets coming soon" Opacity="0.7" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
 				<TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
 					Your sessions:
@@ -67,10 +68,40 @@
 					<Border.BorderBrush>
 						<SolidColorBrush Color="Gray" Opacity="0.5"/>
 					</Border.BorderBrush>
-					<ListBox>
+					<ListBox Items="{Binding Sessions, Mode=OneWay}">
 						<ListBox.Background>
 							<SolidColorBrush Color="#222222" Opacity="0.5"/>
 						</ListBox.Background>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid Margin="-5" VerticalAlignment="Center">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+									<TextBlock Text="{Binding Path=Data.StartedAt, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss }'}" Margin="2 2 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+									<Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 -5 0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="5"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="5"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="5"/>
+										</Grid.ColumnDefinitions>
+
+										<TextBlock Foreground="LightGreen" Margin="0 1 5 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding Data.AuthorMedalCount}"/>
+
+										<TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding Data.GoldMedalCount}"/>
+
+										<TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding Data.SkippedCount}"/>
+									</Grid>
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
 					</ListBox>
 				</Border>
 

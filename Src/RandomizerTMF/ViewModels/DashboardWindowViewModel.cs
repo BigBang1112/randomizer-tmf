@@ -1,11 +1,11 @@
 ﻿using Avalonia.Controls;
+using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
@@ -13,6 +13,7 @@ namespace RandomizerTMF.ViewModels;
 public class DashboardWindowViewModel : WindowViewModelBase
 {
     private ObservableCollection<AutosaveModel> autosaves = new();
+    private ObservableCollection<SessionDataModel> sessions = new();
 
     public TopBarViewModel TopBarViewModel { get; set; }
     public RequestRulesControlViewModel RequestRulesControlViewModel { get; set; }
@@ -23,6 +24,12 @@ public class DashboardWindowViewModel : WindowViewModelBase
     {
         get => autosaves;
         private set => this.RaiseAndSetIfChanged(ref autosaves, value);
+    }
+
+    public ObservableCollection<SessionDataModel> Sessions
+    {
+        get => sessions;
+        private set => this.RaiseAndSetIfChanged(ref sessions, value);
     }
 
     public bool HasAutosavesScanned => RandomizerEngine.HasAutosavesScanned;
@@ -40,15 +47,66 @@ public class DashboardWindowViewModel : WindowViewModelBase
     protected internal override void OnInit()
     {
         Window.Opened += Opened;
+        TopBarViewModel.WindowOwner = Window;
     }
 
     private async void Opened(object? sender, EventArgs e)
     {
+        sessions.Clear();
+
+        var sessionsTask = ScanSessionsAsync();
+
         var anythingChanged = await ScanAutosavesAsync();
 
         if (anythingChanged)
         {
             await UpdateAutosavesWithFullParseAsync();
+        }
+
+        await sessionsTask;
+    }
+    
+    private async Task ScanSessionsAsync()
+    {
+        foreach (var dir in Directory.EnumerateDirectories(RandomizerEngine.SessionsDirectoryPath))
+        {
+            var sessionYml = Path.Combine(dir, "Session.yml");
+
+            if (!File.Exists(sessionYml))
+            {
+                continue;
+            }
+
+            SessionData sessionData;
+            SessionDataModel sessionDataModel;
+
+            try
+            {
+                var sessionYmlContent = await File.ReadAllTextAsync(sessionYml);
+                sessionData = RandomizerEngine.YamlDeserializer.Deserialize<SessionData>(sessionYmlContent);
+                sessionDataModel = new SessionDataModel(sessionData);
+            }
+            catch (Exception ex)
+            {
+                RandomizerEngine.Logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
+                continue;
+            }
+
+            if (sessions.Count == 0)
+            {
+                sessions.Add(sessionDataModel);
+                continue;
+            }
+            
+            // insert by date
+            for (int i = 0; i < sessions.Count; i++)
+            {
+                if (sessions[i].Data.StartedAt < sessionData.StartedAt)
+                {
+                    sessions.Insert(i, sessionDataModel);
+                    break;
+                }
+            }
         }
     }
 

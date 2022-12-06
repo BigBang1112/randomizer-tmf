@@ -20,16 +20,17 @@ public static class RandomizerEngine
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
     
-    private static ISerializer YamlSerializer { get; } = new SerializerBuilder()
+    public static ISerializer YamlSerializer { get; } = new SerializerBuilder()
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
         .WithTypeConverter(new TimeInt32Converter())
         .Build();
 
-    private static IDeserializer YamlDeserializer { get; } = new DeserializerBuilder()
+    public static IDeserializer YamlDeserializer { get; } = new DeserializerBuilder()
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
         .WithTypeConverter(new TimeInt32Converter())
+        .IgnoreUnmatchedProperties()
         .Build();
 
     public static RandomizerConfig Config { get; }
@@ -306,7 +307,7 @@ public static class RandomizerEngine
     {
         CurrentSessionGoldMaps.TryAdd(map.MapUid, map);
         map.LastChangeAt = CurrentSessionWatch?.Elapsed;
-        SetMapResult(map, "GoldMedal");
+        SetMapResult(map, Constants.GoldMedal);
 
         MedalUpdate?.Invoke();
     }
@@ -316,7 +317,7 @@ public static class RandomizerEngine
         CurrentSessionGoldMaps.Remove(map.MapUid);
         CurrentSessionAuthorMaps.TryAdd(map.MapUid, map);
         map.LastChangeAt = CurrentSessionWatch?.Elapsed;
-        SetMapResult(map, "AuthorMedal");
+        SetMapResult(map, Constants.AuthorMedal);
 
         MedalUpdate?.Invoke();
     }
@@ -328,7 +329,7 @@ public static class RandomizerEngine
         {
             CurrentSessionSkippedMaps.TryAdd(map.MapUid, map);
             map.LastChangeAt = CurrentSessionWatch?.Elapsed;
-            SetMapResult(map, "Skipped");
+            SetMapResult(map, Constants.Skipped);
         }
 
         // In other words, if the player received at least a gold medal, the skip is forgiven

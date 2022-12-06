@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+		mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
+        Width="500" Height="300"
+		x:Class="RandomizerTMF.Views.AboutWindow"
+        Title="About Randomizer TMF"
+		Icon="/Assets/icon.ico"
+		WindowStartupLocation="CenterScreen">
+
+	<Design.DataContext>
+		<vm:AboutWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+	
+	<DockPanel>
+		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+		<Grid Margin="10">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
+
+			<TextBlock Grid.ColumnSpan="2" Margin="10 10 10 5" TextWrapping="WrapWithOverflow" Text="Randomizer TMF"/>
+
+			<Button Grid.Column="1" Grid.Row="1" Content="Update" Width="100" HorizontalContentAlignment="Center" Command="{Binding UpdateClick}"/>
+		</Grid>
+	</DockPanel>
+</Window>

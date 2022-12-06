@@ -1,5 +1,4 @@
-﻿using Avalonia.Media.Imaging;
-using GBX.NET.Engines.Game;
+﻿using GBX.NET.Engines.Game;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Models;
 using TmEssentials;
@@ -7,7 +6,7 @@ using TmEssentials;
 namespace RandomizerTMF.ViewModels;
 
 public class AutosaveDetailsWindowViewModel : WindowViewModelBase
-{    
+{
     public TopBarViewModel TopBarViewModel { get; set; }
 
     public AutosaveModel AutosaveModel { get; }

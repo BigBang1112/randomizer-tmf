@@ -12,4 +12,7 @@ public static class Constants
     public const string SessionYml = "Session.yml";
     public const string SessionLog = "Session.log";
     public const string RandomizerTmfLog = "RandomizerTMF.log";
+    public const string AuthorMedal = "AuthorMedal";
+    public const string GoldMedal = "GoldMedal";
+    public const string Skipped = "Skipped";
 }
