@@ -272,7 +272,12 @@ public static class RandomizerEngine
         } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
 
         var mapName = TextFormatter.Deformat(map.Map.MapName).Trim();
-        var replayFileName = $"{mapName}_{score}_{replay.PlayerLogin}.Replay.Gbx";
+        
+        var replayFileFormat = string.IsNullOrWhiteSpace(Config.ReplayFileFormat)
+            ? Constants.DefaultReplayFileFormat
+            : Config.ReplayFileFormat;
+        
+        var replayFileName = string.Format(replayFileFormat, mapName, score, replay.PlayerLogin);
         
         // Validates the file name and fixes it if needed
         foreach (var c in Path.GetInvalidFileNameChars())
