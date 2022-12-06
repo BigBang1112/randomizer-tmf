@@ -277,13 +277,7 @@ public static class RandomizerEngine
             ? Constants.DefaultReplayFileFormat
             : Config.ReplayFileFormat;
         
-        var replayFileName = string.Format(replayFileFormat, mapName, score, replay.PlayerLogin);
-        
-        // Validates the file name and fixes it if needed
-        foreach (var c in Path.GetInvalidFileNameChars())
-        {
-            replayFileName = replayFileName.Replace(c, '_');
-        }
+        var replayFileName = ClearFileName(string.Format(replayFileFormat, mapName, score, replay.PlayerLogin));
 
         var replaysDir = Path.Combine(CurrentSessionDataDirectoryPath, "Replays");
         var replayFilePath = Path.Combine(replaysDir, replayFileName);
@@ -306,6 +300,11 @@ public static class RandomizerEngine
             });
         
         SaveSessionData();
+    }
+
+    private static string ClearFileName(string fileName)
+    {
+        return string.Join('_', fileName.Split(Path.GetInvalidFileNameChars()));
     }
 
     private static void GoldMedalReceived(SessionMap map)
@@ -891,10 +890,7 @@ public static class RandomizerEngine
         var fileName = trackGbxResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? $"{map.MapUid}.Challenge.Gbx";
 
         // Validates the file name and fixes it if needed
-        foreach (var c in Path.GetInvalidFileNameChars())
-        {
-            fileName = fileName.Replace(c, '_');
-        }
+        fileName = ClearFileName(fileName);
 
         CurrentSessionMapSavePath = Path.Combine(DownloadedDirectoryPath, fileName);
 
