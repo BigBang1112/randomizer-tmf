@@ -272,7 +272,7 @@ public static class RandomizerEngine
         } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
 
         var mapName = TextFormatter.Deformat(map.Map.MapName).Trim();
-        var replayFileName = $"{mapName}_{score}.Replay.Gbx";
+        var replayFileName = $"{mapName}_{score}_{replay.PlayerLogin}.Replay.Gbx";
         
         // Validates the file name and fixes it if needed
         foreach (var c in Path.GetInvalidFileNameChars())
