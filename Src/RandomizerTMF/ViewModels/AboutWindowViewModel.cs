@@ -8,7 +8,7 @@ public class AboutWindowViewModel : WindowViewModelBase
 
 	public AboutWindowViewModel()
     {
-        TopBarViewModel = new() { Title = "About Randomizer TMF" };
+        TopBarViewModel = new() { Title = "About Randomizer TMF", MinimizeButtonEnabled = false };
         TopBarViewModel.CloseClick += CloseClick;
         TopBarViewModel.MinimizeClick += MinimizeClick;
     }

@@ -16,7 +16,7 @@ public class MessageWindowViewModel : WindowViewModelBase
 
     public MessageWindowViewModel()
     {
-        TopBarViewModel = new();
+        TopBarViewModel = new() { MinimizeButtonEnabled = false };
         TopBarViewModel.CloseClick += CloseClick;
         TopBarViewModel.MinimizeClick += MinimizeClick;
     }

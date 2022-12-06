@@ -9,11 +9,18 @@ namespace RandomizerTMF.ViewModels;
 public class TopBarViewModel : ViewModelBase
 {
     private string? title = Constants.Title;
+    private bool minimizeButtonEnabled = true;
 
     public string? Title
     {
         get => title;
         set => this.RaiseAndSetIfChanged(ref title, value);
+    }
+    
+    public bool MinimizeButtonEnabled
+    {
+        get => minimizeButtonEnabled;
+        set => this.RaiseAndSetIfChanged(ref minimizeButtonEnabled, value);
     }
 
     public static string? Version { get; } = typeof(Program).Assembly.GetName().Version?.ToString(3);

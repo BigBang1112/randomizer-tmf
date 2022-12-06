@@ -55,7 +55,7 @@
 					</Style>
 				</Button.Styles>
 			</Button>
-			<Button Classes="topBarButton" Margin="0 0 32 0" Command="{Binding OnMinimizeClick}"></Button>
+			<Button Classes="topBarButton" Margin="0 0 32 0" Command="{Binding OnMinimizeClick}" IsEnabled="{Binding MinimizeButtonEnabled}"></Button>
 			<Button Classes="topBarButton" Background="DarkRed" Command="{Binding OnCloseClick}"></Button>
 		</Panel>
 	</Border>

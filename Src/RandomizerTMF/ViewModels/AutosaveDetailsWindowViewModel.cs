@@ -64,7 +64,7 @@ public class AutosaveDetailsWindowViewModel : WindowViewModelBase
             MapAuthorScore: 0,
             MapMode: CGameCtnChallenge.PlayMode.Race));
         
-        TopBarViewModel = new() { Title = AutosaveModel.Text };
+        TopBarViewModel = new() { Title = AutosaveModel.Text, MinimizeButtonEnabled = false };
     }
 
     public AutosaveDetailsWindowViewModel(AutosaveModel autosaveModel, string autosaveFilePath)
@@ -72,7 +72,7 @@ public class AutosaveDetailsWindowViewModel : WindowViewModelBase
         AutosaveModel = autosaveModel;
         AutosaveFilePath = autosaveFilePath;
 
-        TopBarViewModel = new() { Title = autosaveModel.Text };
+        TopBarViewModel = new() { Title = autosaveModel.Text, MinimizeButtonEnabled = false };
         TopBarViewModel.CloseClick += CloseClick;
         TopBarViewModel.MinimizeClick += MinimizeClick;
     }
