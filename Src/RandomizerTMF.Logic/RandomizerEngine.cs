@@ -772,6 +772,8 @@ public static class RandomizerEngine
 
         CurrentSession = null;
         CurrentSessionTokenSource = null;
+        
+        SetReadOnlySessionYml();
 
         CurrentSessionData = null;
 
@@ -779,6 +781,24 @@ public static class RandomizerEngine
         CurrentSessionLogWriter = null;
 
         Logger = new LoggerToFile(LogWriter);
+    }
+
+    private static void SetReadOnlySessionYml()
+    {
+        if (CurrentSessionDataDirectoryPath is null)
+        {
+            return;
+        }
+        
+        try
+        {
+            var sessionYmlFile = Path.Combine(CurrentSessionDataDirectoryPath, Constants.SessionYml);
+            File.SetAttributes(sessionYmlFile, File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to set Session.yml as read-only.");
+        }
     }
 
     /// <summary>
@@ -1083,7 +1103,7 @@ public static class RandomizerEngine
 
         Logger.LogInformation("Opening {filePath} in TMForever...", filePath);
 
-        var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /windowless /singleinst /file=\"{filePath}\"")
+        var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /singleinst /file=\"{filePath}\"")
         {
             
         };
