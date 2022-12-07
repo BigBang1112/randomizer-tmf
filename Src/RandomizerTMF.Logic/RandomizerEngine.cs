@@ -34,6 +34,8 @@ public static class RandomizerEngine
         .Build();
 
     public static RandomizerConfig Config { get; }
+    
+    public static HttpClient Http { get; }
 
     public static string? TmForeverExeFilePath { get; set; }
     public static string? TmUnlimiterExeFilePath { get; set; }
@@ -128,6 +130,16 @@ public static class RandomizerEngine
 
         Config = GetOrCreateConfig();
 
+        Logger.LogInformation("Preparing HTTP client...");
+
+        var socketHandler = new SocketsHttpHandler()
+        {
+            PooledConnectionLifetime = TimeSpan.FromMinutes(1),
+        };
+        
+        Http = new HttpClient(socketHandler);
+        Http.DefaultRequestHeaders.UserAgent.TryParseAdd("Randomizer TMF (beta)");
+
         Logger.LogInformation("Preparing general events...");
 
         AutosaveWatcher = new FileSystemWatcher
@@ -139,6 +151,8 @@ public static class RandomizerEngine
         AutosaveWatcher.Changed += AutosaveCreatedOrChanged;
 
         Status += RandomizerEngineStatus;
+        
+        Logger.LogInformation("Randomizer TMF initialized.");
     }
 
     private static void RandomizerEngineStatus(string status)
@@ -658,16 +672,13 @@ public static class RandomizerEngine
 
         InitializeSessionData();
 
-        using var http = new HttpClient();
-        http.DefaultRequestHeaders.UserAgent.TryParseAdd("Randomizer TMF (beta)");
-
         while (true)
         {
             // This try block is used to handle map requests and their HTTP errors, mostly.
 
             try
             {
-                await PrepareNewMapAsync(http, cancellationToken);
+                await PrepareNewMapAsync(cancellationToken);
             }
             catch (HttpRequestException)
             {
@@ -773,11 +784,10 @@ public static class RandomizerEngine
     /// <summary>
     /// Requests, downloads, and allocates the map.
     /// </summary>
-    /// <param name="http"></param>
     /// <param name="cancellationToken"></param>
     /// <exception cref="InvalidSessionException"></exception>
     /// <exception cref="MapValidationException"></exception>
-    private static async Task PrepareNewMapAsync(HttpClient http, CancellationToken cancellationToken)
+    private static async Task PrepareNewMapAsync(CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
 
@@ -787,7 +797,7 @@ public static class RandomizerEngine
         Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
 
         // HEAD request ensures least overhead
-        using var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
+        using var randomResponse = await Http.HeadAsync(requestUrl, cancellationToken);
 
         if (randomResponse.StatusCode == HttpStatusCode.NotFound)
         {
@@ -832,7 +842,7 @@ public static class RandomizerEngine
         var trackGbxUrl = $"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}";
 
         Logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
-        using var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
+        using var trackGbxResponse = await Http.GetAsync(trackGbxUrl, cancellationToken);
         trackGbxResponse.EnsureSuccessStatusCode();
 
         using var stream = await trackGbxResponse.Content.ReadAsStreamAsync(cancellationToken);
