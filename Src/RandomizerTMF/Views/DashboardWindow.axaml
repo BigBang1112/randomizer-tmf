@@ -93,11 +93,11 @@
 											<ColumnDefinition Width="5"/>
 										</Grid.ColumnDefinitions>
 
-										<TextBlock Foreground="LightGreen" Margin="0 1 5 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding Data.AuthorMedalCount}"/>
+										<TextBlock Foreground="LightGreen" Margin="0 1 5 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding AuthorMedalCount}"/>
 
-										<TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding Data.GoldMedalCount}"/>
+										<TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding GoldMedalCount}"/>
 
-										<TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding Data.SkippedCount}"/>
+										<TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding SkippedCount}"/>
 									</Grid>
 								</Grid>
 							</DataTemplate>
