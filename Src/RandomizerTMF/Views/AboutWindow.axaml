@@ -4,8 +4,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="using:RandomizerTMF.Views"
 		xmlns:vm="using:RandomizerTMF.ViewModels"
-		mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
-        Width="500" Height="300"
+		mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
+        Width="500"
+		Height="350"
+		MinWidth="500"
+		MinHeight="350"
 		x:Class="RandomizerTMF.Views.AboutWindow"
         Title="About Randomizer TMF"
 		Icon="/Assets/icon.ico"
@@ -23,7 +26,11 @@
 		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
 		<Grid Margin="10">
 			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="5"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
@@ -31,9 +38,33 @@
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
 
-			<TextBlock Grid.ColumnSpan="2" Margin="10 10 10 5" TextWrapping="WrapWithOverflow" Text="Randomizer TMF"/>
+			<TextBlock Grid.ColumnSpan="2" Margin="0 10 0 0" TextWrapping="WrapWithOverflow" FontSize="36" HorizontalAlignment="Center" Text="Randomizer TMF" FontWeight="Bold"/>
+			<TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0 6 0 0" TextWrapping="WrapWithOverflow" FontSize="24" HorizontalAlignment="Center" Text="{Binding VersionText}" FontWeight="Bold"/>
+			<Button Grid.Row="2" VerticalAlignment="Top" Margin="14" ToolTip.Tip="Click to visit my website!" Command="{Binding ProjectClick}" Content="Project by BigBang1112"/>
+			<TextBlock Grid.Row="2" Margin="20" TextAlignment="Right">Many thanks to all bug reporters!</TextBlock>
 
-			<Button Grid.Column="1" Grid.Row="1" Content="Update" Width="100" HorizontalContentAlignment="Center" Command="{Binding UpdateClick}"/>
+			<Button Grid.ColumnSpan="2"
+					Grid.Row="3"
+					Content="Randomizer TMF is on GitHub"
+					FontSize="16"
+					FontWeight="Bold"
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					Command="{Binding GitHubClick}"/>
+
+			<Button Grid.ColumnSpan="2"
+					Grid.Row="5"
+					Background="#A80"
+					FontWeight="Bold"
+					FontSize="24"
+					Height="55"
+					Content="{Binding UpdateText}"
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					IsEnabled="{Binding IsNewUpdate}"
+					Command="{Binding UpdateClick}"/>
 		</Grid>
 	</DockPanel>
 </Window>

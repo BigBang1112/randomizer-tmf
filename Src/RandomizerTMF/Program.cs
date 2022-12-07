@@ -2,12 +2,13 @@
 using Avalonia.ReactiveUI;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic;
-using System;
 
 namespace RandomizerTMF;
 
 internal class Program
 {
+    internal static string? Version { get; } = typeof(Program).Assembly.GetName().Version?.ToString(3);
+
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
@@ -16,6 +17,8 @@ internal class Program
     {
         try
         {
+            UpdateDetector.RequestNewUpdateAsync();
+
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)

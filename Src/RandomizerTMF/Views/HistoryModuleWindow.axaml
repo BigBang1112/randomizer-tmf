@@ -46,7 +46,7 @@
 							</Grid.ColumnDefinitions>
 							<Image Width="20" Height="20" Source="{Binding EnvIconBitmap}"/>
 							<TextBlock Grid.Column="1" Text="{Binding MapName}" Margin="5 1 -5 0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
-							<TextBlock Grid.Column="2" Text="{Binding TimestampText}" ToolTip.Tip="Timestamp of the last change of the map in the run. Green - AT, Yellow - Gold Medal, Orange - Skip" HorizontalAlignment="Right" Foreground="{Binding TimestampColor}" Margin="0 1 5 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+							<TextBlock Grid.Column="2" Text="{Binding TimestampText}" ToolTip.Tip="Timestamp of the last change of the map in the run. Green - Author Medal, Yellow - Gold Medal, Orange - Skip" HorizontalAlignment="Right" Foreground="{Binding TimestampColor}" Margin="0 1 5 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
 						</Grid>
 					</DataTemplate>
 				</ListBox.ItemTemplate>

@@ -16,14 +16,18 @@ public class TopBarViewModel : ViewModelBase
         get => title;
         set => this.RaiseAndSetIfChanged(ref title, value);
     }
-    
+
     public bool MinimizeButtonEnabled
     {
         get => minimizeButtonEnabled;
         set => this.RaiseAndSetIfChanged(ref minimizeButtonEnabled, value);
     }
 
-    public static string? Version { get; } = typeof(Program).Assembly.GetName().Version?.ToString(3);
+    public bool IsNewUpdate => UpdateDetector.IsNewUpdate;
+
+    public static string? Version => Program.Version;
+    public static string? VersionTooltip => $"About Randomizer TMF {Program.Version}";
+
 
     public Window? WindowOwner { get; set; }
 
@@ -32,7 +36,7 @@ public class TopBarViewModel : ViewModelBase
 
     public TopBarViewModel()
     {
-
+        UpdateDetector.UpdateChecked += () => this.RaisePropertyChanged(nameof(IsNewUpdate));
     }
 
     public void OnCloseClick()

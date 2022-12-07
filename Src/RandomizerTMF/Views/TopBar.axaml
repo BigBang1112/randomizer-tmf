@@ -12,6 +12,22 @@
 
 	<UserControl.Styles>
 		<StyleInclude Source="/Styles/ButtonStyles.axaml"/>
+		
+		<Style Selector="Button.newUpdate">
+			<Style.Animations>
+				<Animation Duration="0:0:0.5" Easing="CubicEaseOut" RepeatCount="INFINITE">
+					<KeyFrame Cue="0%">
+						<Setter Property="Background" Value="#555"></Setter>
+					</KeyFrame>
+					<KeyFrame Cue="50%">
+						<Setter Property="Background" Value="#A80"></Setter>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="Background" Value="#555"></Setter>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
 	</UserControl.Styles>
 
 	<Border DockPanel.Dock="Top" BorderThickness="0 0 0 2" Padding="4 4 0 4" Margin="6 0" Height="36">
@@ -33,26 +49,13 @@
 				</Button.Template>
 			</Button>
 
-			<Button Classes="topBarButton" Margin="0 0 68 0"
+			<Button Classes="topBarButton" Classes.newUpdate="{Binding IsNewUpdate}" Margin="0 0 68 0"
 					Width="40"
 					Content="{Binding Version}"
-					Command="{Binding VersionClick}">
+					Command="{Binding VersionClick}"
+					ToolTip.Tip="{Binding VersionTooltip}">
 				<Button.Styles>
-					<Style Selector="Button">
-						<Style.Animations>
-							<Animation Duration="0:0:0.5" Easing="CubicEaseOut" RepeatCount="INFINITE">
-								<KeyFrame Cue="0%">
-									<Setter Property="Background" Value="#555"></Setter>
-								</KeyFrame>
-								<KeyFrame Cue="50%">
-									<Setter Property="Background" Value="#A80"></Setter>
-								</KeyFrame>
-								<KeyFrame Cue="100%">
-									<Setter Property="Background" Value="#555"></Setter>
-								</KeyFrame>
-							</Animation>
-						</Style.Animations>
-					</Style>
+					
 				</Button.Styles>
 			</Button>
 			<Button Classes="topBarButton" Margin="0 0 32 0" Command="{Binding OnMinimizeClick}" IsEnabled="{Binding MinimizeButtonEnabled}"></Button>
