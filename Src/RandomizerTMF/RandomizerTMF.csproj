@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
+		<RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
 		<Nullable>enable</Nullable>
 		<!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
 		<TrimMode>copyused</TrimMode>
@@ -12,6 +13,10 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 
 		<ApplicationIcon>Assets/icon.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Company>BigBang1112</Company>
 	</PropertyGroup>
 
 	<PropertyGroup>
