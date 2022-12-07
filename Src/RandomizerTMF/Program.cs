@@ -24,9 +24,15 @@ internal class Program
         catch (Exception ex)
         {
             RandomizerEngine.Logger.LogError(ex, "Global error");
-        }
 
-        RandomizerEngine.FlushLog();
+#if DEBUG
+            throw;
+#endif
+        }
+        finally
+        {
+            RandomizerEngine.FlushLog();
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
