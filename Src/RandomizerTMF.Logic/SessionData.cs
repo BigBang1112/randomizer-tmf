@@ -11,8 +11,13 @@ public class SessionData
 
     public List<SessionDataMap> Maps { get; set; } = new();
 
+    [YamlIgnore]
     public int AuthorMedalCount => Maps.Count(m => string.Equals(m.Result, Constants.AuthorMedal));
+
+    [YamlIgnore]
     public int GoldMedalCount => Maps.Count(m => string.Equals(m.Result, Constants.GoldMedal));
+
+    [YamlIgnore]
     public int SkippedCount => Maps.Count(m => string.Equals(m.Result, Constants.Skipped));
 
     public SessionData() : this(DateTimeOffset.Now)
