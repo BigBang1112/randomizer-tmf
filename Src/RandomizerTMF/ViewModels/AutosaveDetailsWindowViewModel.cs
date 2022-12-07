@@ -5,10 +5,8 @@ using TmEssentials;
 
 namespace RandomizerTMF.ViewModels;
 
-public class AutosaveDetailsWindowViewModel : WindowViewModelBase
+public class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
 {
-    public TopBarViewModel TopBarViewModel { get; set; }
-
     public AutosaveModel AutosaveModel { get; }
     public string? AutosaveFilePath { get; }
 
@@ -63,8 +61,9 @@ public class AutosaveDetailsWindowViewModel : WindowViewModelBase
             MapAuthorTime: TimeInt32.Zero,
             MapAuthorScore: 0,
             MapMode: CGameCtnChallenge.PlayMode.Race));
-        
-        TopBarViewModel = new() { Title = AutosaveModel.Text, MinimizeButtonEnabled = false };
+
+        TopBarViewModel.Title = AutosaveModel.Text;
+        TopBarViewModel.MinimizeButtonEnabled = false;
     }
 
     public AutosaveDetailsWindowViewModel(AutosaveModel autosaveModel, string autosaveFilePath)
@@ -72,22 +71,18 @@ public class AutosaveDetailsWindowViewModel : WindowViewModelBase
         AutosaveModel = autosaveModel;
         AutosaveFilePath = autosaveFilePath;
 
-        TopBarViewModel = new() { Title = autosaveModel.Text, MinimizeButtonEnabled = false };
-        TopBarViewModel.CloseClick += CloseClick;
-        TopBarViewModel.MinimizeClick += MinimizeClick;
+        TopBarViewModel.Title = AutosaveModel.Text;
+        TopBarViewModel.MinimizeButtonEnabled = false;
     }
 
     protected internal override void OnInit()
     {
+        base.OnInit();
+        
         Window.Title = $"Autosave: {TopBarViewModel.Title}";
     }
 
-    private void MinimizeClick()
-    {
-        
-    }
-
-    private void CloseClick()
+    protected override void CloseClick()
     {
         Window.Close();
     }

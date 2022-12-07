@@ -28,6 +28,7 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="5"/>
@@ -40,11 +41,13 @@
 
 			<TextBlock Grid.ColumnSpan="2" Margin="0 10 0 0" TextWrapping="WrapWithOverflow" FontSize="36" HorizontalAlignment="Center" Text="Randomizer TMF" FontWeight="Bold"/>
 			<TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0 6 0 0" TextWrapping="WrapWithOverflow" FontSize="24" HorizontalAlignment="Center" Text="{Binding VersionText}" FontWeight="Bold"/>
-			<Button Grid.Row="2" VerticalAlignment="Top" Margin="14" ToolTip.Tip="Click to visit my website!" Command="{Binding ProjectClick}" Content="Project by BigBang1112"/>
-			<TextBlock Grid.Row="2" Margin="20" TextAlignment="Right">Many thanks to all bug reporters!</TextBlock>
+			<Button Grid.Row="2" VerticalAlignment="Top" Margin="14 14 14 0" ToolTip.Tip="Click to visit my website!" Command="{Binding ProjectClick}" Content="Project by BigBang1112"/>
+			<TextBlock Grid.Row="2" Margin="20 20 20 0" TextAlignment="Right">Many thanks to all bug reporters!</TextBlock>
 
+			<TextBlock Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Massive thanks to TMX maintainers for making this possible."/>
+			
 			<Button Grid.ColumnSpan="2"
-					Grid.Row="3"
+					Grid.Row="4"
 					Content="Randomizer TMF is on GitHub"
 					FontSize="16"
 					FontWeight="Bold"
@@ -54,7 +57,7 @@
 					Command="{Binding GitHubClick}"/>
 
 			<Button Grid.ColumnSpan="2"
-					Grid.Row="5"
+					Grid.Row="6"
 					Background="#A80"
 					FontWeight="Bold"
 					FontSize="24"

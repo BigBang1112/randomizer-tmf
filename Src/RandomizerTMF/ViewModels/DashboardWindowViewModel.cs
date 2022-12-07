@@ -10,12 +10,11 @@ using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class DashboardWindowViewModel : WindowViewModelBase
+public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 {
     private ObservableCollection<AutosaveModel> autosaves = new();
     private ObservableCollection<SessionDataModel> sessions = new();
-
-    public TopBarViewModel TopBarViewModel { get; set; }
+    
     public RequestRulesControlViewModel RequestRulesControlViewModel { get; set; }
 
     public string? GameDirectory => RandomizerEngine.Config.GameDirectory;
@@ -37,17 +36,14 @@ public class DashboardWindowViewModel : WindowViewModelBase
 
     public DashboardWindowViewModel()
     {
-        TopBarViewModel = new();
-        TopBarViewModel.CloseClick += CloseClick;
-        TopBarViewModel.MinimizeClick += MinimizeClick;
-
         RequestRulesControlViewModel = new();
     }
 
     protected internal override void OnInit()
     {
+        base.OnInit();
+        
         Window.Opened += Opened;
-        TopBarViewModel.WindowOwner = Window;
     }
 
     private async void Opened(object? sender, EventArgs e)
@@ -158,12 +154,12 @@ public class DashboardWindowViewModel : WindowViewModelBase
         return RandomizerEngine.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
     }
 
-    public void CloseClick()
+    protected override void CloseClick()
     {
         RandomizerEngine.Exit();
     }
 
-    public void MinimizeClick()
+    protected override void MinimizeClick()
     {
         Window.WindowState = WindowState.Minimized;
     }

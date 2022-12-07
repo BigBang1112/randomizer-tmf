@@ -6,13 +6,11 @@ using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class MainWindowViewModel : WindowViewModelBase
+public class MainWindowViewModel : WindowWithTopBarViewModelBase
 {
     private string? gameDirectory;
     private string? userDirectory;
     private GameDirInspectResult? nadeoIni;
-
-    public TopBarViewModel TopBarViewModel { get; set; }
 
     public string? GameDirectory
     {
@@ -69,10 +67,6 @@ public class MainWindowViewModel : WindowViewModelBase
 
     public MainWindowViewModel()
     {
-        TopBarViewModel = new();
-        TopBarViewModel.CloseClick += CloseClick;
-        TopBarViewModel.MinimizeClick += MinimizeClick;
-
         if (!string.IsNullOrWhiteSpace(RandomizerEngine.Config.GameDirectory))
         {
             GameDirectory = RandomizerEngine.Config.GameDirectory;
@@ -81,12 +75,12 @@ public class MainWindowViewModel : WindowViewModelBase
         }
     }
 
-    public void CloseClick()
+    protected override void CloseClick()
     {
         RandomizerEngine.Exit();
     }
 
-    public void MinimizeClick()
+    protected override void MinimizeClick()
     {
         Window.WindowState = WindowState.Minimized;
     }

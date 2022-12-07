@@ -3,10 +3,8 @@ using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class AboutWindowViewModel : WindowViewModelBase
+public class AboutWindowViewModel : WindowWithTopBarViewModelBase
 {
-    public TopBarViewModel TopBarViewModel { get; set; }
-
     public string VersionText => $"version {Program.Version}";
 
     public string UpdateText => UpdateDetector.UpdateCheckResult ?? "Checking...";
@@ -14,9 +12,8 @@ public class AboutWindowViewModel : WindowViewModelBase
 
     public AboutWindowViewModel()
     {
-        TopBarViewModel = new() { Title = "About Randomizer TMF", MinimizeButtonEnabled = false };
-        TopBarViewModel.CloseClick += CloseClick;
-        TopBarViewModel.MinimizeClick += MinimizeClick;
+        TopBarViewModel.Title = "About Randomizer TMF";
+        TopBarViewModel.MinimizeButtonEnabled = false;
 
         UpdateDetector.UpdateChecked += () =>
         {
@@ -24,18 +21,8 @@ public class AboutWindowViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(IsNewUpdate));
         };
     }
-    
-    protected internal override void OnInit()
-    {
-        TopBarViewModel.WindowOwner = Window;
-    }
 
-    private void MinimizeClick()
-    {
-
-    }
-
-    private void CloseClick()
+    protected override void CloseClick()
     {
         Window.Close();
     }

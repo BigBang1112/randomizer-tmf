@@ -2,11 +2,9 @@
 
 namespace RandomizerTMF.ViewModels;
 
-public class MessageWindowViewModel : WindowViewModelBase
+public class MessageWindowViewModel : WindowWithTopBarViewModelBase
 {
     private string content = "";
-
-    public TopBarViewModel TopBarViewModel { get; set; }
 
     public string Content
     {
@@ -16,22 +14,15 @@ public class MessageWindowViewModel : WindowViewModelBase
 
     public MessageWindowViewModel()
     {
-        TopBarViewModel = new() { MinimizeButtonEnabled = false };
-        TopBarViewModel.CloseClick += CloseClick;
-        TopBarViewModel.MinimizeClick += MinimizeClick;
+        TopBarViewModel.MinimizeButtonEnabled = false;
     }
 
-    protected internal override void OnInit()
-    {
-        TopBarViewModel.Title = Window.Title;
-    }
-
-    private void CloseClick()
+    protected override void CloseClick()
     {
         Window.Close();
     }
 
-    private void MinimizeClick()
+    protected override void MinimizeClick()
     {
 
     }

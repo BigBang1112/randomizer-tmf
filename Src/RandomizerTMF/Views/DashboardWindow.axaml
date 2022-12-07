@@ -116,6 +116,7 @@
 				<Button Grid.Row="9"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
+						IsEnabled="{Binding HasAutosavesScanned}"
 						Command="{Binding ChangeClick}">Configure Randomizer TMF</Button>
 			</Grid>
 			
