@@ -1083,15 +1083,26 @@ public static class RandomizerEngine
 
         Logger.LogInformation("Opening {filePath} in TMForever...", filePath);
 
-        var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /singleinst /file=\"{filePath}\"");
-
+        var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /windowless /singleinst /file=\"{filePath}\"")
+        {
+            
+        };
+        
         var process = new Process
         {
             StartInfo = startInfo
         };
-
+        
         process.Start();
-        process.WaitForInputIdle();
+        
+        try
+        {
+            process.WaitForInputIdle();
+        }
+        catch (InvalidOperationException ex)
+        {
+            Logger.LogWarning(ex, "Could not wait for input.");
+        }
     }
 
     public static void OpenAutosaveIngame(string fileName)
