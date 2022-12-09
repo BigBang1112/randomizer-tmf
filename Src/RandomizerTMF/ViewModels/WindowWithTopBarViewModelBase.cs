@@ -6,7 +6,7 @@ public class WindowWithTopBarViewModelBase : WindowViewModelBase
     
     public WindowWithTopBarViewModelBase()
 	{
-        TopBarViewModel = new() { MinimizeButtonEnabled = false };
+        TopBarViewModel = new();
         TopBarViewModel.CloseClick += CloseClick;
         TopBarViewModel.MinimizeClick += MinimizeClick;
     }
