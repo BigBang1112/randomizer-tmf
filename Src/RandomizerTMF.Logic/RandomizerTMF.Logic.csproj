@@ -13,4 +13,10 @@
 		<PackageReference Include="YamlDotNet" Version="12.0.2" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="OfficialBlocks.yml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

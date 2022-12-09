@@ -34,7 +34,8 @@ public static class RandomizerEngine
         .Build();
 
     public static RandomizerConfig Config { get; }
-    
+    public static Dictionary<string, HashSet<string>> OfficialBlocks { get; }
+
     public static HttpClient Http { get; }
 
     public static string? TmForeverExeFilePath { get; set; }
@@ -129,6 +130,10 @@ public static class RandomizerEngine
         Logger.LogInformation("Loading config...");
 
         Config = GetOrCreateConfig();
+
+        Logger.LogInformation("Loading official blocks...");
+
+        OfficialBlocks = GetOfficialBlocks();
 
         Logger.LogInformation("Preparing HTTP client...");
 
@@ -401,6 +406,12 @@ public static class RandomizerEngine
         SaveConfig(config);
 
         return config;
+    }
+    
+    private static Dictionary<string, HashSet<string>> GetOfficialBlocks()
+    {
+        using var reader = new StreamReader(Constants.OfficialBlocksYml);
+        return YamlDeserializer.Deserialize<Dictionary<string, HashSet<string>>>(reader);
     }
 
     public static GameDirInspectResult UpdateGameDirectory(string gameDirectoryPath)
@@ -884,15 +895,23 @@ public static class RandomizerEngine
 
         Status("Validating the map...");
 
-        if (!ValidateMap(map))
+        if (!ValidateMap(map, out string? invalidBlock))
         {
             // Attempts another track if invalid
             requestAttempt++;
-            Status($"Map choice is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");
+
+            if (invalidBlock is not null)
+            {
+                Status($"{invalidBlock} in {map.Collection}");
+                Logger.LogInformation("Map is invalid because {invalidBlock} is not valid for the {env} environment.", invalidBlock, map.Collection);
+                await Task.Delay(500, cancellationToken);
+            }
+
+            Status($"Map is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");
 
             if (requestAttempt >= requestMaxAttempts)
             {
-                Logger.LogWarning("Map choice is invalid after {MaxAttempts} attempts. Cancelling the session...", requestMaxAttempts);
+                Logger.LogWarning("Map is invalid after {MaxAttempts} attempts. Cancelling the session...", requestMaxAttempts);
                 requestAttempt = 0;
                 throw new InvalidSessionException();
             }
@@ -1029,16 +1048,37 @@ public static class RandomizerEngine
     /// </summary>
     /// <param name="map"></param>
     /// <returns>True if valid, false if not valid.</returns>
-    private static bool ValidateMap(CGameCtnChallenge map)
+    private static bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock)
     {
+        invalidBlock = null;
+
         if (AutosaveHeaders.ContainsKey(map.MapUid))
         {
             return false;
         }
 
-        if (Config.Rules.NoUnlimiter && map.Chunks.TryGet(0x3F001000, out _))
+        if (Config.Rules.NoUnlimiter)
         {
-            return false;
+            if (map.Chunks.TryGet(0x3F001000, out _))
+            {
+                return false;
+            }
+            
+            if (!OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            {
+                return false;
+            }
+
+            foreach (var block in map.GetBlocks())
+            {
+                var blockName = block.Name.Trim();
+
+                if (!officialBlocks.Contains(blockName))
+                {
+                    invalidBlock = blockName;
+                    return false;
+                }
+            }
         }
 
         return true;
