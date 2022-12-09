@@ -720,7 +720,7 @@ public static class RandomizerEngine
     {
         var startedAt = DateTimeOffset.Now;
 
-        CurrentSessionData = new SessionData(startedAt);
+        CurrentSessionData = new SessionData(startedAt, Config.Rules);
 
         if (CurrentSessionDataDirectoryPath is null)
         {
