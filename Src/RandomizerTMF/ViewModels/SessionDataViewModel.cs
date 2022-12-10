@@ -109,6 +109,11 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
     {
         var rules = new ObservableCollection<string>();
 
+        if (Model.Data.Rules is null) // To handle sessions made in early Randomizer TMF version
+        {
+            return rules;
+        }
+
         foreach (var prop in Model.Data.Rules.GetType().GetProperties())
         {
             if (prop.Name == nameof(RandomizerRules.RequestRules))

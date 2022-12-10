@@ -5,7 +5,7 @@ namespace RandomizerTMF.Logic;
 public class SessionData
 {
     public DateTimeOffset StartedAt { get; set; }
-    public RandomizerRules Rules { get; set; }
+    public RandomizerRules? Rules { get; set; }
 
     [YamlIgnore]
     public string StartedAtText => StartedAt.ToString("yyyy-MM-dd HH_mm_ss");
