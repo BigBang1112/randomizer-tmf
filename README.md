@@ -5,7 +5,7 @@
 
 **Randomizer TMF - Random Map Challenge for TMNF/TMUF** is a project (inspired from the Flink's Random Map Challenge) that ports random map picking experience to TMNF and TMUF games.
 
-The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx files with executable arguments to create flawless and automatic joy of exploration.
+The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx files, and executable arguments to create flawless and automatic joy of exploration.
 
 ### You will never receive a map you finished before!
 
@@ -35,6 +35,8 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 - Preview of your autosaves
 
 ## Download goals
+
+[![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
 
 - **50 downloads within 1 week** - Guaranteed support throughout 2023
 - **100 downloads** - Discord Rich Presence integration
