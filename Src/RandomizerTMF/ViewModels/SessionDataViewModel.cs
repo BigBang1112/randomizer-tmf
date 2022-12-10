@@ -14,7 +14,7 @@ namespace RandomizerTMF.ViewModels;
 public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
 {
     private ObservableCollection<SessionDataReplayModel> replays = new();
-    private SessionDataMapModel selectedMap;
+    private SessionDataMapModel? selectedMap;
 
     public SessionDataModel Model { get; }
     public ObservableCollection<string> Rules { get; }
@@ -26,7 +26,7 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
         private set => this.RaiseAndSetIfChanged(ref replays, value);
     }
 
-    public SessionDataMapModel SelectedMap
+    public SessionDataMapModel? SelectedMap
     {
         get => selectedMap;
         set
@@ -34,6 +34,11 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
             selectedMap = value;
 
             Replays.Clear();
+
+            if (value is null)
+            {
+                return;
+            }
 
             var map = default(CGameCtnChallenge);
             var first = true;
