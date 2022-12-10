@@ -35,7 +35,7 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
 
             Replays.Clear();
 
-            if (value is null)
+            if (selectedMap is null)
             {
                 return;
             }
