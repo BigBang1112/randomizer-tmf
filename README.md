@@ -53,7 +53,7 @@ Gogo!
 To people that rooted the project:
 
 - Flink and Greep (for inventing the challenge)
-- Arkady (for inspiring this project with his `Open map` feature in [Gbx Map Browser](https://github.com/ArkadySK/GbxMapBrowser))
+- Arkady (for inspiring this project with his `Play` feature in [Gbx Map Browser](https://github.com/ArkadySK/GbxMapBrowser))
 
 To all early testers:
 
