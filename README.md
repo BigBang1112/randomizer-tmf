@@ -36,13 +36,13 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 
 ## Download goals
 
-**50 downloads within 1 week** - Guaranteed support throughout 2023
-**100 downloads** - Discord Rich Presence integration
-**300 downloads** - TMUF theme
-**500 downloads** - Profile management (fresh account randomization)
-**2000 downloads** - Automated RMC leaderboards
-**10000 downloads** - UI directly displayed ingame (fullscreen support)
-**99999 downloads** - Randomizer TMTurbo
+- **50 downloads within 1 week** - Guaranteed support throughout 2023
+- **100 downloads** - Discord Rich Presence integration
+- **300 downloads** - TMUF theme
+- **500 downloads** - Profile management (fresh account randomization)
+- **2000 downloads** - Automated RMC leaderboards
+- **10000 downloads** - UI directly displayed ingame (fullscreen support)
+- **99999 downloads** - Randomizer TMTurbo
 
 Gogo!
 
