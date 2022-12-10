@@ -14,5 +14,10 @@ namespace RandomizerTMF.Views
         {
             (DataContext as DashboardWindowViewModel)?.AutosaveDoubleClick(((ListBox)(sender ?? throw new Exception())).SelectedIndex);
         }
+
+        private void SessionsDoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            (DataContext as DashboardWindowViewModel)?.SessionDoubleClick(((ListBox)(sender ?? throw new Exception())).SelectedIndex);
+        }
     }
 }

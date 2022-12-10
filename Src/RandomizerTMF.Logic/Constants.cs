@@ -17,4 +17,5 @@ public static class Constants
     public const string Skipped = "Skipped";
     public const string DefaultReplayFileFormat = "{0}_{1}_{2}.Replay.Gbx";
     public const string OfficialBlocksYml = "OfficialBlocks.yml";
+    public const string Replays = "Replays";
 }

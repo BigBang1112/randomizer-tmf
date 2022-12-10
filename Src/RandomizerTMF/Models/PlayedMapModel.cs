@@ -16,7 +16,7 @@ public class PlayedMapModel
     public SessionMap Map { get; }
     public EResult Result { get; }
     
-    public string? TimestampText => Map.LastChangeAt?.ToString("h':'mm':'ss");
+    public string? TimestampText => Map.LastTimestamp?.ToString("h':'mm':'ss");
     
     public IBrush? TimestampColor => Result switch
     {
@@ -43,12 +43,5 @@ public class PlayedMapModel
         }
 
         EnvIconBitmap = bitmap;
-    }
-
-    public enum EResult
-    {
-        GoldMedal,
-        AuthorMedal,
-        Skipped
     }
 }

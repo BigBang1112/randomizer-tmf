@@ -8,7 +8,7 @@ public class SessionData
     public RandomizerRules Rules { get; set; }
 
     [YamlIgnore]
-    public string StartedAtText { get; }
+    public string StartedAtText => StartedAt.ToString("yyyy-MM-dd HH_mm_ss");
 
     public List<SessionDataMap> Maps { get; set; } = new();
 
@@ -20,7 +20,6 @@ public class SessionData
     public SessionData(DateTimeOffset startedAt, RandomizerRules rules)
     {
         StartedAt = startedAt;
-        StartedAtText = startedAt.ToString("yyyy-MM-dd HH_mm_ss");
         Rules = rules;
     }
 }

@@ -6,11 +6,11 @@ namespace RandomizerTMF.Logic;
 /// <summary>
 /// Real-time session map object
 /// </summary>
-public class SessionMap
+public class SessionMap : ISessionMap
 {
     public CGameCtnChallenge Map { get; }
     public DateTimeOffset ReceivedAt { get; }
-    public TimeSpan? LastChangeAt { get; set; }
+    public TimeSpan? LastTimestamp { get; set; }
 
     public CGameCtnChallengeParameters? ChallengeParameters => Map.ChallengeParameters;
     public CGameCtnChallenge.PlayMode? Mode => Map.Mode;

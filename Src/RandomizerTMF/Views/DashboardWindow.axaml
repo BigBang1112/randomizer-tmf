@@ -68,7 +68,7 @@
 					<Border.BorderBrush>
 						<SolidColorBrush Color="Gray" Opacity="0.5"/>
 					</Border.BorderBrush>
-					<ListBox Items="{Binding Sessions, Mode=OneWay}">
+					<ListBox DoubleTapped="SessionsDoubleTapped" Items="{Binding Sessions, Mode=OneWay}">
 						<ListBox.Background>
 							<SolidColorBrush Color="#222222" Opacity="0.5"/>
 						</ListBox.Background>

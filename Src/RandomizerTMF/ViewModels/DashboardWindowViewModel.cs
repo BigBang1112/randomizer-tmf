@@ -235,6 +235,21 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         return window;
     }
 
+    public void SessionDoubleClick(int selectedIndex)
+    {
+        if (selectedIndex < 0)
+        {
+            return;
+        }
+
+        var sessionModel = Sessions[selectedIndex];
+
+        OpenDialog<SessionDataWindow>(window => new SessionDataViewModel(sessionModel)
+        {
+            Window = window
+        });
+    }
+
     public void AutosaveDoubleClick(int selectedIndex)
     {
         if (selectedIndex < 0)

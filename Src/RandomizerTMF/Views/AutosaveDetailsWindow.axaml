@@ -11,6 +11,7 @@
 		MinWidth="380"
 		Height="280"
 		MinHeight="235"
+		WindowStartupLocation="CenterOwner"
 		Title="Autosave details">
 
 	<Design.DataContext>

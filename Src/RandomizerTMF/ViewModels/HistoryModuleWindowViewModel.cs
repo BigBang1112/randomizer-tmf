@@ -33,17 +33,17 @@ public class HistoryModuleWindowViewModel : WindowViewModelBase
     {
         foreach (var map in RandomizerEngine.CurrentSessionAuthorMaps)
         {
-            yield return new PlayedMapModel(map.Value, PlayedMapModel.EResult.AuthorMedal);
+            yield return new PlayedMapModel(map.Value, EResult.AuthorMedal);
         }
 
         foreach (var map in RandomizerEngine.CurrentSessionGoldMaps)
         {
-            yield return new PlayedMapModel(map.Value, PlayedMapModel.EResult.GoldMedal);
+            yield return new PlayedMapModel(map.Value, EResult.GoldMedal);
         }
 
         foreach (var map in RandomizerEngine.CurrentSessionSkippedMaps)
         {
-            yield return new PlayedMapModel(map.Value, PlayedMapModel.EResult.Skipped);
+            yield return new PlayedMapModel(map.Value, EResult.Skipped);
         }
     }
 }

@@ -1,0 +1,185 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
+        x:Class="RandomizerTMF.Views.SessionDataWindow"
+        xmlns:views="using:RandomizerTMF.Views"
+		xmlns:vm="using:RandomizerTMF.ViewModels"
+		WindowStartupLocation="CenterOwner"
+		Icon="/Assets/icon.ico"
+		Width="700"
+		MinWidth="700"
+		Height="350"
+		MinHeight="230"
+		Title="Session">
+
+	<Design.DataContext>
+		<vm:SessionDataViewModel/>
+	</Design.DataContext>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
+	</Window.Styles>
+
+	<DockPanel>
+		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+		<Grid ShowGridLines="False">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="15"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="10"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="10"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="15"/>
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="5"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="3"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="10"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="10"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="10"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="15"/>
+			</Grid.RowDefinitions>
+			
+			<TextBlock Grid.Column="1" Grid.Row="1"
+					   FontWeight="Bold"
+					   Margin="0 5"
+					   HorizontalAlignment="Center"
+					   Text="{Binding Path=Model.Data.StartedAt, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss }'}"/>
+			<Grid Grid.Column="1" Grid.Row="3">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Image Source="/Assets/Images/Medals/NadeoMedal.png" Width="50" Height="50"/>
+				<Image Grid.Column="1" Source="/Assets/Images/Medals/GoldMedal.png" Width="50" Height="50"/>
+				<TextBlock Grid.Column="2"
+						   FontWeight="Bold"
+						   FontSize="15"
+						   Foreground="{Binding Model.SkippedBrush}"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Text="SKIPS"/>
+				<TextBlock Text="{Binding Model.AuthorMedalCount}"
+						   Grid.Row="1"
+						   Margin="5 5 5 0"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="LightGreen"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"/>
+				<TextBlock Text="{Binding Model.GoldMedalCount}"
+						   Grid.Row="1" Grid.Column="1"
+						   Margin="5 5 5 0"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="Gold"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"/>
+				<TextBlock Text="{Binding Model.SkippedCount}"
+						   Grid.Row="1" Grid.Column="2"
+						   Margin="5 5 5 0"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="{Binding Model.SkippedBrush}"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"/>
+			</Grid>
+			<Button Grid.Column="1" Grid.Row="5"
+					Content="Open session folder"
+					Command="{Binding OpenSessionFolderClick}"
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"/>
+			<Border Grid.Column="1" Grid.Row="7" Grid.RowSpan="3" BorderThickness="2">
+				<Border.BorderBrush>
+					<SolidColorBrush Color="Gray" Opacity="0.5"/>
+				</Border.BorderBrush>
+				<ListBox Items="{Binding Rules}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal" Margin="-6 -6 0 -9">
+								<TextBlock Text="{Binding}" FontSize="12"/>
+							</StackPanel>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+
+			<TextBlock Grid.Column="3" Grid.Row="1"
+					   Margin="0 5"
+					   HorizontalAlignment="Center"
+					   Text="Maps:"/>
+			<Border Grid.Column="3" Grid.Row="3" Grid.RowSpan="7" BorderThickness="2">
+				<Border.BorderBrush>
+					<SolidColorBrush Color="Gray" Opacity="0.5"/>
+				</Border.BorderBrush>
+				<ListBox Items="{Binding Maps}" SelectedItem="{Binding SelectedMap}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid Margin="-6" VerticalAlignment="Center">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="60"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="{Binding Map.Name}" Margin="0 1 -5 0" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+								<TextBlock Grid.Column="1" Text="{Binding TimestampText}" ToolTip.Tip="Timestamp of the last change of the map in the run. Green - Author Medal, Yellow - Gold Medal, Orange - Skip" HorizontalAlignment="Right" Foreground="{Binding TimestampColor}" Margin="0 1 5 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+								<Button Grid.Column="2" Content="TMX" FontSize="10" Padding="4" Command="{Binding TmxClick}" Margin="0 1 0 -1"/>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+
+			<TextBlock Grid.Column="5" Grid.Row="1"
+					   Margin="0 5"
+					   HorizontalAlignment="Center"
+					   Text="Replays:"/>
+			<Border Grid.Column="5" Grid.Row="3" Grid.RowSpan="5" BorderThickness="2">
+				<Border.BorderBrush>
+					<SolidColorBrush Color="Gray" Opacity="0.5"/>
+				</Border.BorderBrush>
+				<ListBox Items="{Binding Replays}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid Margin="-6" VerticalAlignment="Center">
+								<TextBlock Grid.Column="0" Text="{Binding TimeText}" Margin="5 1 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+								<Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 5 0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="5"/>
+										<ColumnDefinition Width="5"/>
+										<ColumnDefinition Width="5"/>
+										<ColumnDefinition Width="5"/>
+									</Grid.ColumnDefinitions>
+									<Image Grid.Column="3" Width="20" Source="/Assets/Images/Medals/BronzeMedal.png" IsVisible="{Binding HasBronzeMedal}"/>
+									<Image Grid.Column="2" Width="20" Source="/Assets/Images/Medals/SilverMedal.png" IsVisible="{Binding HasSilverMedal}"/>
+									<Image Grid.Column="1" Width="20" Source="/Assets/Images/Medals/GoldMedal.png" IsVisible="{Binding HasGoldMedal}"/>
+									<Image Width="20" Source="/Assets/Images/Medals/NadeoMedal.png" IsVisible="{Binding HasAuthorMedal}"/>
+								</Grid>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+			<Button Grid.Column="5" Grid.Row="9"
+					Width="180"
+					Content="Open Replays folder"
+				    Command="{Binding OpenReplaysFolderClick}"
+					IsEnabled="{Binding IsOpenReplaysFolderEnabled}"
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center"/>
+		</Grid>
+	</DockPanel>
+</Window>

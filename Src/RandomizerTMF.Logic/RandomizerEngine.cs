@@ -298,7 +298,7 @@ public static class RandomizerEngine
         
         var replayFileName = ClearFileName(string.Format(replayFileFormat, mapName, score, replay.PlayerLogin));
 
-        var replaysDir = Path.Combine(CurrentSessionDataDirectoryPath, "Replays");
+        var replaysDir = Path.Combine(CurrentSessionDataDirectoryPath, Constants.Replays);
         var replayFilePath = Path.Combine(replaysDir, replayFileName);
 
         Directory.CreateDirectory(replaysDir);
@@ -329,7 +329,7 @@ public static class RandomizerEngine
     private static void GoldMedalReceived(SessionMap map)
     {
         CurrentSessionGoldMaps.TryAdd(map.MapUid, map);
-        map.LastChangeAt = CurrentSessionWatch?.Elapsed;
+        map.LastTimestamp = CurrentSessionWatch?.Elapsed;
         SetMapResult(map, Constants.GoldMedal);
 
         MedalUpdate?.Invoke();
@@ -339,7 +339,7 @@ public static class RandomizerEngine
     {
         CurrentSessionGoldMaps.Remove(map.MapUid);
         CurrentSessionAuthorMaps.TryAdd(map.MapUid, map);
-        map.LastChangeAt = CurrentSessionWatch?.Elapsed;
+        map.LastTimestamp = CurrentSessionWatch?.Elapsed;
         SetMapResult(map, Constants.AuthorMedal);
 
         MedalUpdate?.Invoke();
@@ -351,7 +351,7 @@ public static class RandomizerEngine
         if (!CurrentSessionGoldMaps.ContainsKey(map.MapUid))
         {
             CurrentSessionSkippedMaps.TryAdd(map.MapUid, map);
-            map.LastChangeAt = CurrentSessionWatch?.Elapsed;
+            map.LastTimestamp = CurrentSessionWatch?.Elapsed;
             SetMapResult(map, Constants.Skipped);
         }
 
@@ -368,7 +368,7 @@ public static class RandomizerEngine
         if (dataMap is not null)
         {
             dataMap.Result = result;
-            dataMap.LastTimestamp = map.LastChangeAt;
+            dataMap.LastTimestamp = map.LastTimestamp;
         }
         
         SaveSessionData();
@@ -1064,19 +1064,17 @@ public static class RandomizerEngine
                 return false;
             }
             
-            if (!OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            if (OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
             {
-                return false;
-            }
-
-            foreach (var block in map.GetBlocks())
-            {
-                var blockName = block.Name.Trim();
-
-                if (!officialBlocks.Contains(blockName))
+                foreach (var block in map.GetBlocks())
                 {
-                    invalidBlock = blockName;
-                    return false;
+                    var blockName = block.Name.Trim();
+
+                    if (!officialBlocks.Contains(blockName))
+                    {
+                        invalidBlock = blockName;
+                        return false;
+                    }
                 }
             }
         }
