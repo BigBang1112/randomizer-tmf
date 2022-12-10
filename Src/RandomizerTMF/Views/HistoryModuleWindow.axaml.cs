@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using RandomizerTMF.Logic;
+using RandomizerTMF.Models;
+using RandomizerTMF.ViewModels;
 
 namespace RandomizerTMF.Views
 {
@@ -20,6 +22,11 @@ namespace RandomizerTMF.Views
             };
 
             Deactivated += (_, _) => { Topmost = false; Topmost = true; };
+        }
+
+        private void MapsDoubleTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            (DataContext as HistoryModuleWindowViewModel)?.MapDoubleClick(((ListBox)(sender ?? throw new Exception())).SelectedItem as PlayedMapModel);
         }
     }
 }

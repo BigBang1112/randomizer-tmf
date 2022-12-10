@@ -1,5 +1,6 @@
 ﻿using RandomizerTMF.Logic;
 using RandomizerTMF.Models;
+using RandomizerTMF.Views;
 using ReactiveUI;
 using System.Collections.ObjectModel;
 
@@ -45,5 +46,18 @@ public class HistoryModuleWindowViewModel : WindowViewModelBase
         {
             yield return new PlayedMapModel(map.Value, EResult.Skipped);
         }
+    }
+
+    public void MapDoubleClick(PlayedMapModel? selectedItem)
+    {
+        if (selectedItem is null)
+        {
+            return;
+        }
+
+        OpenDialog<SessionMapWindow>(window => new SessionMapViewModel(selectedItem)
+        {
+            Window = window
+        });
     }
 }

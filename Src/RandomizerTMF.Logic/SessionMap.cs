@@ -10,6 +10,8 @@ public class SessionMap : ISessionMap
 {
     public CGameCtnChallenge Map { get; }
     public DateTimeOffset ReceivedAt { get; }
+    public string TmxLink { get; }
+    
     public TimeSpan? LastTimestamp { get; set; }
 
     public CGameCtnChallengeParameters? ChallengeParameters => Map.ChallengeParameters;
@@ -17,9 +19,10 @@ public class SessionMap : ISessionMap
     public string MapUid => Map.MapUid;
     public Ident MapInfo => Map.MapInfo;
 
-    public SessionMap(CGameCtnChallenge map, DateTimeOffset receivedAt)
+    public SessionMap(CGameCtnChallenge map, DateTimeOffset receivedAt, string tmxLink)
     {
         Map = map;
         ReceivedAt = receivedAt;
+        TmxLink = tmxLink;
     }
 }

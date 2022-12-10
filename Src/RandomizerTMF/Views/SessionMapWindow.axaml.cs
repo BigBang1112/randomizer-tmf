@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace RandomizerTMF.Views;
 
-public partial class SessionDataWindow : Window
+public partial class SessionMapWindow : Window
 {
-    public SessionDataWindow()
+    public SessionMapWindow()
     {
         InitializeComponent();
     }

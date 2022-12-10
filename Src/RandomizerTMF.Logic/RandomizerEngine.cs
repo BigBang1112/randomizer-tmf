@@ -952,13 +952,15 @@ public static class RandomizerEngine
 
         Logger.LogInformation("Map saved successfully!");
 
-        CurrentSessionMap = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now); // The map should be ready to be played now
+        var tmxLink = randomResponse.RequestMessage.RequestUri.ToString();
+
+        CurrentSessionMap = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now, tmxLink); // The map should be ready to be played now
 
         CurrentSessionData?.Maps.Add(new()
         {
             Name = TextFormatter.Deformat(map.MapName),
             Uid = map.MapUid,
-            TmxLink = randomResponse.RequestMessage.RequestUri.ToString()
+            TmxLink = tmxLink
         });
 
         SaveSessionData(); // May not be super necessary?
