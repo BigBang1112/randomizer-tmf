@@ -64,4 +64,4 @@ To all early testers:
 - Poutrel
 - Arkes
 
-And to everyone still believing in me!
+And to everyone that still believe in me!
