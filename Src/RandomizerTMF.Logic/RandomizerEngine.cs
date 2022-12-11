@@ -767,6 +767,24 @@ public static class RandomizerEngine
         {
             throw new RuleValidationException("Time limit cannot be above 9:59:59");
         }
+
+        if (Config.Rules.RequestRules.PrimaryType is EPrimaryType.Platform
+        && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        {
+            throw new RuleValidationException("Platform is not valid with TMNF or Nations Exchange");
+        }
+
+        if (Config.Rules.RequestRules.PrimaryType is EPrimaryType.Stunts
+        && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        {
+            throw new RuleValidationException("Stunts is not valid with TMNF or Nations Exchange");
+        }
+
+        if (Config.Rules.RequestRules.PrimaryType is EPrimaryType.Puzzle
+        && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        {
+            throw new RuleValidationException("Puzzle is not valid with TMNF or Nations Exchange");
+        }
     }
 
     /// <summary>
