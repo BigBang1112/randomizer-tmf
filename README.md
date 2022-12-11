@@ -5,7 +5,7 @@
 
 **Randomizer TMF - Random Map Challenge for TMNF/TMUF** is a project (inspired from the Flink's Random Map Challenge) that ports random map picking experience to TMNF and TMUF games.
 
-The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx files with executable arguments to create flawless and automatic joy of exploration.
+The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx files, and executable arguments to create flawless and automatic joy of exploration.
 
 ### You will never receive a map you finished before!
 
@@ -36,13 +36,15 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 
 ## Download goals
 
-**50 downloads within 1 week** - Guaranteed support throughout 2023
-**100 downloads** - Discord Rich Presence integration
-**300 downloads** - TMUF theme
-**500 downloads** - Profile management (fresh account randomization)
-**2000 downloads** - Automated RMC leaderboards
-**10000 downloads** - UI directly displayed ingame (fullscreen support)
-**99999 downloads** - Randomizer TMTurbo
+[![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
+
+- **50 downloads within 1 week** - Guaranteed support throughout 2023
+- **100 downloads** - Discord Rich Presence integration
+- **300 downloads** - TMUF theme
+- **500 downloads** - Profile management (fresh account randomization)
+- **2000 downloads** - Automated RMC leaderboards
+- **10000 downloads** - UI directly displayed ingame (fullscreen support)
+- **99999 downloads** - Randomizer TMTurbo
 
 Gogo!
 
@@ -51,7 +53,7 @@ Gogo!
 To people that rooted the project:
 
 - Flink and Greep (for inventing the challenge)
-- Arkady (for inspiring this project with his `Open map` feature in [Gbx Map Browser](https://github.com/ArkadySK/GbxMapBrowser))
+- Arkady (for inspiring this project with his `Play` feature in [Gbx Map Browser](https://github.com/ArkadySK/GbxMapBrowser))
 
 To all early testers:
 
@@ -64,4 +66,4 @@ To all early testers:
 
 To all TMX maintainers that make this possible!
 
-And to everyone still believing in me!
+And to everyone that still believe in me!
