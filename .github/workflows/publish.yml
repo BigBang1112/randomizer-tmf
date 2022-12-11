@@ -27,12 +27,12 @@ jobs:
       run: dotnet restore
       
     - name: Publish ${{ matrix.os.runtime }}
-      run: dotnet publish Src/RandomizerTMF -c Release -f net7.0 -r ${{ matrix.os.runtime }} -o RandomizerTMF.${{ github.ref_name }}.${{ matrix.os.runtime }} --self-contained
+      run: dotnet publish Src/RandomizerTMF -c Release -f net7.0 -r ${{ matrix.os.runtime }} -o RandomizerTMF --self-contained
       
     - name: Zip to RandomizerTMF.${{ github.ref_name }}.${{ matrix.os.runtime }}.zip
       uses: thedoctor0/zip-release@main
       with:
-        path: RandomizerTMF.${{ github.ref_name }}.${{ matrix.os.runtime }}
+        path: RandomizerTMF
         filename: RandomizerTMF.${{ github.ref_name }}.${{ matrix.os.runtime }}.zip
     
     - name: SHA256 checksum
