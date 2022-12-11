@@ -523,21 +523,28 @@ public static class RandomizerEngine
 
         foreach (var file in Directory.EnumerateFiles(AutosavesDirectoryPath).AsParallel())
         {
-            if (GameBox.ParseNodeHeader(file) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
+            try
             {
-                continue;
+                if (GameBox.ParseNodeHeader(file) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
+                {
+                    continue;
+                }
+
+                var mapUid = replay.MapInfo.Id;
+
+                if (AutosaveHeaders.ContainsKey(mapUid))
+                {
+                    continue;
+                }
+
+                AutosaveHeaders.TryAdd(mapUid, new AutosaveHeader(Path.GetFileName(file), replay));
+
+                anythingChanged = true;
             }
-
-            var mapUid = replay.MapInfo.Id;
-
-            if (AutosaveHeaders.ContainsKey(mapUid))
+            catch
             {
-                continue;
+                // Errors get lost currently
             }
-            
-            AutosaveHeaders.TryAdd(mapUid, new AutosaveHeader(Path.GetFileName(file), replay));
-
-            anythingChanged = true;
         }
 
         HasAutosavesScanned = true;

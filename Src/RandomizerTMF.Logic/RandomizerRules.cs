@@ -1,4 +1,6 @@
-﻿namespace RandomizerTMF.Logic;
+﻿using TmEssentials;
+
+namespace RandomizerTMF.Logic;
 
 public class RandomizerRules
 {
@@ -8,6 +10,7 @@ public class RandomizerRules
     public RequestRules RequestRules { get; init; } = new()
     {
         Site = ESite.TMNF,
-        PrimaryType = EPrimaryType.Race
+        PrimaryType = EPrimaryType.Race,
+        AuthorTimeMax = TimeInt32.FromMinutes(2)
     };
 }
