@@ -64,5 +64,11 @@
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</ProjectReference>
 	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\..\LICENSE">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 	
 </Project>
