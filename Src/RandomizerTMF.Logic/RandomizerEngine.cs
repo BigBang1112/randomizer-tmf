@@ -1,5 +1,6 @@
 ﻿using GBX.NET;
 using GBX.NET.Engines.Game;
+using GBX.NET.Exceptions;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.TypeConverters;
@@ -541,9 +542,13 @@ public static class RandomizerEngine
 
                 anythingChanged = true;
             }
-            catch
+            catch (NotAGbxException)
             {
-                // Errors get lost currently
+                // do nothing
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Gbx error found in the Autosaves folder when reading the header.");
             }
         }
 
