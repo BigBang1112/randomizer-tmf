@@ -62,4 +62,6 @@ To all early testers:
 - Poutrel
 - Arkes
 
+To all TMX maintainers that make this possible!
+
 And to everyone still believing in me!

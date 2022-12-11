@@ -207,7 +207,7 @@
 
 				<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 3" Orientation="Horizontal">
 					<TextBlock FontSize="10" VerticalAlignment="Center" Text="{Binding Autosaves.Count}"/>
-					<TextBlock FontSize="10" VerticalAlignment="Center" Text=" autosave details loaded. Try double click!"/>
+					<TextBlock FontSize="10" VerticalAlignment="Center" Text=" autosave details loaded. Try a double click!"/>
 				</StackPanel>
 			</Grid>
 		</Grid>

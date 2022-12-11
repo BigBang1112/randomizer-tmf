@@ -143,7 +143,7 @@ public static class RandomizerEngine
         };
         
         Http = new HttpClient(socketHandler);
-        Http.DefaultRequestHeaders.UserAgent.TryParseAdd("Randomizer TMF (beta)");
+        Http.DefaultRequestHeaders.UserAgent.TryParseAdd($"Randomizer TMF {typeof(RandomizerEngine).Assembly.GetName().Version}");
 
         Logger.LogInformation("Preparing general events...");
 
@@ -249,17 +249,19 @@ public static class RandomizerEngine
             }
             else
             {
+                var ghost = replay.GetGhosts().First();
+
                 if ((CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= CurrentSessionMap.ChallengeParameters.AuthorTime)
-                 || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && replay.GetGhosts().First().Respawns <= CurrentSessionMap.ChallengeParameters.AuthorScore && replay.Time <= CurrentSessionMap.ChallengeParameters.AuthorTime)
-                 || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && replay.GetGhosts().First().StuntScore >= CurrentSessionMap.ChallengeParameters.AuthorScore))
+                 || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && ((CurrentSessionMap.ChallengeParameters.AuthorScore > 0 && ghost.Respawns <= CurrentSessionMap.ChallengeParameters.AuthorScore) || (ghost.Respawns == 0 && replay.Time <= CurrentSessionMap.ChallengeParameters.AuthorTime)))
+                 || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= CurrentSessionMap.ChallengeParameters.AuthorScore))
                 {
                     AuthorMedalReceived(CurrentSessionMap);
 
                     SkipTokenSource?.Cancel();
                 }
                 else if ((CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= CurrentSessionMap.ChallengeParameters.GoldTime)
-                      || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && replay.GetGhosts().First().Respawns <= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
-                      || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && replay.GetGhosts().First().StuntScore >= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
+                      || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && ghost.Respawns <= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
+                      || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
                 {
                     GoldMedalReceived(CurrentSessionMap);
                 }

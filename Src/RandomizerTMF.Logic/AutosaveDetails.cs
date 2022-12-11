@@ -29,6 +29,6 @@ public record AutosaveDetails(TimeInt32 Time,
         || (MapMode is CGameCtnChallenge.PlayMode.Stunts && Score >= MapGoldTime.TotalMilliseconds);
 
     public bool HasAuthorMedal => (MapMode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && Time <= MapAuthorTime)
-        || (MapMode is CGameCtnChallenge.PlayMode.Platform && ((Respawns == 0 && Time <= MapAuthorTime) || Respawns <= MapAuthorScore))
+        || (MapMode is CGameCtnChallenge.PlayMode.Platform && ((MapAuthorScore > 0 && Respawns <= MapAuthorScore) || (Respawns == 0 && Time <= MapAuthorTime)))
         || (MapMode is CGameCtnChallenge.PlayMode.Stunts && Score >= MapAuthorScore);
 }

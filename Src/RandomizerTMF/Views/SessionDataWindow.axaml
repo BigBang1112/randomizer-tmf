@@ -155,8 +155,8 @@
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<Grid Margin="-6" VerticalAlignment="Center">
-								<TextBlock Grid.Column="0" Text="{Binding TimeText}" Margin="5 1 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
-								<Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 5 0">
+								<TextBlock Text="{Binding TimeText}" Margin="5 1 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+								<Grid HorizontalAlignment="Right" Margin="0 2 5 0">
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="5"/>
 										<ColumnDefinition Width="5"/>

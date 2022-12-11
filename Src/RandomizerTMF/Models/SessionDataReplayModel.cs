@@ -27,14 +27,15 @@ public class SessionDataReplayModel
         || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && StuntScore >= Map.ChallengeParameters?.GoldTime?.TotalMilliseconds);
 
     public bool HasAuthorMedal => (Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && Time <= Map.ChallengeParameters?.AuthorTime)
-        || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ((Respawns == 0 && Time <= Map.ChallengeParameters?.AuthorTime) || Respawns <= Map.ChallengeParameters?.AuthorScore))
+        || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ((Map.ChallengeParameters?.AuthorScore > 0 && Respawns <= Map.ChallengeParameters?.AuthorScore) || (Respawns == 0 && Time <= Map.ChallengeParameters?.AuthorTime)))
         || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && StuntScore >= Map.ChallengeParameters?.AuthorScore);
 
     public SessionDataReplayModel(SessionDataReplay replay, string sessionStr, bool first, CGameCtnChallenge? map)
-	{
+    {
         Replay = replay;
+
         var path = Path.Combine(Constants.Sessions, sessionStr, Constants.Replays, replay.FileName);
-        var node = GameBox.ParseNode<CGameCtnReplayRecord>(path);
+        var node = GameBox.ParseNode<CGameCtnReplayRecord>(path.Replace("\uFEFF", ""));
 
         if (first)
         {
@@ -50,5 +51,13 @@ public class SessionDataReplayModel
             Respawns = ghost.Respawns;
             StuntScore = ghost.StuntScore;
         }
+
+        TimeText = map.Mode switch
+        {
+            CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle => Time.ToTmString(useHundredths: true),
+            CGameCtnChallenge.PlayMode.Platform => $"{Respawns} ({Time.ToTmString(useHundredths: true)})",
+            CGameCtnChallenge.PlayMode.Stunts => StuntScore.ToString() ?? "",
+            _ => "",
+        };
     }
 }
