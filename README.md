@@ -38,7 +38,7 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 
 [![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
 
-- **50 downloads within 1 week** - Guaranteed support throughout 2023
+- ✔️ **50 downloads within 1 week** - Guaranteed support throughout 2023
 - **100 downloads** - Discord Rich Presence integration
 - **300 downloads** - TMUF theme
 - **500 downloads** - Profile management (fresh account randomization)
