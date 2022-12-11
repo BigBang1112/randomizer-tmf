@@ -7,12 +7,13 @@ using RandomizerTMF.Logic.TypeConverters;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
+using System.Text.RegularExpressions;
 using TmEssentials;
 using YamlDotNet.Serialization;
 
 namespace RandomizerTMF.Logic;
 
-public static class RandomizerEngine
+public static partial class RandomizerEngine
 {
     private static readonly int requestMaxAttempts = 10;
     private static int requestAttempt;
@@ -110,6 +111,9 @@ public static class RandomizerEngine
     public static StreamWriter LogWriter { get; private set; }
     public static StreamWriter? CurrentSessionLogWriter { get; private set; }
     public static bool SessionEnding { get; private set; }
+    
+    [GeneratedRegex("[^a-zA-Z0-9_.]+")]
+    private static partial Regex SpecialCharRegex();
 
     static RandomizerEngine()
     {
@@ -293,8 +297,8 @@ public static class RandomizerEngine
             _ => ""
         } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
 
-        var mapName = TextFormatter.Deformat(map.Map.MapName).Trim();
-        
+        var mapName = SpecialCharRegex().Replace(TextFormatter.Deformat(map.Map.MapName).Trim(), "_");
+
         var replayFileFormat = string.IsNullOrWhiteSpace(Config.ReplayFileFormat)
             ? Constants.DefaultReplayFileFormat
             : Config.ReplayFileFormat;
