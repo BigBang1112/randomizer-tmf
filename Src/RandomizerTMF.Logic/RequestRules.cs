@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using TmEssentials;
 
@@ -36,7 +37,7 @@ public class RequestRules
     public TimeInt32? AuthorTimeMin { get; set; }
     public TimeInt32? AuthorTimeMax { get; set; }
 
-    public string ToUrl() // Not very efficient but does the job done fast enough
+    public string ToUrl(RandomizerRules additionalRules) // Not very efficient but does the job done fast enough
     {
         var b = new StringBuilder("https://");
 
@@ -56,7 +57,8 @@ public class RequestRules
 
         foreach (var prop in GetType().GetProperties().Where(x => x.Name != nameof(Site)))
         {
-            if (prop.GetValue(this) is not object val || val is null || (val is IEnumerable enumerable && !enumerable.Cast<object>().Any()))
+            var val = prop.GetValue(this);
+            if (NeedSkip(prop, additionalRules) && (val is not object || val is null || (val is IEnumerable enumerable && !enumerable.Cast<object>().Any())))
             {
                 continue;
             }
@@ -74,6 +76,24 @@ public class RequestRules
             b.Append(prop.Name.ToLower());
             b.Append('=');
 
+            if (prop.Name == nameof(Environment)){
+                if (additionalRules.EvenEnvironmentDistribution)
+                {
+                    var a = GetRandomEEnvironment(Environment);
+                    b.Append(a);
+                    continue;
+                }
+            }
+
+            if (prop.Name == nameof(Vehicle)){
+                if (additionalRules.EvenVehicleDistribution)
+                {
+                    var c = GetRandomEEnvironment(Vehicle);
+                    b.Append(c);
+                    continue;
+                }
+            }
+
             var genericType = prop.PropertyType.IsGenericType ? prop.PropertyType.GetGenericTypeDefinition() : null;
 
             if (genericType == typeof(Nullable<>))
@@ -89,6 +109,20 @@ public class RequestRules
         return b.ToString();
     }
 
+    private static bool NeedSkip(MemberInfo prop, RandomizerRules rules)
+    {
+        return !(prop.Name == nameof(Environment) && rules.EvenEnvironmentDistribution) &&
+               !(prop.Name == nameof(Vehicle) && rules.EvenVehicleDistribution);
+    }
+
+    private static int GetRandomEEnvironment(IEnumerable<EEnvironment>? container)
+    {
+        if (container is null)
+            return Random.Shared.Next(0, 7);
+        var list = container.ToArray();
+        return (int) list.ElementAt(Random.Shared.Next(0, list.Length));
+    }
+    
     private static string GetSiteUrl(ESite[] matchingSites)
     {
         var randomSite = matchingSites[Random.Shared.Next(matchingSites.Length)];

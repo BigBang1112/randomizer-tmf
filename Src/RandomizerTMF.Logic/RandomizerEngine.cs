@@ -850,22 +850,9 @@ public static class RandomizerEngine
     private static async Task PrepareNewMapAsync(CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
-
-        if (Config.Rules.EvenEnvironmentDistribution)
-        {
-            var (site, envi) = GetRandomEEnvironment();
-            Config.Rules.RequestRules.Site = site;
-            Config.Rules.RequestRules.Environment = envi;
-        }
-        if (Config.Rules.EvenVehicleDistribution)
-        {
-            var (site, vehicle) = GetRandomEEnvironment();
-            Config.Rules.RequestRules.Site = site;
-            Config.Rules.RequestRules.Vehicle = vehicle;
-        }
         
         // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = Config.Rules.RequestRules.ToUrl();
+        var requestUrl = Config.Rules.RequestRules.ToUrl(Config.Rules);
 
         Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
 
@@ -1008,12 +995,7 @@ public static class RandomizerEngine
         SaveSessionData(); // May not be super necessary?
     }
 
-    private static (ESite site, HashSet<EEnvironment> eEnvironments) GetRandomEEnvironment()
-    {
-        var envs = new HashSet<EEnvironment>();
-        envs.Add((EEnvironment)random.Next(0, 7));
-        return (ESite.TMUF, envs);
-    }
+
 
     /// <summary>
     /// Handles the play loop of a map. Throws cancellation exception on session end (not the map end).
