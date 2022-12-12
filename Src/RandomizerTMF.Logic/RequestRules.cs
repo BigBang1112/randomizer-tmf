@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using TmEssentials;
 
@@ -7,7 +8,14 @@ namespace RandomizerTMF.Logic;
 
 public class RequestRules
 {
+    private static readonly ESite[] siteValues = Enum.GetValues<ESite>();
+    private static readonly EEnvironment[] envValues = Enum.GetValues<EEnvironment>();
+
+    // Custom rules that are not part of the official API
+
     public required ESite Site { get; set; }
+    public bool EqualEnvironmentDistribution { get; set; }
+    public bool EqualVehicleDistribution { get; set; }
 
     public string? Author { get; set; }
     public HashSet<EEnvironment>? Environment { get; set; }
@@ -40,12 +48,12 @@ public class RequestRules
     {
         var b = new StringBuilder("https://");
 
-        var matchingSites = Enum.GetValues<ESite>()
+        var matchingSites = siteValues
             .Where(x => x != ESite.Any && (Site & x) == x)
             .ToArray();
 
         var siteUrl = GetSiteUrl(matchingSites.Length == 0
-            ? Enum.GetValues<ESite>().Where(x => x is not ESite.Any).ToArray()
+            ? siteValues.Where(x => x is not ESite.Any).ToArray()
             : matchingSites);
 
         b.Append(siteUrl);
@@ -54,9 +62,21 @@ public class RequestRules
 
         var first = true;
 
-        foreach (var prop in GetType().GetProperties().Where(x => x.Name != nameof(Site)))
+        foreach (var prop in GetType().GetProperties().Where(DoesNotSkip))
         {
-            if (prop.GetValue(this) is not object val || val is null || (val is IEnumerable enumerable && !enumerable.Cast<object>().Any()))
+            var val = prop.GetValue(this);
+
+            if (EqualEnvironmentDistribution && prop.Name == nameof(Environment))
+            {
+                val = GetRandomEnvironmentThroughSet(Environment);
+            }
+
+            if (EqualVehicleDistribution && prop.Name == nameof(Vehicle))
+            {
+                val = GetRandomEnvironmentThroughSet(Vehicle);
+            }
+
+            if (val is null || (val is IEnumerable enumerable && !enumerable.Cast<object>().Any()))
             {
                 continue;
             }
@@ -87,6 +107,28 @@ public class RequestRules
         }
 
         return b.ToString();
+    }
+
+    private bool DoesNotSkip(PropertyInfo prop)
+    {
+        return prop.Name is not nameof(Site)
+                        and not nameof(EqualEnvironmentDistribution)
+                        and not nameof(EqualVehicleDistribution);
+    }
+
+    private static EEnvironment GetRandomEnvironment(HashSet<EEnvironment>? container)
+    {
+        if (container is null || container.Count == 0)
+        {
+            return (EEnvironment)Random.Shared.Next(0, envValues.Length); // Safe in case of EEnvironment
+        }
+        
+        return container.ElementAt(Random.Shared.Next(0, container.Count));
+    }
+
+    private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(HashSet<EEnvironment>? container)
+    {
+        return new HashSet<EEnvironment>() { GetRandomEnvironment(container) };
     }
 
     private static string GetSiteUrl(ESite[] matchingSites)

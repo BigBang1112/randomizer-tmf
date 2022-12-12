@@ -48,14 +48,10 @@ public class TopBarViewModel : ViewModelBase
     {
         MinimizeClick?.Invoke();
     }
-
+    
     public void DonateClick()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "https://paypal.me/bigbang1112",
-            UseShellExecute = true
-        });
+        ProcessUtils.OpenUrl("https://paypal.me/bigbang1112");
     }
 
     public void VersionClick()

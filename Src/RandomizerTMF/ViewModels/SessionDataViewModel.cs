@@ -160,7 +160,7 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
     {
         if (RandomizerEngine.SessionsDirectoryPath is not null)
         {
-            OpenFolder(Path.Combine(RandomizerEngine.SessionsDirectoryPath, Model.Data.StartedAtText) + Path.DirectorySeparatorChar);
+            ProcessUtils.OpenDir(Path.Combine(RandomizerEngine.SessionsDirectoryPath, Model.Data.StartedAtText) + Path.DirectorySeparatorChar);
         }
     }
 
@@ -172,19 +172,9 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
 
             if (Directory.Exists(replaysDir))
             {
-                OpenFolder(replaysDir + Path.DirectorySeparatorChar);
+                ProcessUtils.OpenDir(replaysDir + Path.DirectorySeparatorChar);
             }
         }
-    }
-
-    private static void OpenFolder(string folderPath)
-    {
-        Process.Start(new ProcessStartInfo()
-        {
-            FileName = folderPath,
-            UseShellExecute = true,
-            Verb = "open"
-        });
     }
 
     [GeneratedRegex("[a-z][A-Z]")]

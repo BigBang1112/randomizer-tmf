@@ -1,17 +1,19 @@
 ﻿using GBX.NET;
 using GBX.NET.Engines.Game;
+using GBX.NET.Exceptions;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.TypeConverters;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
+using System.Text.RegularExpressions;
 using TmEssentials;
 using YamlDotNet.Serialization;
 
 namespace RandomizerTMF.Logic;
 
-public static class RandomizerEngine
+public static partial class RandomizerEngine
 {
     private static readonly int requestMaxAttempts = 10;
     private static int requestAttempt;
@@ -109,6 +111,9 @@ public static class RandomizerEngine
     public static StreamWriter LogWriter { get; private set; }
     public static StreamWriter? CurrentSessionLogWriter { get; private set; }
     public static bool SessionEnding { get; private set; }
+    
+    [GeneratedRegex("[^a-zA-Z0-9_.]+")]
+    private static partial Regex SpecialCharRegex();
 
     static RandomizerEngine()
     {
@@ -292,8 +297,8 @@ public static class RandomizerEngine
             _ => ""
         } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
 
-        var mapName = TextFormatter.Deformat(map.Map.MapName).Trim();
-        
+        var mapName = SpecialCharRegex().Replace(TextFormatter.Deformat(map.Map.MapName).Trim(), "_");
+
         var replayFileFormat = string.IsNullOrWhiteSpace(Config.ReplayFileFormat)
             ? Constants.DefaultReplayFileFormat
             : Config.ReplayFileFormat;
@@ -541,9 +546,13 @@ public static class RandomizerEngine
 
                 anythingChanged = true;
             }
-            catch
+            catch (NotAGbxException)
             {
-                // Errors get lost currently
+                // do nothing
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Gbx error found in the Autosaves folder when reading the header.");
             }
         }
 
@@ -775,22 +784,57 @@ public static class RandomizerEngine
             throw new RuleValidationException("Time limit cannot be above 9:59:59");
         }
 
-        if (Config.Rules.RequestRules.PrimaryType is EPrimaryType.Platform
-        && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        foreach (var primaryType in Enum.GetValues<EPrimaryType>())
         {
-            throw new RuleValidationException("Platform is not valid with TMNF or Nations Exchange");
+            if (primaryType is EPrimaryType.Race)
+            {
+                continue;
+            }
+            
+            if (Config.Rules.RequestRules.PrimaryType == primaryType
+            && (Config.Rules.RequestRules.Site == ESite.Any
+             || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+            {
+                throw new RuleValidationException($"{primaryType} is not valid with TMNF or Nations Exchange");
+            }
         }
 
-        if (Config.Rules.RequestRules.PrimaryType is EPrimaryType.Stunts
-        && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        if (Config.Rules.RequestRules.Environment is not null || Config.Rules.RequestRules.Vehicle is not null)
         {
-            throw new RuleValidationException("Stunts is not valid with TMNF or Nations Exchange");
+            foreach (var env in Enum.GetValues<EEnvironment>())
+            {
+                if (env is EEnvironment.Stadium)
+                {
+                    continue;
+                }
+
+                if (Config.Rules.RequestRules.Site != ESite.Any && !Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) && !Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
+                {
+                    continue;
+                }
+                
+                if (Config.Rules.RequestRules.Environment?.Contains(env) == true)
+                {
+                    throw new RuleValidationException($"{env} is not valid with TMNF or Nations Exchange");
+                }
+
+                if (Config.Rules.RequestRules.Vehicle?.Contains(env) == true)
+                {
+                    throw new RuleValidationException($"{env}Car is not valid with TMNF or Nations Exchange");
+                }
+            }
         }
 
-        if (Config.Rules.RequestRules.PrimaryType is EPrimaryType.Puzzle
-        && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        if (Config.Rules.RequestRules.EqualEnvironmentDistribution
+         && Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
         {
-            throw new RuleValidationException("Puzzle is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException($"Equal environment distribution is not valid with TMNF or Nations Exchange");
+        }
+
+        if (Config.Rules.RequestRules.EqualVehicleDistribution
+         && Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
+        {
+            throw new RuleValidationException($"Equal vehicle distribution is not valid with TMNF or Nations Exchange");
         }
     }
 
@@ -848,7 +892,7 @@ public static class RandomizerEngine
     private static async Task PrepareNewMapAsync(CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
-
+        
         // Randomized URL is constructed with the ToUrl() method.
         var requestUrl = Config.Rules.RequestRules.ToUrl();
 
@@ -992,6 +1036,8 @@ public static class RandomizerEngine
 
         SaveSessionData(); // May not be super necessary?
     }
+
+
 
     /// <summary>
     /// Handles the play loop of a map. Throws cancellation exception on session end (not the map end).
