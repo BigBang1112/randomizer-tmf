@@ -274,7 +274,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         if (RandomizerEngine.DownloadedDirectoryPath is not null)
         {
-            OpenFolder(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+            ProcessUtils.OpenDir(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
         }
     }
 
@@ -282,17 +282,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         if (RandomizerEngine.SessionsDirectoryPath is not null)
         {
-            OpenFolder(RandomizerEngine.SessionsDirectoryPath + Path.DirectorySeparatorChar);
+            ProcessUtils.OpenDir(RandomizerEngine.SessionsDirectoryPath + Path.DirectorySeparatorChar);
         }
-    }
-
-    private static void OpenFolder(string folderPath)
-    {
-        Process.Start(new ProcessStartInfo()
-        {
-            FileName = folderPath,
-            UseShellExecute = true,
-            Verb = "open"
-        });
     }
 }

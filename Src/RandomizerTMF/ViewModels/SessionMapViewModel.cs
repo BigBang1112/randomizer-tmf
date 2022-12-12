@@ -25,10 +25,6 @@ public class SessionMapViewModel : WindowWithTopBarViewModelBase
 
     public void VisitOnTmxClick()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = Model.Map.TmxLink,
-            UseShellExecute = true
-        });
+        ProcessUtils.OpenUrl(Model.Map.TmxLink);
     }
 }

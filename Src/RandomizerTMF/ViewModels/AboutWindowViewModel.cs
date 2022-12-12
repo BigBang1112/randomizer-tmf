@@ -44,10 +44,6 @@ public class AboutWindowViewModel : WindowWithTopBarViewModelBase
 
     private void OpenWeb(string site)
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = site,
-            UseShellExecute = true
-        });
+        ProcessUtils.OpenUrl(site);
     }
 }

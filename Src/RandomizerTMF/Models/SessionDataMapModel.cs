@@ -32,10 +32,6 @@ public class SessionDataMapModel
 
     public void TmxClick()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = Map.TmxLink,
-            UseShellExecute = true
-        });
+        ProcessUtils.OpenUrl(Map.TmxLink);
     }
 }
