@@ -926,27 +926,27 @@ public class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
-    public bool EvenEnvDistribution
+    public bool EqualEnvDistribution
     {
-        get => RandomizerEngine.Config.Rules.EvenEnvironmentDistribution;
+        get => RandomizerEngine.Config.Rules.RequestRules.EqualEnvironmentDistribution;
         set
         {
-            RandomizerEngine.Config.Rules.EvenEnvironmentDistribution = value;
+            RandomizerEngine.Config.Rules.RequestRules.EqualEnvironmentDistribution = value;
 
-            this.RaisePropertyChanged(nameof(EvenEnvDistribution));
+            this.RaisePropertyChanged(nameof(EqualEnvDistribution));
 
             RandomizerEngine.SaveConfig();
         }
     }
     
-    public bool EvenVehicleDistribution
+    public bool EqualVehicleDistribution
     {
-        get => RandomizerEngine.Config.Rules.EvenVehicleDistribution;
+        get => RandomizerEngine.Config.Rules.RequestRules.EqualVehicleDistribution;
         set
         {
-            RandomizerEngine.Config.Rules.EvenVehicleDistribution = value;
+            RandomizerEngine.Config.Rules.RequestRules.EqualVehicleDistribution = value;
 
-            this.RaisePropertyChanged(nameof(EvenVehicleDistribution));
+            this.RaisePropertyChanged(nameof(EqualVehicleDistribution));
 
             RandomizerEngine.SaveConfig();
         }

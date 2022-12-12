@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="530"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="580"
 			 xmlns:views="using:RandomizerTMF.Views"
 		     xmlns:vm="using:RandomizerTMF.ViewModels"
 			 x:Class="RandomizerTMF.Views.RequestRulesControl">
@@ -169,9 +169,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="5" />
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="15" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="5" />
+				<RowDefinition Height="8" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
@@ -232,9 +230,15 @@
 				<DatePicker SelectedDate="{Binding UploadedBefore}" />
 				<Button Content="Reset" Margin="0 3 0 0" Command="{Binding UploadedBeforeReset}"/>
 			</StackPanel>
-			
-			<CheckBox Grid.Row="12" Grid.Column="2" IsChecked="{Binding EvenEnvDistribution}" Content="Even envi distribution" ToolTip.Tip="Preferably use with TMUF exchange as a source"/>
-			<CheckBox Grid.Row="14" Grid.Column="2" IsChecked="{Binding EvenVehicleDistribution}" Content="Even car distribution" ToolTip.Tip="Preferably use with TMUF exchange as a source"/>
+
+			<Grid Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="4">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<CheckBox IsChecked="{Binding EqualEnvDistribution}" Content="Equal environment distribution" ToolTip.Tip="Environments are picked equally. Combining it with Equal car distribution can create an envimix effect."/>
+				<CheckBox Grid.Column="1" IsChecked="{Binding EqualVehicleDistribution}" Content="Equal car distribution" ToolTip.Tip="Cars are picked equally. Combining it with Equal environment distribution can create an envimix effect."/>
+			</Grid>
 		</Grid>
 	</Grid>
 	

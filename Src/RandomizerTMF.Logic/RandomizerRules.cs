@@ -6,9 +6,6 @@ public class RandomizerRules
 {
     public TimeSpan TimeLimit { get; set; } = TimeSpan.FromHours(1);
     public bool NoUnlimiter { get; set; } = true;
-
-    public bool EvenEnvironmentDistribution { get; set; }
-    public bool EvenVehicleDistribution { get; set; }
     
     public RequestRules RequestRules { get; init; } = new()
     {

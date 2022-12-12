@@ -859,7 +859,7 @@ public static partial class RandomizerEngine
         Status("Fetching random track...");
         
         // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = Config.Rules.RequestRules.ToUrl(Config.Rules);
+        var requestUrl = Config.Rules.RequestRules.ToUrl();
 
         Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
 
