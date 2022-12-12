@@ -826,13 +826,15 @@ public static partial class RandomizerEngine
         }
 
         if (Config.Rules.RequestRules.EqualEnvironmentDistribution
-         && Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
+        && (Config.Rules.RequestRules.Site == ESite.Any
+         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
             throw new RuleValidationException($"Equal environment distribution is not valid with TMNF or Nations Exchange");
         }
 
         if (Config.Rules.RequestRules.EqualVehicleDistribution
-         && Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
+        && (Config.Rules.RequestRules.Site == ESite.Any
+         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
             throw new RuleValidationException($"Equal vehicle distribution is not valid with TMNF or Nations Exchange");
         }
