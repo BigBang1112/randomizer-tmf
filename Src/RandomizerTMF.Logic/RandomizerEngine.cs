@@ -22,6 +22,8 @@ public static partial class RandomizerEngine
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
     
+    private static Random random = new Random();
+    
     public static ISerializer YamlSerializer { get; } = new SerializerBuilder()
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
@@ -857,9 +859,9 @@ public static partial class RandomizerEngine
     private static async Task PrepareNewMapAsync(CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
-
+        
         // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = Config.Rules.RequestRules.ToUrl();
+        var requestUrl = Config.Rules.RequestRules.ToUrl(Config.Rules);
 
         Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
 
@@ -1001,6 +1003,8 @@ public static partial class RandomizerEngine
 
         SaveSessionData(); // May not be super necessary?
     }
+
+
 
     /// <summary>
     /// Handles the play loop of a map. Throws cancellation exception on session end (not the map end).

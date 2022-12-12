@@ -926,5 +926,31 @@ public class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
+    public bool EvenEnvDistribution
+    {
+        get => RandomizerEngine.Config.Rules.EvenEnvironmentDistribution;
+        set
+        {
+            RandomizerEngine.Config.Rules.EvenEnvironmentDistribution = value;
+
+            this.RaisePropertyChanged(nameof(EvenEnvDistribution));
+
+            RandomizerEngine.SaveConfig();
+        }
+    }
+    
+    public bool EvenVehicleDistribution
+    {
+        get => RandomizerEngine.Config.Rules.EvenVehicleDistribution;
+        set
+        {
+            RandomizerEngine.Config.Rules.EvenVehicleDistribution = value;
+
+            this.RaisePropertyChanged(nameof(EvenVehicleDistribution));
+
+            RandomizerEngine.SaveConfig();
+        }
+    }
+
     public void UploadedBeforeReset() => UploadedBefore = null;
 }

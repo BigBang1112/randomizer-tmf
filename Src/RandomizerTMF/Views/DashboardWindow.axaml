@@ -9,7 +9,7 @@
 		Icon="/Assets/icon.ico"
 		Width="1250"
 		MinWidth="1180"
-		Height="685"
+		Height="765"
 		MinHeight="645"
 		WindowStartupLocation="CenterScreen"
 		Title="Randomizer TMF - Random Map Challenge for TMNF/TMUF">

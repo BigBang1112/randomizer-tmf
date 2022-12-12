@@ -20,7 +20,7 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 ### Most common questions
 
 #### [What is my installation directory?](https://github.com/BigBang1112/randomizer-tmf/wiki/QnA#what-is-my-installation-directory)
-#### [Why I don't see the small windows/panels/modules above my game?](https://github.com/BigBang1112/randomizer-tmf/wiki/QnA#why-i-dont-see-the-small-windowspanelsmodules-above-my-game)
+#### [Why don't I see the small windows/panels/modules above my game?](https://github.com/BigBang1112/randomizer-tmf/wiki/QnA#why-dont-i-see-the-small-windowspanelsmodules-above-my-game)
 #### [Why my game changes its resolution when the map starts?](https://github.com/BigBang1112/randomizer-tmf/wiki/QnA#why-my-game-changes-its-resolution-when-the-map-starts-or-is-switched)
 #### [Why is the timer running during map load?](https://github.com/BigBang1112/randomizer-tmf/wiki/QnA#why-is-the-timer-running-during-map-load)
 
@@ -38,7 +38,7 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 
 [![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
 
-- **50 downloads within 1 week** - Guaranteed support throughout 2023
+- ✔️ **50 downloads within 1 week** - Guaranteed support throughout 2023
 - **100 downloads** - Discord Rich Presence integration
 - **300 downloads** - TMUF theme
 - **500 downloads** - Profile management (fresh account randomization)
