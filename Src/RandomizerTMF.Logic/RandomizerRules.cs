@@ -8,7 +8,7 @@ public class RandomizerRules
     public bool NoUnlimiter { get; set; } = true;
 
     public bool EvenEnvironmentDistribution { get; set; }
-    public bool EvenCarsDistribution { get; set; }
+    public bool EvenVehicleDistribution { get; set; }
     
     public RequestRules RequestRules { get; init; } = new()
     {

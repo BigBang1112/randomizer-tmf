@@ -20,6 +20,8 @@ public static class RandomizerEngine
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
     
+    private static Random random = new Random();
+    
     public static ISerializer YamlSerializer { get; } = new SerializerBuilder()
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
@@ -849,6 +851,19 @@ public static class RandomizerEngine
     {
         Status("Fetching random track...");
 
+        if (Config.Rules.EvenEnvironmentDistribution)
+        {
+            var (site, envi) = GetRandomEEnvironment();
+            Config.Rules.RequestRules.Site = site;
+            Config.Rules.RequestRules.Environment = envi;
+        }
+        if (Config.Rules.EvenVehicleDistribution)
+        {
+            var (site, vehicle) = GetRandomEEnvironment();
+            Config.Rules.RequestRules.Site = site;
+            Config.Rules.RequestRules.Vehicle = vehicle;
+        }
+        
         // Randomized URL is constructed with the ToUrl() method.
         var requestUrl = Config.Rules.RequestRules.ToUrl();
 
@@ -991,6 +1006,13 @@ public static class RandomizerEngine
         });
 
         SaveSessionData(); // May not be super necessary?
+    }
+
+    private static (ESite site, HashSet<EEnvironment> eEnvironments) GetRandomEEnvironment()
+    {
+        var envs = new HashSet<EEnvironment>();
+        envs.Add((EEnvironment)random.Next(0, 7));
+        return (ESite.TMUF, envs);
     }
 
     /// <summary>
