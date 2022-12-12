@@ -4,8 +4,7 @@ using RandomizerTMF.Models;
 using ReactiveUI;
 using System.Collections;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using TmEssentials;
 
@@ -107,7 +106,10 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
 
     private ObservableCollection<string> ConstructRules()
     {
-        var rules = new ObservableCollection<string>();
+        var rules = new ObservableCollection<string>
+        {
+            "Version: " + (Model.Data.Version is null ? "< 1.0.3" : Model.Data.Version)
+        };
 
         if (Model.Data.Rules is null) // To handle sessions made in early Randomizer TMF version
         {
@@ -121,39 +123,54 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
                 continue;
             }
 
-            rules.Add($"{ToSentenceCase(prop.Name)}: {prop.GetValue(Model.Data.Rules)}");
+            AddRuleString(rules, prop, Model.Data.Rules);
         }
 
         foreach (var prop in Model.Data.Rules.RequestRules.GetType().GetProperties())
         {
-            var val = prop.GetValue(Model.Data.Rules.RequestRules);
-
-            if (val is null)
-            {
-                continue;
-            }
-
-            if (val is not string and IEnumerable enumerable)
-            {
-                if (enumerable.Cast<object>().Any())
-                {
-                    val = string.Join(", ", enumerable.Cast<object>().Select(x => x.ToString()));
-                }
-                else
-                {
-                    val = null;
-                }
-            }
-
-            if (val is TimeInt32 timeInt32)
-            {
-                val = timeInt32.ToString(useHundredths: true);
-            }
-
-            rules.Add($"{ToSentenceCase(prop.Name)}: {val}");
+            AddRuleString(rules, prop, Model.Data.Rules.RequestRules);
         }
 
         return rules;
+    }
+
+    private static void AddRuleString(IList rules, PropertyInfo prop, object owner)
+    {
+        var val = prop.GetValue(owner);
+
+        if (val is null)
+        {
+            return;
+        }
+
+        if (val is bool valBool)
+        {
+            if (valBool)
+            {
+                rules.Add(ToSentenceCase(prop.Name));
+            }
+
+            return;
+        }
+
+        if (val is not string and IEnumerable enumerable)
+        {
+            if (enumerable.Cast<object>().Any())
+            {
+                val = string.Join(", ", enumerable.Cast<object>().Select(x => x.ToString()));
+            }
+            else
+            {
+                val = null;
+            }
+        }
+
+        if (val is TimeInt32 timeInt32)
+        {
+            val = timeInt32.ToString(useHundredths: true);
+        }
+
+        rules.Add($"{ToSentenceCase(prop.Name)}: {val}");
     }
 
     public void OpenSessionFolderClick()

@@ -111,7 +111,9 @@ public static partial class RandomizerEngine
     public static StreamWriter LogWriter { get; private set; }
     public static StreamWriter? CurrentSessionLogWriter { get; private set; }
     public static bool SessionEnding { get; private set; }
-    
+
+    public static string? Version { get; } = typeof(RandomizerEngine).Assembly.GetName().Version?.ToString(3);
+
     [GeneratedRegex("[^a-zA-Z0-9_.]+")]
     private static partial Regex SpecialCharRegex();
 
@@ -148,7 +150,7 @@ public static partial class RandomizerEngine
         };
         
         Http = new HttpClient(socketHandler);
-        Http.DefaultRequestHeaders.UserAgent.TryParseAdd($"Randomizer TMF {typeof(RandomizerEngine).Assembly.GetName().Version}");
+        Http.DefaultRequestHeaders.UserAgent.TryParseAdd($"Randomizer TMF {Version}");
 
         Logger.LogInformation("Preparing general events...");
 
@@ -749,7 +751,7 @@ public static partial class RandomizerEngine
     {
         var startedAt = DateTimeOffset.Now;
 
-        CurrentSessionData = new SessionData(startedAt, Config.Rules);
+        CurrentSessionData = new SessionData(Version, startedAt, Config.Rules);
 
         if (CurrentSessionDataDirectoryPath is null)
         {
