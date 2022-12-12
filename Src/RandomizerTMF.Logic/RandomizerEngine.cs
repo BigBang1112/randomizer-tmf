@@ -22,8 +22,6 @@ public static partial class RandomizerEngine
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
     
-    private static Random random = new Random();
-    
     public static ISerializer YamlSerializer { get; } = new SerializerBuilder()
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
