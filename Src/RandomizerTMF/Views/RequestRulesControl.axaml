@@ -169,6 +169,10 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="5" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="15" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="5" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
 			<TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" ToolTip.Tip="Time limit of the session in hours, minutes, and seconds.">Time limit:</TextBlock>
@@ -228,6 +232,9 @@
 				<DatePicker SelectedDate="{Binding UploadedBefore}" />
 				<Button Content="Reset" Margin="0 3 0 0" Command="{Binding UploadedBeforeReset}"/>
 			</StackPanel>
+			
+			<CheckBox Grid.Row="12" Grid.Column="2" IsChecked="{Binding EvenEnvDistibution}" Content="Even Envis distribution"/>
+			<CheckBox Grid.Row="14" Grid.Column="2" IsChecked="{Binding EvenCarsDistibution}" Content="Even Cars distribution"/>
 		</Grid>
 	</Grid>
 	
