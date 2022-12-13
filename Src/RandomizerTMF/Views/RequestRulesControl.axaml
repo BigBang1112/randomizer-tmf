@@ -145,7 +145,7 @@
 		<TextBlock Grid.Row="9" Margin="0 8 0 12"
 				   HorizontalAlignment="Center"
 				   VerticalAlignment="Center"
-				   Opacity="0.5">If any horizontal layer above has no buttons toggled, it simply means "any of those".</TextBlock>
+				   Opacity="0.5">If any horizontal layer above has no buttons toggled, it simply means "all selected".</TextBlock>
 
 		<Grid Grid.Row="11" ShowGridLines="False">
 			<Grid.ColumnDefinitions>

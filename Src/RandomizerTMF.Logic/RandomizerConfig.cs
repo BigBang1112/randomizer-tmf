@@ -17,4 +17,7 @@ public class RandomizerConfig
     /// {0} is the map name, {1} is the replay score (example: 9'59''59 in Race/Puzzle or 999_9'59''59 in Platform/Stunts), {2} is the player login.
     /// </summary>
     public string? ReplayFileFormat { get; set; } = Constants.DefaultReplayFileFormat;
+
+    public int ReplayParseFailRetries { get; set; } = 10;
+    public int ReplayParseFailDelayMs { get; set; } = 50;
 }

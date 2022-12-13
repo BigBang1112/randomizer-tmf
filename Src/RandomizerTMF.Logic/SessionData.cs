@@ -4,6 +4,7 @@ namespace RandomizerTMF.Logic;
 
 public class SessionData
 {
+    public string? Version { get; set; }
     public DateTimeOffset StartedAt { get; set; }
     public RandomizerRules Rules { get; set; }
 
@@ -12,13 +13,14 @@ public class SessionData
 
     public List<SessionDataMap> Maps { get; set; } = new();
 
-    public SessionData() : this(DateTimeOffset.Now, new())
+    public SessionData() : this(null, DateTimeOffset.Now, new())
     {
         
     }
 
-    public SessionData(DateTimeOffset startedAt, RandomizerRules rules)
+    public SessionData(string? version, DateTimeOffset startedAt, RandomizerRules rules)
     {
+        Version = version;
         StartedAt = startedAt;
         Rules = rules;
     }

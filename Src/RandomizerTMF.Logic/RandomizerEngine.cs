@@ -111,7 +111,9 @@ public static partial class RandomizerEngine
     public static StreamWriter LogWriter { get; private set; }
     public static StreamWriter? CurrentSessionLogWriter { get; private set; }
     public static bool SessionEnding { get; private set; }
-    
+
+    public static string? Version { get; } = typeof(RandomizerEngine).Assembly.GetName().Version?.ToString(3);
+
     [GeneratedRegex("[^a-zA-Z0-9_.]+")]
     private static partial Regex SpecialCharRegex();
 
@@ -148,7 +150,7 @@ public static partial class RandomizerEngine
         };
         
         Http = new HttpClient(socketHandler);
-        Http.DefaultRequestHeaders.UserAgent.TryParseAdd($"Randomizer TMF {typeof(RandomizerEngine).Assembly.GetName().Version}");
+        Http.DefaultRequestHeaders.UserAgent.TryParseAdd($"Randomizer TMF {Version}");
 
         Logger.LogInformation("Preparing general events...");
 
@@ -187,34 +189,52 @@ public static partial class RandomizerEngine
         lastAutosaveUpdate = lastWriteTime;
         //
 
+        var retryCounter = 0;
+        
         CGameCtnReplayRecord replay;
 
-        try
+        while (true)
         {
-            // Any kind of autosave update section
-            
-            Logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
-
-            if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
+            try
             {
-                Logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
-                return;
+                // Any kind of autosave update section
+
+                Logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
+
+                if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
+                {
+                    Logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
+                    return;
+                }
+
+                if (r.MapInfo is null)
+                {
+                    Logger.LogWarning("Found replay {file} that has no map info.", e.FullPath);
+                    return;
+                }
+
+                AutosaveHeaders.TryAdd(r.MapInfo.Id, new AutosaveHeader(Path.GetFileName(e.FullPath), r));
+
+                replay = r;
+            }
+            catch (Exception ex)
+            {
+                retryCounter++;
+                
+                Logger.LogError(ex, "Error while analyzing a new file {autosavePath} in autosaves folder (retry {counter}/{maxRetries}).",
+                    e.FullPath, retryCounter, Config.ReplayParseFailRetries);
+
+                if (retryCounter >= Config.ReplayParseFailRetries)
+                {
+                    return;
+                }
+
+                Thread.Sleep(Config.ReplayParseFailDelayMs);
+
+                continue;
             }
 
-            if (r.MapInfo is null)
-            {
-                Logger.LogWarning("Found replay {file} that has no map info.", e.FullPath);
-                return;
-            }
-
-            AutosaveHeaders.TryAdd(r.MapInfo.Id, new AutosaveHeader(Path.GetFileName(e.FullPath), r));
-
-            replay = r;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error while analyzing a new file {autosavePath} in autosaves folder.", e.FullPath);
-            return;
+            break;
         }
 
         try
@@ -749,7 +769,7 @@ public static partial class RandomizerEngine
     {
         var startedAt = DateTimeOffset.Now;
 
-        CurrentSessionData = new SessionData(startedAt, Config.Rules);
+        CurrentSessionData = new SessionData(Version, startedAt, Config.Rules);
 
         if (CurrentSessionDataDirectoryPath is null)
         {
@@ -776,12 +796,12 @@ public static partial class RandomizerEngine
     {
         if (Config.Rules.TimeLimit == TimeSpan.Zero)
         {
-            throw new RuleValidationException("Time limit cannot be 0:00:00");
+            throw new RuleValidationException("Time limit cannot be 0:00:00.");
         }
 
         if (Config.Rules.TimeLimit > new TimeSpan(9, 59, 59))
         {
-            throw new RuleValidationException("Time limit cannot be above 9:59:59");
+            throw new RuleValidationException("Time limit cannot be above 9:59:59.");
         }
 
         foreach (var primaryType in Enum.GetValues<EPrimaryType>())
@@ -790,51 +810,95 @@ public static partial class RandomizerEngine
             {
                 continue;
             }
-            
+
             if (Config.Rules.RequestRules.PrimaryType == primaryType
-            && (Config.Rules.RequestRules.Site == ESite.Any
+            && (Config.Rules.RequestRules.Site is ESite.Any
              || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
             {
-                throw new RuleValidationException($"{primaryType} is not valid with TMNF or Nations Exchange");
+                throw new RuleValidationException($"{primaryType} cannot be specifically selected with TMNF or Nations Exchange.");
             }
         }
 
-        if (Config.Rules.RequestRules.Environment is not null || Config.Rules.RequestRules.Vehicle is not null)
+        if (Config.Rules.RequestRules.Environment?.Count > 0)
         {
-            foreach (var env in Enum.GetValues<EEnvironment>())
+            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Island)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Coast)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Bay))
             {
-                if (env is EEnvironment.Stadium)
-                {
-                    continue;
-                }
+                throw new RuleValidationException("Island, Coast, or Bay has to be selected when environments are specified and Sunrise Exchange is selected.");
+            }
 
-                if (Config.Rules.RequestRules.Site != ESite.Any && !Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) && !Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
-                {
-                    continue;
-                }
-                
-                if (Config.Rules.RequestRules.Environment?.Contains(env) == true)
-                {
-                    throw new RuleValidationException($"{env} is not valid with TMNF or Nations Exchange");
-                }
+            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Original)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Snow)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Desert)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Rally))
+            {
+                throw new RuleValidationException("Snow, Desert, or Rally has to be selected when environments are specified and Original Exchange is selected.");
+            }
 
-                if (Config.Rules.RequestRules.Vehicle?.Contains(env) == true)
+            if (!Config.Rules.RequestRules.Environment.Contains(EEnvironment.Stadium)
+             && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+            {
+                throw new RuleValidationException("Stadium has to be selected when environments are specified and TMNF or Nations Exchange is selected.");
+            }
+
+            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise) || Config.Rules.RequestRules.Site.HasFlag(ESite.Original))
+            {
+                foreach (var env in Config.Rules.RequestRules.Environment)
                 {
-                    throw new RuleValidationException($"{env}Car is not valid with TMNF or Nations Exchange");
+                    if (Config.Rules.RequestRules.Vehicle?.Contains(env) == false)
+                    {
+                        throw new RuleValidationException("Envimix randomization is not allowed when Sunrise or Original Exchange is selected.");
+                    }
                 }
+            }
+        }
+        
+        if (Config.Rules.RequestRules.Vehicle?.Count > 0)
+        {
+            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Island)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Coast)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Bay)
+              && Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise))
+            {
+                throw new RuleValidationException("IslandCar, CoastCar, or BayCar has to be selected when cars are specified and Sunrise Exchange is selected.");
+            }
+
+            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Snow)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Desert)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Rally)
+              && Config.Rules.RequestRules.Site.HasFlag(ESite.Original))
+            {
+                throw new RuleValidationException("SnowCar, DesertCar, or RallyCar has to be selected when cars are specified and Original Exchange is selected.");
+            }
+
+            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Stadium)
+             && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+            {
+                throw new RuleValidationException("StadiumCar has to be selected when cars are specified and TMNF or Nations Exchange is selected.");
             }
         }
 
         if (Config.Rules.RequestRules.EqualEnvironmentDistribution
-         && Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
+         && Config.Rules.RequestRules.EqualVehicleDistribution
+         && Config.Rules.RequestRules.Site is not ESite.TMUF)
         {
-            throw new RuleValidationException($"Equal environment distribution is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException("Equal environment and car distribution combined is only valid with TMUF Exchange.");
+        }
+
+        if (Config.Rules.RequestRules.EqualEnvironmentDistribution
+        && (Config.Rules.RequestRules.Site is ESite.Any
+         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        {
+            throw new RuleValidationException("Equal environment distribution is not valid with TMNF or Nations Exchange.");
         }
 
         if (Config.Rules.RequestRules.EqualVehicleDistribution
-         && Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
+        && (Config.Rules.RequestRules.Site is ESite.Any
+         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
-            throw new RuleValidationException($"Equal vehicle distribution is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange.");
         }
     }
 
