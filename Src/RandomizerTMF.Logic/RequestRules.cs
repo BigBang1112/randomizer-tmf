@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using RandomizerTMF.Logic.Exceptions;
+using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -52,8 +53,12 @@ public class RequestRules
             .Where(x => x != ESite.Any && (Site & x) == x)
             .ToArray();
 
-        var site = GetSite(matchingSites.Length == 0
-            ? siteValues.Where(x => x is not ESite.Any).ToArray()
+        // If Site is Any, then it picks from sites that are valid within environments and cars
+        var site = GetRandomSite(matchingSites.Length == 0
+            ? siteValues.Where(x => x is not ESite.Any
+            && IsSiteValidWithEnvironments(x)
+            && IsSiteValidWithVehicles(x)
+            && IsSiteValidWithEnvimix(x)).ToArray()
             : matchingSites);
 
         var siteUrl = GetSiteUrl(site);
@@ -124,6 +129,50 @@ public class RequestRules
                         and not nameof(EqualVehicleDistribution);
     }
 
+    private static bool IsSiteValidWithEnvironments(ESite site, HashSet<EEnvironment>? envs)
+    {
+        if (envs is null)
+        {
+            return true;
+        }
+        
+        return site switch
+        {
+            ESite.Sunrise => envs.Contains(EEnvironment.Island) || envs.Contains(EEnvironment.Coast) || envs.Contains(EEnvironment.Bay),
+            ESite.Original => envs.Contains(EEnvironment.Snow) || envs.Contains(EEnvironment.Desert) || envs.Contains(EEnvironment.Rally),
+            ESite.TMNF or ESite.Nations => envs.Contains(EEnvironment.Stadium),
+            _ => true,
+        };
+    }
+
+    private bool IsSiteValidWithEnvironments(ESite site)
+    {
+        return IsSiteValidWithEnvironments(site, Environment);
+    }
+
+    private bool IsSiteValidWithVehicles(ESite site)
+    {
+        return IsSiteValidWithEnvironments(site, Vehicle);
+    }
+
+    private bool IsSiteValidWithEnvimix(ESite site)
+    {
+        if (site is not ESite.Sunrise and not ESite.Original || Environment is null || Environment.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (var env in Environment)
+        {
+            if (Vehicle?.Contains(env) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private bool IsValidInNations(PropertyInfo prop, object val)
     {
         if (prop.Name is nameof(Environment) or nameof(Vehicle) && !val.Equals(EEnvironment.Stadium))
@@ -154,21 +203,18 @@ public class RequestRules
         return new HashSet<EEnvironment>() { GetRandomEnvironment(container) };
     }
 
-    private static ESite GetSite(ESite[] matchingSites)
+    private static ESite GetRandomSite(ESite[] matchingSites)
     {
         return matchingSites[Random.Shared.Next(matchingSites.Length)];
     }
 
-    private static string GetSiteUrl(ESite site)
+    private static string GetSiteUrl(ESite site) => site switch
     {
-        return site switch
-        {
-            ESite.Any => throw new UnreachableException("Any is not a valid site"),
-            ESite.TMNF => "tmnf.exchange",
-            ESite.TMUF => "tmuf.exchange",
-            _ => $"{site.ToString().ToLower()}.tm-exchange.com",
-        };
-    }
+        ESite.Any => throw new UnreachableException("Any is not a valid site"),
+        ESite.TMNF => "tmnf.exchange",
+        ESite.TMUF => "tmuf.exchange",
+        _ => $"{site.ToString().ToLower()}.tm-exchange.com",
+    };
 
     private static void AppendValue(StringBuilder b, Type type, object val, Type? genericType = null)
     {

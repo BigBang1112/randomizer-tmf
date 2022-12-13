@@ -796,12 +796,12 @@ public static partial class RandomizerEngine
     {
         if (Config.Rules.TimeLimit == TimeSpan.Zero)
         {
-            throw new RuleValidationException("Time limit cannot be 0:00:00");
+            throw new RuleValidationException("Time limit cannot be 0:00:00.");
         }
 
         if (Config.Rules.TimeLimit > new TimeSpan(9, 59, 59))
         {
-            throw new RuleValidationException("Time limit cannot be above 9:59:59");
+            throw new RuleValidationException("Time limit cannot be above 9:59:59.");
         }
 
         foreach (var primaryType in Enum.GetValues<EPrimaryType>())
@@ -815,45 +815,90 @@ public static partial class RandomizerEngine
             && (Config.Rules.RequestRules.Site is ESite.Any
              || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
             {
-                throw new RuleValidationException($"{primaryType} cannot be specifically selected with TMNF or Nations Exchange");
+                throw new RuleValidationException($"{primaryType} cannot be specifically selected with TMNF or Nations Exchange.");
             }
         }
 
-        if (Config.Rules.RequestRules.Environment is not null
-         && Config.Rules.RequestRules.Environment.Contains(EEnvironment.Stadium) == false
-        && (Config.Rules.RequestRules.Site is ESite.Any
-         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+        if (Config.Rules.RequestRules.Environment?.Count > 0)
         {
-            throw new RuleValidationException("Stadium has to be selected when environments are specified and TMNF or Nations Exchange is selected");
-        }
+            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Island)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Coast)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Bay))
+            {
+                throw new RuleValidationException("Island, Coast, or Bay has to be selected when environments are specified and Sunrise Exchange is selected.");
+            }
 
-        if (Config.Rules.RequestRules.Vehicle is not null
-        && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Stadium)
-        && (Config.Rules.RequestRules.Site is ESite.Any
-         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Original)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Snow)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Desert)
+            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Rally))
+            {
+                throw new RuleValidationException("Snow, Desert, or Rally has to be selected when environments are specified and Original Exchange is selected.");
+            }
+
+            if (!Config.Rules.RequestRules.Environment.Contains(EEnvironment.Stadium)
+             && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+            {
+                throw new RuleValidationException("Stadium has to be selected when environments are specified and TMNF or Nations Exchange is selected.");
+            }
+
+            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise) || Config.Rules.RequestRules.Site.HasFlag(ESite.Original))
+            {
+                foreach (var env in Config.Rules.RequestRules.Environment)
+                {
+                    if (Config.Rules.RequestRules.Vehicle?.Contains(env) == false)
+                    {
+                        throw new RuleValidationException("Envimix randomization is not allowed when Sunrise or Original Exchange is selected.");
+                    }
+                }
+            }
+        }
+        
+        if (Config.Rules.RequestRules.Vehicle?.Count > 0)
         {
-            throw new RuleValidationException("StadiumCar has to be selected when cars are specified and TMNF or Nations Exchange is selected");
+            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Island)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Coast)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Bay)
+              && Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise))
+            {
+                throw new RuleValidationException("IslandCar, CoastCar, or BayCar has to be selected when cars are specified and Sunrise Exchange is selected.");
+            }
+
+            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Snow)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Desert)
+             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Rally)
+              && Config.Rules.RequestRules.Site.HasFlag(ESite.Original))
+            {
+                throw new RuleValidationException("SnowCar, DesertCar, or RallyCar has to be selected when cars are specified and Original Exchange is selected.");
+            }
+
+            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Stadium)
+             && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
+            {
+                throw new RuleValidationException("StadiumCar has to be selected when cars are specified and TMNF or Nations Exchange is selected.");
+            }
         }
 
         if (Config.Rules.RequestRules.EqualEnvironmentDistribution
          && Config.Rules.RequestRules.EqualVehicleDistribution
          && Config.Rules.RequestRules.Site is not ESite.TMUF)
         {
-            throw new RuleValidationException("Equal environment and car distribution combined is only valid with TMUF Exchange");
+            throw new RuleValidationException("Equal environment and car distribution combined is only valid with TMUF Exchange.");
         }
 
         if (Config.Rules.RequestRules.EqualEnvironmentDistribution
         && (Config.Rules.RequestRules.Site is ESite.Any
          || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
-            throw new RuleValidationException("Equal environment distribution is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException("Equal environment distribution is not valid with TMNF or Nations Exchange.");
         }
 
         if (Config.Rules.RequestRules.EqualVehicleDistribution
         && (Config.Rules.RequestRules.Site is ESite.Any
          || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
-            throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange.");
         }
     }
 
