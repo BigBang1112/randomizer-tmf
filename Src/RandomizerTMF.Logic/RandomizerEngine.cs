@@ -189,34 +189,52 @@ public static partial class RandomizerEngine
         lastAutosaveUpdate = lastWriteTime;
         //
 
+        var retryCounter = 0;
+        
         CGameCtnReplayRecord replay;
 
-        try
+        while (true)
         {
-            // Any kind of autosave update section
-            
-            Logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
-
-            if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
+            try
             {
-                Logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
-                return;
+                // Any kind of autosave update section
+
+                Logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
+
+                if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
+                {
+                    Logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
+                    return;
+                }
+
+                if (r.MapInfo is null)
+                {
+                    Logger.LogWarning("Found replay {file} that has no map info.", e.FullPath);
+                    return;
+                }
+
+                AutosaveHeaders.TryAdd(r.MapInfo.Id, new AutosaveHeader(Path.GetFileName(e.FullPath), r));
+
+                replay = r;
+            }
+            catch (Exception ex)
+            {
+                retryCounter++;
+                
+                Logger.LogError(ex, "Error while analyzing a new file {autosavePath} in autosaves folder (retry {counter}/{maxRetries}).",
+                    e.FullPath, retryCounter, Config.ReplayParseFailRetries);
+
+                if (retryCounter >= Config.ReplayParseFailRetries)
+                {
+                    return;
+                }
+
+                Thread.Sleep(Config.ReplayParseFailDelayMs);
+
+                continue;
             }
 
-            if (r.MapInfo is null)
-            {
-                Logger.LogWarning("Found replay {file} that has no map info.", e.FullPath);
-                return;
-            }
-
-            AutosaveHeaders.TryAdd(r.MapInfo.Id, new AutosaveHeader(Path.GetFileName(e.FullPath), r));
-
-            replay = r;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error while analyzing a new file {autosavePath} in autosaves folder.", e.FullPath);
-            return;
+            break;
         }
 
         try
@@ -786,59 +804,25 @@ public static partial class RandomizerEngine
             throw new RuleValidationException("Time limit cannot be above 9:59:59");
         }
 
-        foreach (var primaryType in Enum.GetValues<EPrimaryType>())
+        if (Config.Rules.RequestRules.EqualEnvironmentDistribution
+         && Config.Rules.RequestRules.EqualVehicleDistribution
+         && Config.Rules.RequestRules.Site != ESite.TMUF)
         {
-            if (primaryType is EPrimaryType.Race)
-            {
-                continue;
-            }
-            
-            if (Config.Rules.RequestRules.PrimaryType == primaryType
-            && (Config.Rules.RequestRules.Site == ESite.Any
-             || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
-            {
-                throw new RuleValidationException($"{primaryType} is not valid with TMNF or Nations Exchange");
-            }
-        }
-
-        if (Config.Rules.RequestRules.Environment is not null || Config.Rules.RequestRules.Vehicle is not null)
-        {
-            foreach (var env in Enum.GetValues<EEnvironment>())
-            {
-                if (env is EEnvironment.Stadium)
-                {
-                    continue;
-                }
-
-                if (Config.Rules.RequestRules.Site != ESite.Any && !Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) && !Config.Rules.RequestRules.Site.HasFlag(ESite.Nations))
-                {
-                    continue;
-                }
-                
-                if (Config.Rules.RequestRules.Environment?.Contains(env) == true)
-                {
-                    throw new RuleValidationException($"{env} is not valid with TMNF or Nations Exchange");
-                }
-
-                if (Config.Rules.RequestRules.Vehicle?.Contains(env) == true)
-                {
-                    throw new RuleValidationException($"{env}Car is not valid with TMNF or Nations Exchange");
-                }
-            }
+            throw new RuleValidationException("Equal environment and car distribution combined is only valid with TMUF Exchange");
         }
 
         if (Config.Rules.RequestRules.EqualEnvironmentDistribution
         && (Config.Rules.RequestRules.Site == ESite.Any
          || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
-            throw new RuleValidationException($"Equal environment distribution is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException("Equal environment distribution is not valid with TMNF or Nations Exchange");
         }
 
         if (Config.Rules.RequestRules.EqualVehicleDistribution
         && (Config.Rules.RequestRules.Site == ESite.Any
          || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
         {
-            throw new RuleValidationException($"Equal vehicle distribution is not valid with TMNF or Nations Exchange");
+            throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange");
         }
     }
 
