@@ -18,4 +18,18 @@ public static class Constants
     public const string DefaultReplayFileFormat = "{0}_{1}_{2}.Replay.Gbx";
     public const string OfficialBlocksYml = "OfficialBlocks.yml";
     public const string Replays = "Replays";
+    public const string Tracks = "Tracks";
+    public const string Autosaves = "Autosaves";
+    public const string Challenges = "Challenges";
+    public const string Downloaded = "Downloaded";
+    
+    public const string AlpineCar = "AlpineCar";
+    public const string SnowCar = "SnowCar";
+    public const string American = "American";
+    public const string SpeedCar = "SpeedCar";
+    public const string DesertCar = "DesertCar";
+    public const string Rally = "Rally";
+    public const string RallyCar = "RallyCar";
+    public const string SportCar = "SportCar";
+    public const string IslandCar = "IslandCar";
 }

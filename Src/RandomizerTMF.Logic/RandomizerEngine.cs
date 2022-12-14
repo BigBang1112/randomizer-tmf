@@ -53,8 +53,8 @@ public static partial class RandomizerEngine
         {
             userDataDirectoryPath = value;
 
-            AutosavesDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, "Tracks", "Replays", "Autosaves");
-            DownloadedDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, "Tracks", "Challenges", "Downloaded", string.IsNullOrWhiteSpace(Config.DownloadedMapsDirectory) ? Constants.DownloadedMapsDirectory : Config.DownloadedMapsDirectory);
+            AutosavesDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, Constants.Tracks, Constants.Replays, Constants.Autosaves);
+            DownloadedDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, Constants.Tracks, Constants.Challenges, Constants.Downloaded, string.IsNullOrWhiteSpace(Config.DownloadedMapsDirectory) ? Constants.DownloadedMapsDirectory : Config.DownloadedMapsDirectory);
 
             AutosaveWatcher.Path = AutosavesDirectoryPath ?? "";
         }
@@ -633,10 +633,10 @@ public static partial class RandomizerEngine
 
         mapCar = mapCar switch
         {
-            "AlpineCar" => "SnowCar",
-            "American" or "SpeedCar" => "DesertCar",
-            "Rally" => "RallyCar",
-            "SportCar" => "IslandCar",
+            Constants.AlpineCar => Constants.SnowCar,
+            Constants.American or Constants.SpeedCar => Constants.DesertCar,
+            Constants.Rally => Constants.RallyCar,
+            Constants.SportCar => Constants.IslandCar,
             _ => mapCar
         };
 
