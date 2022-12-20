@@ -11,6 +11,6 @@ public class RandomizerRules
     {
         Site = ESite.TMNF,
         PrimaryType = EPrimaryType.Race,
-        AuthorTimeMax = TimeInt32.FromMinutes(2)
+        AuthorTimeMax = TimeInt32.FromMinutes(3)
     };
 }
