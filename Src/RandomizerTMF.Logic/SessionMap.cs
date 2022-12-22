@@ -13,6 +13,8 @@ public class SessionMap : ISessionMap
     public string TmxLink { get; }
     
     public TimeSpan? LastTimestamp { get; set; }
+    
+    public string? FilePath { get; set; }
 
     public CGameCtnChallengeParameters? ChallengeParameters => Map.ChallengeParameters;
     public CGameCtnChallenge.PlayMode? Mode => Map.Mode;

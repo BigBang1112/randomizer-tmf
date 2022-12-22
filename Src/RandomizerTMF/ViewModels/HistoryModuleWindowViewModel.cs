@@ -30,19 +30,24 @@ public class HistoryModuleWindowViewModel : WindowViewModelBase
         this.RaisePropertyChanged(nameof(HasFinishedMaps));
     }
 
-    private IEnumerable<PlayedMapModel> EnumerateCurrentSessionMaps()
+    private static IEnumerable<PlayedMapModel> EnumerateCurrentSessionMaps()
     {
-        foreach (var map in RandomizerEngine.CurrentSessionAuthorMaps)
+        if (RandomizerEngine.CurrentSession is null)
+        {
+            yield break;
+        }
+
+        foreach (var map in RandomizerEngine.CurrentSession.AuthorMaps)
         {
             yield return new PlayedMapModel(map.Value, EResult.AuthorMedal);
         }
 
-        foreach (var map in RandomizerEngine.CurrentSessionGoldMaps)
+        foreach (var map in RandomizerEngine.CurrentSession.GoldMaps)
         {
             yield return new PlayedMapModel(map.Value, EResult.GoldMedal);
         }
 
-        foreach (var map in RandomizerEngine.CurrentSessionSkippedMaps)
+        foreach (var map in RandomizerEngine.CurrentSession.SkippedMaps)
         {
             yield return new PlayedMapModel(map.Value, EResult.Skipped);
         }

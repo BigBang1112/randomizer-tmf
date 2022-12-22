@@ -4,18 +4,18 @@ namespace RandomizerTMF.Logic;
 
 public class LoggerToFile : ILogger
 {
-    private readonly IList<StreamWriter> writers;
-
     internal LogScope? CurrentScope { get; set; }
+
+    public IList<StreamWriter> Writers { get; set; }
 
     public LoggerToFile(params StreamWriter[] writers)
     {
-        this.writers = writers;
+        Writers = writers;
     }
 
     public LoggerToFile(StreamWriter writer)
     {
-        writers = new List<StreamWriter> { writer };
+        Writers = new List<StreamWriter> { writer };
     }
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull
@@ -56,7 +56,7 @@ public class LoggerToFile : ILogger
 
         // CurrentScope is not utilized
 
-        foreach (var writer in writers)
+        foreach (var writer in Writers)
         {
             writer.WriteLine($"[{DateTime.Now}, {logLevel}] {message}");
 

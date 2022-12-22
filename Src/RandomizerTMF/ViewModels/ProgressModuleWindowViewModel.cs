@@ -6,9 +6,9 @@ namespace RandomizerTMF.ViewModels;
 
 public class ProgressModuleWindowViewModel : WindowViewModelBase
 {
-    public int AuthorMedalCount => RandomizerEngine.CurrentSessionAuthorMaps.Count;
-    public int GoldMedalCount => RandomizerEngine.CurrentSessionGoldMaps.Count;
-    public int SkipCount => RandomizerEngine.CurrentSessionSkippedMaps.Count;
+    public int AuthorMedalCount => RandomizerEngine.CurrentSession?.AuthorMaps.Count ?? 0;
+    public int GoldMedalCount => RandomizerEngine.CurrentSession?.GoldMaps.Count ?? 0;
+    public int SkipCount => RandomizerEngine.CurrentSession?.SkippedMaps.Count ?? 0;
     public IBrush SkipColor => SkipCount == 0 ? Brushes.LightGreen : Brushes.Orange;
 
     public ProgressModuleWindowViewModel()

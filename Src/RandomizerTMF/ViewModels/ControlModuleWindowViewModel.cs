@@ -14,7 +14,7 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
 
     public IBrush PrimaryButtonBackground => RandomizerEngine.HasSessionRunning ? new SolidColorBrush(new Color(255, 127, 96, 0)) : Brushes.DarkGreen;
 
-    public bool CanSkip => RandomizerEngine.SkipTokenSource is not null;
+    public bool CanSkip => RandomizerEngine.CurrentSession?.SkipTokenSource is not null;
 
     public ControlModuleWindowViewModel()
     {
@@ -36,13 +36,13 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
 
     public async Task PrimaryButtonClick()
     {
-        if (RandomizerEngine.HasSessionRunning)
+        if (RandomizerEngine.CurrentSession is not null)
         {
-            await RandomizerEngine.SkipMapAsync();
+            await RandomizerEngine.CurrentSession.SkipMapAsync();
             return;
         }
         
-        await RandomizerEngine.StartSessionAsync();
+        RandomizerEngine.StartSession();
 
         this.RaisePropertyChanged(nameof(PrimaryButtonText));
         this.RaisePropertyChanged(nameof(SecondaryButtonText));
@@ -54,7 +54,7 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
 
     public void ReloadMapButtonClick()
     {
-        RandomizerEngine.ReloadMap();
+        RandomizerEngine.CurrentSession?.ReloadMap();
     }
 
     public async Task SecondaryButtonClick()

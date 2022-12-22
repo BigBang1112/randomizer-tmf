@@ -173,7 +173,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         try
         {
-            RandomizerEngine.ValidateRules();
+            Validator.ValidateRules(RandomizerEngine.Config.Rules);
         }
         catch (RuleValidationException ex)
         {

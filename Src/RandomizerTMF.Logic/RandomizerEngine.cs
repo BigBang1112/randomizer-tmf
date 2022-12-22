@@ -6,8 +6,6 @@ using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.TypeConverters;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Net;
-using System.Text.RegularExpressions;
 using TmEssentials;
 using YamlDotNet.Serialization;
 
@@ -15,10 +13,6 @@ namespace RandomizerTMF.Logic;
 
 public static partial class RandomizerEngine
 {
-    private static readonly int requestMaxAttempts = 10;
-    private static int requestAttempt;
-
-    private static bool isActualSkipCancellation;
     private static string? userDataDirectoryPath;
     private static bool hasAutosavesScanned;
     
@@ -64,22 +58,8 @@ public static partial class RandomizerEngine
     public static string? DownloadedDirectoryPath { get; private set; }
     public static string SessionsDirectoryPath => Constants.Sessions;
 
-    public static Task? CurrentSession { get; private set; }
-    public static CancellationTokenSource? CurrentSessionTokenSource { get; private set; }
-    public static CancellationTokenSource? SkipTokenSource { get; private set; }
-    public static SessionMap? CurrentSessionMap { get; private set; }
-    public static string? CurrentSessionMapSavePath { get; private set; }
-    public static Stopwatch? CurrentSessionWatch { get; private set; }
-
-    public static SessionData? CurrentSessionData { get; private set; }
-    public static string? CurrentSessionDataDirectoryPath => CurrentSessionData is null ? null : Path.Combine(SessionsDirectoryPath, CurrentSessionData.StartedAtText);
-
-    // This "trilogy" handles the storage of played maps. If the player didn't receive at least gold and didn't skip it, it is not counted in the progress.
-    // It may (?) be better to wrap the CGameCtnChallenge into "CompletedMap" and have status of it being "gold", "author", or "skipped", and better handle that to make it script-friendly.
-    public static Dictionary<string, SessionMap> CurrentSessionGoldMaps { get; } = new();
-    public static Dictionary<string, SessionMap> CurrentSessionAuthorMaps { get; } = new();
-    public static Dictionary<string, SessionMap> CurrentSessionSkippedMaps { get; } = new();
-
+    public static CurrentSession? CurrentSession { get; private set; }
+    
     public static bool HasSessionRunning => CurrentSession is not null;
 
     /// <summary>
@@ -101,21 +81,18 @@ public static partial class RandomizerEngine
 
     public static FileSystemWatcher AutosaveWatcher { get; }
 
-    public static event Action? MapStarted;
-    public static event Action? MapEnded;
-    public static event Action? MapSkip;
-    public static event Action<string> Status;
-    public static event Action? MedalUpdate;
 
     public static ILogger Logger { get; private set; }
     public static StreamWriter LogWriter { get; private set; }
-    public static StreamWriter? CurrentSessionLogWriter { get; private set; }
     public static bool SessionEnding { get; private set; }
 
     public static string? Version { get; } = typeof(RandomizerEngine).Assembly.GetName().Version?.ToString(3);
 
-    [GeneratedRegex("[^a-zA-Z0-9_.]+")]
-    private static partial Regex SpecialCharRegex();
+    public static event Action<string>? Status;
+    public static event Action? MapStarted;
+    public static event Action? MapEnded;
+    public static event Action? MapSkip;
+    public static event Action? MedalUpdate;
 
     static RandomizerEngine()
     {
@@ -161,19 +138,24 @@ public static partial class RandomizerEngine
         };
 
         AutosaveWatcher.Changed += AutosaveCreatedOrChanged;
-
-        Status += RandomizerEngineStatus;
         
         Logger.LogInformation("Randomizer TMF initialized.");
     }
 
-    private static void RandomizerEngineStatus(string status)
+    public static void OnStatus(string status)
     {
         // Status kind of logging
         // Unlike regular logs, these are shown to the user in a module, while also written to the log file in its own way
         Logger.LogInformation("STATUS: {status}", status);
+
+        Status?.Invoke(status);
     }
-    
+
+    public static void OnMapStarted() => MapStarted?.Invoke();
+    public static void OnMapEnded() => MapEnded?.Invoke();
+    public static void OnMapSkip() => MapSkip?.Invoke();
+    public static void OnMedalUpdate() => MedalUpdate?.Invoke();
+
     private static DateTime lastAutosaveUpdate = DateTime.MinValue;
 
     private static void AutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
@@ -237,168 +219,13 @@ public static partial class RandomizerEngine
             break;
         }
 
-        try
+        if (CurrentSession is null)
         {
-            // Current session map autosave update section
-
-            if (CurrentSessionMap is null)
-            {
-                Logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while no session is running.", e.FullPath, replay.MapInfo.Id);
-                return;
-            }
-
-            if (CurrentSessionMap.MapInfo != replay.MapInfo)
-            {
-                Logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while the current session map is {currentSessionMapUid}.", e.FullPath, replay.MapInfo.Id, CurrentSessionMap.MapInfo.Id);
-                return;
-            }
-            
-            UpdateSessionDataFromAutosave(e.FullPath, CurrentSessionMap, replay);
-
-            Status("Checking the autosave...");
-
-            // New autosave from the current map, save it into session for progression reasons
-
-            // The following part has a scriptable potential
-            // There are different medal rules for each gamemode (and where to look for validating)
-            // So that's why the code looks like this for the time being
-
-            if (CurrentSessionMap.ChallengeParameters?.AuthorTime is null)
-            {
-                Logger.LogWarning("Found autosave {autosavePath} for map {mapName} ({mapUid}) that has no author time.",
-                    e.FullPath,
-                    TextFormatter.Deformat(CurrentSessionMap.Map.MapName).Trim(),
-                    replay.MapInfo.Id);
-
-                SkipTokenSource?.Cancel();
-            }
-            else
-            {
-                var ghost = replay.GetGhosts().First();
-
-                if ((CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= CurrentSessionMap.ChallengeParameters.AuthorTime)
-                 || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && ((CurrentSessionMap.ChallengeParameters.AuthorScore > 0 && ghost.Respawns <= CurrentSessionMap.ChallengeParameters.AuthorScore) || (ghost.Respawns == 0 && replay.Time <= CurrentSessionMap.ChallengeParameters.AuthorTime)))
-                 || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= CurrentSessionMap.ChallengeParameters.AuthorScore))
-                {
-                    AuthorMedalReceived(CurrentSessionMap);
-
-                    SkipTokenSource?.Cancel();
-                }
-                else if ((CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= CurrentSessionMap.ChallengeParameters.GoldTime)
-                      || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Platform && ghost.Respawns <= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
-                      || (CurrentSessionMap.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= CurrentSessionMap.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
-                {
-                    GoldMedalReceived(CurrentSessionMap);
-                }
-            }
-
-            Status("Playing the map...");
-        }
-        catch (Exception ex)
-        {
-            Status("Error when checking the autosave...");
-            Logger.LogError(ex, "Error when checking the autosave {autosavePath}.", e.FullPath);
-        }
-    }
-
-    private static void UpdateSessionDataFromAutosave(string fullPath, SessionMap map, CGameCtnReplayRecord replay)
-    {
-        if (CurrentSessionDataDirectoryPath is null)
-        {
+            Logger.LogInformation("No session is running, ending here.");
             return;
         }
 
-        Status("Copying the autosave...");
-
-        var score = map.Map.Mode switch
-        {
-            CGameCtnChallenge.PlayMode.Stunts => replay.GetGhosts().First().StuntScore + "_",
-            CGameCtnChallenge.PlayMode.Platform => replay.GetGhosts().First().Respawns + "_",
-            _ => ""
-        } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
-
-        var mapName = SpecialCharRegex().Replace(TextFormatter.Deformat(map.Map.MapName).Trim(), "_");
-
-        var replayFileFormat = string.IsNullOrWhiteSpace(Config.ReplayFileFormat)
-            ? Constants.DefaultReplayFileFormat
-            : Config.ReplayFileFormat;
-        
-        var replayFileName = ClearFileName(string.Format(replayFileFormat, mapName, score, replay.PlayerLogin));
-
-        var replaysDir = Path.Combine(CurrentSessionDataDirectoryPath, Constants.Replays);
-        var replayFilePath = Path.Combine(replaysDir, replayFileName);
-
-        Directory.CreateDirectory(replaysDir);
-        File.Copy(fullPath, replayFilePath, overwrite: true);
-
-        if (CurrentSessionWatch is null)
-        {
-            return;
-        }
-        
-        CurrentSessionData?.Maps
-            .FirstOrDefault(x => x.Uid == map.MapUid)?
-            .Replays
-            .Add(new()
-            {
-                FileName = replayFileName,
-                Timestamp = CurrentSessionWatch.Elapsed
-            });
-        
-        SaveSessionData();
-    }
-
-    private static string ClearFileName(string fileName)
-    {
-        return string.Join('_', fileName.Split(Path.GetInvalidFileNameChars()));
-    }
-
-    private static void GoldMedalReceived(SessionMap map)
-    {
-        CurrentSessionGoldMaps.TryAdd(map.MapUid, map);
-        map.LastTimestamp = CurrentSessionWatch?.Elapsed;
-        SetMapResult(map, Constants.GoldMedal);
-
-        MedalUpdate?.Invoke();
-    }
-
-    private static void AuthorMedalReceived(SessionMap map)
-    {
-        CurrentSessionGoldMaps.Remove(map.MapUid);
-        CurrentSessionAuthorMaps.TryAdd(map.MapUid, map);
-        map.LastTimestamp = CurrentSessionWatch?.Elapsed;
-        SetMapResult(map, Constants.AuthorMedal);
-
-        MedalUpdate?.Invoke();
-    }
-
-    private static void Skipped(SessionMap map)
-    {
-        // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
-        if (!CurrentSessionGoldMaps.ContainsKey(map.MapUid))
-        {
-            CurrentSessionSkippedMaps.TryAdd(map.MapUid, map);
-            map.LastTimestamp = CurrentSessionWatch?.Elapsed;
-            SetMapResult(map, Constants.Skipped);
-        }
-
-        // In other words, if the player received at least a gold medal, the skip is forgiven
-
-        // MapSkip event is thrown to update the UI
-        MapSkip?.Invoke();
-    }
-
-    private static void SetMapResult(SessionMap map, string result)
-    {
-        var dataMap = CurrentSessionData?.Maps.FirstOrDefault(x => x.Uid == map.MapUid);
-
-        if (dataMap is not null)
-        {
-            dataMap.Result = result;
-            dataMap.LastTimestamp = map.LastTimestamp;
-        }
-        
-        SaveSessionData();
+        CurrentSession.AutosaveCreatedOrChanged(e.FullPath, replay);
     }
 
     /// <summary>
@@ -516,20 +343,6 @@ public static partial class RandomizerEngine
         File.WriteAllText(Constants.ConfigYml, YamlSerializer.Serialize(config));
 
         Logger.LogInformation("Config file saved.");
-    }
-
-    private static void SaveSessionData()
-    {
-        if (CurrentSessionData is null || CurrentSessionDataDirectoryPath is null)
-        {
-            return;
-        }
-
-        Logger.LogInformation("Saving the session data into file...");
-        
-        File.WriteAllText(Path.Combine(CurrentSessionDataDirectoryPath, Constants.SessionYml), YamlSerializer.Serialize(CurrentSessionData));
-
-        Logger.LogInformation("Session data saved.");
     }
 
     /// <summary>
@@ -658,248 +471,22 @@ public static partial class RandomizerEngine
     }
 
     /// <summary>
-    /// Starts the randomizer session by creating a new watch and <see cref="Task"/> for <see cref="CurrentSession"/> (+ <see cref="CurrentSessionTokenSource"/>) that will handle randomization on different thread from the UI thread.
+    /// Starts the randomizer session by creating a new <see cref="Session"/> that will handle randomization on different thread from the UI thread.
     /// </summary>
-    public static Task StartSessionAsync()
+    public static void StartSession()
     {
         if (Config.GameDirectory is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        CurrentSessionWatch = new Stopwatch();
-        CurrentSessionTokenSource = new CancellationTokenSource();
-        CurrentSession = Task.Run(() => RunSessionSafeAsync(CurrentSessionTokenSource.Token), CurrentSessionTokenSource.Token);
-
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Runs the session in a way it won't ever throw an exception. Clears the session after its end as well.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private static async Task RunSessionSafeAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await RunSessionAsync(cancellationToken);
-        }
-        catch (TaskCanceledException)
-        {
-            Status("Session ended.");
-        }
-        catch (InvalidSessionException)
-        {
-            Status("Session ended. No maps found.");
-        }
-        catch (Exception ex)
-        {
-            Status("Session ended due to error.");
-            Logger.LogError(ex, "Error during session.");
-        }
-        finally
-        {
-            ClearCurrentSession();
-        }
-    }
-
-    /// <summary>
-    /// Does the actual work during a running session. That this method ends means the session also ends. It does NOT clean up the session after its end.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="TaskCanceledException"></exception>
-    private static async Task RunSessionAsync(CancellationToken cancellationToken)
-    {
-        if (Config.GameDirectory is null)
-        {
-            throw new UnreachableException("Game directory is null");
-        }
-
-        ValidateRules();
-
-        InitializeSessionData();
-
-        while (true)
-        {
-            // This try block is used to handle map requests and their HTTP errors, mostly.
-
-            try
-            {
-                await PrepareNewMapAsync(cancellationToken);
-            }
-            catch (HttpRequestException)
-            {
-                Status("Failed to fetch a track. Retrying...");
-                await Task.Delay(1000, cancellationToken);
-                continue;
-            }
-            catch (MapValidationException)
-            {
-                Logger.LogInformation("Map has not passed the validator, attempting another one...");
-                await Task.Delay(500, cancellationToken);
-                continue;
-            }
-            catch (InvalidSessionException)
-            {
-                Logger.LogWarning("Session is invalid.");
-                throw;
-            }
-            catch (TaskCanceledException)
-            {
-                Logger.LogInformation("Session terminated during map request.");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Status("Error! Check the log for more details.");
-                Logger.LogError(ex, "An error occurred during map request.");
-
-                await Task.Delay(1000, cancellationToken);
-
-                continue;
-            }
-
-            await PlayCurrentSessionMapAsync(cancellationToken);
-        }
-    }
-
-    private static void InitializeSessionData()
-    {
-        var startedAt = DateTimeOffset.Now;
-
-        CurrentSessionData = new SessionData(Version, startedAt, Config.Rules);
-
-        if (CurrentSessionDataDirectoryPath is null)
-        {
-            throw new UnreachableException("CurrentSessionDataDirectoryPath is null");
-        }
-
-        Directory.CreateDirectory(CurrentSessionDataDirectoryPath);
-
-        CurrentSessionLogWriter = new StreamWriter(Path.Combine(CurrentSessionDataDirectoryPath, Constants.SessionLog))
-        {
-            AutoFlush = true
-        };
-
-        Logger = new LoggerToFile(CurrentSessionLogWriter, LogWriter);
-
-        SaveSessionData();
-    }
-
-    /// <summary>
-    /// Validates the session rules. This should be called right before the session start and after loading the modules.
-    /// </summary>
-    /// <exception cref="RuleValidationException"></exception>
-    public static void ValidateRules()
-    {
-        if (Config.Rules.TimeLimit == TimeSpan.Zero)
-        {
-            throw new RuleValidationException("Time limit cannot be 0:00:00.");
-        }
-
-        if (Config.Rules.TimeLimit > new TimeSpan(9, 59, 59))
-        {
-            throw new RuleValidationException("Time limit cannot be above 9:59:59.");
-        }
-
-        foreach (var primaryType in Enum.GetValues<EPrimaryType>())
-        {
-            if (primaryType is EPrimaryType.Race)
-            {
-                continue;
-            }
-
-            if (Config.Rules.RequestRules.PrimaryType == primaryType
-            && (Config.Rules.RequestRules.Site is ESite.Any
-             || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
-            {
-                throw new RuleValidationException($"{primaryType} cannot be specifically selected with TMNF or Nations Exchange.");
-            }
-        }
-
-        if (Config.Rules.RequestRules.Environment?.Count > 0)
-        {
-            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise)
-            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Island)
-            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Coast)
-            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Bay))
-            {
-                throw new RuleValidationException("Island, Coast, or Bay has to be selected when environments are specified and Sunrise Exchange is selected.");
-            }
-
-            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Original)
-            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Snow)
-            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Desert)
-            && !Config.Rules.RequestRules.Environment.Contains(EEnvironment.Rally))
-            {
-                throw new RuleValidationException("Snow, Desert, or Rally has to be selected when environments are specified and Original Exchange is selected.");
-            }
-
-            if (!Config.Rules.RequestRules.Environment.Contains(EEnvironment.Stadium)
-             && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
-            {
-                throw new RuleValidationException("Stadium has to be selected when environments are specified and TMNF or Nations Exchange is selected.");
-            }
-
-            if (Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise) || Config.Rules.RequestRules.Site.HasFlag(ESite.Original))
-            {
-                foreach (var env in Config.Rules.RequestRules.Environment)
-                {
-                    if (Config.Rules.RequestRules.Vehicle?.Contains(env) == false)
-                    {
-                        throw new RuleValidationException("Envimix randomization is not allowed when Sunrise or Original Exchange is selected.");
-                    }
-                }
-            }
-        }
-        
-        if (Config.Rules.RequestRules.Vehicle?.Count > 0)
-        {
-            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Island)
-             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Coast)
-             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Bay)
-              && Config.Rules.RequestRules.Site.HasFlag(ESite.Sunrise))
-            {
-                throw new RuleValidationException("IslandCar, CoastCar, or BayCar has to be selected when cars are specified and Sunrise Exchange is selected.");
-            }
-
-            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Snow)
-             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Desert)
-             && !Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Rally)
-              && Config.Rules.RequestRules.Site.HasFlag(ESite.Original))
-            {
-                throw new RuleValidationException("SnowCar, DesertCar, or RallyCar has to be selected when cars are specified and Original Exchange is selected.");
-            }
-
-            if (!Config.Rules.RequestRules.Vehicle.Contains(EEnvironment.Stadium)
-             && (Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
-            {
-                throw new RuleValidationException("StadiumCar has to be selected when cars are specified and TMNF or Nations Exchange is selected.");
-            }
-        }
-
-        if (Config.Rules.RequestRules.EqualEnvironmentDistribution
-         && Config.Rules.RequestRules.EqualVehicleDistribution
-         && Config.Rules.RequestRules.Site is not ESite.TMUF)
-        {
-            throw new RuleValidationException("Equal environment and car distribution combined is only valid with TMUF Exchange.");
-        }
-
-        if (Config.Rules.RequestRules.EqualEnvironmentDistribution
-        && (Config.Rules.RequestRules.Site is ESite.Any
-         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
-        {
-            throw new RuleValidationException("Equal environment distribution is not valid with TMNF or Nations Exchange.");
-        }
-
-        if (Config.Rules.RequestRules.EqualVehicleDistribution
-        && (Config.Rules.RequestRules.Site is ESite.Any
-         || Config.Rules.RequestRules.Site.HasFlag(ESite.TMNF) || Config.Rules.RequestRules.Site.HasFlag(ESite.Nations)))
-        {
-            throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange.");
-        }
+        CurrentSession = new CurrentSession(
+            new MapDownloader(Config, Http, Logger),
+            Config,
+            new TMForever(Config, Logger),
+            Http,
+            Logger);
+        CurrentSession.Start();
     }
 
     /// <summary>
@@ -907,326 +494,10 @@ public static partial class RandomizerEngine
     /// </summary>
     private static void ClearCurrentSession()
     {
-        StopTrackingCurrentSessionMap();
-
-        CurrentSessionGoldMaps.Clear();
-        CurrentSessionAuthorMaps.Clear();
-        CurrentSessionSkippedMaps.Clear();
-
-        CurrentSessionWatch?.Stop();
-        CurrentSessionWatch = null;
-
+        CurrentSession?.Stop();
         CurrentSession = null;
-        CurrentSessionTokenSource = null;
-        
-        SetReadOnlySessionYml();
-
-        CurrentSessionData = null;
-
-        CurrentSessionLogWriter?.Dispose();
-        CurrentSessionLogWriter = null;
 
         Logger = new LoggerToFile(LogWriter);
-    }
-
-    private static void SetReadOnlySessionYml()
-    {
-        if (CurrentSessionDataDirectoryPath is null)
-        {
-            return;
-        }
-        
-        try
-        {
-            var sessionYmlFile = Path.Combine(CurrentSessionDataDirectoryPath, Constants.SessionYml);
-            File.SetAttributes(sessionYmlFile, File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to set Session.yml as read-only.");
-        }
-    }
-
-    /// <summary>
-    /// Requests, downloads, and allocates the map.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <exception cref="InvalidSessionException"></exception>
-    /// <exception cref="MapValidationException"></exception>
-    private static async Task PrepareNewMapAsync(CancellationToken cancellationToken)
-    {
-        Status("Fetching random track...");
-        
-        // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = Config.Rules.RequestRules.ToUrl();
-
-        Logger.LogDebug("Requesting generated URL: {url}", requestUrl);
-
-        // HEAD request ensures least overhead
-        using var randomResponse = await Http.HeadAsync(requestUrl, cancellationToken);
-
-        if (randomResponse.StatusCode == HttpStatusCode.NotFound)
-        {
-            // The session is ALWAYS invalid if there's no map that can be found.
-            // This DOES NOT relate to the lack of maps left that the user hasn't played.
-
-            Logger.LogWarning("No map fulfills the randomization filter.");
-
-            throw new InvalidSessionException();
-        }
-
-        randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
-
-
-        // Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
-
-        if (randomResponse.RequestMessage is null)
-        {
-            Logger.LogWarning("Response from the HEAD request does not contain information about the request message. This is odd...");
-            return;
-        }
-
-        if (randomResponse.RequestMessage.RequestUri is null)
-        {
-            Logger.LogWarning("Response from the HEAD request does not contain information about the request URI. This is odd...");
-            return;
-        }
-
-        var trackId = randomResponse.RequestMessage.RequestUri.Segments.LastOrDefault();
-
-        if (trackId is null)
-        {
-            Logger.LogWarning("Request URI does not contain any segments. This is very odd...");
-            return;
-        }
-
-
-        // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
-
-        Status($"Downloading track {trackId}...");
-
-        var trackGbxUrl = $"https://{randomResponse.RequestMessage.RequestUri.Host}/trackgbx/{trackId}";
-
-        Logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
-        using var trackGbxResponse = await Http.GetAsync(trackGbxUrl, cancellationToken);
-        trackGbxResponse.EnsureSuccessStatusCode();
-
-        using var stream = await trackGbxResponse.Content.ReadAsStreamAsync(cancellationToken);
-
-
-        // The map is gonna be parsed as it is downloading throughout
-
-        Status("Parsing the map...");
-
-        if (GameBox.ParseNode(stream) is not CGameCtnChallenge map)
-        {
-            Logger.LogWarning("Downloaded file is not a valid Gbx map file!");
-            return;
-        }
-
-
-        // Map validation ensures that the player won't receive duplicate maps
-        // + ensures some additional filters like "No Unlimiter", which cannot be filtered on TMX
-
-        Status("Validating the map...");
-
-        if (!ValidateMap(map, out string? invalidBlock))
-        {
-            // Attempts another track if invalid
-            requestAttempt++;
-
-            if (invalidBlock is not null)
-            {
-                Status($"{invalidBlock} in {map.Collection}");
-                Logger.LogInformation("Map is invalid because {invalidBlock} is not valid for the {env} environment.", invalidBlock, map.Collection);
-                await Task.Delay(500, cancellationToken);
-            }
-
-            Status($"Map is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");
-
-            if (requestAttempt >= requestMaxAttempts)
-            {
-                Logger.LogWarning("Map is invalid after {MaxAttempts} attempts. Cancelling the session...", requestMaxAttempts);
-                requestAttempt = 0;
-                throw new InvalidSessionException();
-            }
-
-            throw new MapValidationException();
-        }
-
-        requestAttempt = 0;
-
-        // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
-
-        Status("Saving the map...");
-
-        if (DownloadedDirectoryPath is null)
-        {
-            throw new UnreachableException("Cannot update autosaves without a valid user data directory path.");
-        }
-
-        Logger.LogDebug("Ensuring {dir} exists...", DownloadedDirectoryPath);
-        Directory.CreateDirectory(DownloadedDirectoryPath); // Ensures the directory really exists
-
-        Logger.LogDebug("Preparing the file name...");
-
-        // Extracts the file name, and if it fails, it uses the MapUid as a fallback
-        var fileName = trackGbxResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? $"{map.MapUid}.Challenge.Gbx";
-
-        // Validates the file name and fixes it if needed
-        fileName = ClearFileName(fileName);
-
-        CurrentSessionMapSavePath = Path.Combine(DownloadedDirectoryPath, fileName);
-
-        Logger.LogInformation("Saving the map as {fileName}...", CurrentSessionMapSavePath);
-
-        // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
-        var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
-
-        await File.WriteAllBytesAsync(CurrentSessionMapSavePath, trackData, cancellationToken);
-
-        Logger.LogInformation("Map saved successfully!");
-
-        var tmxLink = randomResponse.RequestMessage.RequestUri.ToString();
-
-        CurrentSessionMap = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now, tmxLink); // The map should be ready to be played now
-
-        CurrentSessionData?.Maps.Add(new()
-        {
-            Name = TextFormatter.Deformat(map.MapName),
-            Uid = map.MapUid,
-            TmxLink = tmxLink
-        });
-
-        SaveSessionData(); // May not be super necessary?
-    }
-
-
-
-    /// <summary>
-    /// Handles the play loop of a map. Throws cancellation exception on session end (not the map end).
-    /// </summary>
-    /// <exception cref="TaskCanceledException"></exception>
-    private static async Task PlayCurrentSessionMapAsync(CancellationToken cancellationToken)
-    {
-        // Hacky last moment validations
-
-        if (CurrentSessionMapSavePath is null)
-        {
-            throw new UnreachableException("CurrentSessionMapSavePath is null");
-        }
-
-        if (CurrentSessionMap is null)
-        {
-            throw new UnreachableException("CurrentSessionMap is null");
-        }
-
-        if (CurrentSessionWatch is null)
-        {
-            throw new UnreachableException("CurrentSessionWatch is null");
-        }
-
-        // Map starts here
-
-        Status("Starting the map...");
-
-        OpenFileIngame(CurrentSessionMapSavePath);
-
-        CurrentSessionWatch.Start();
-
-        SkipTokenSource = new CancellationTokenSource();
-        MapStarted?.Invoke();
-
-        Status("Playing the map...");
-
-        // This loop either softly stops when the map is skipped by the player
-        // or hardly stops when author medal is received / time limit is reached, End Session was clicked or an exception was thrown in general
-
-        // SkipTokenSource is used within the session to skip a map, while CurrentSessionTokenSource handles the whole session cancellation
-
-        while (!SkipTokenSource.IsCancellationRequested)
-        {
-            if (CurrentSessionWatch.Elapsed >= Config.Rules.TimeLimit) // Time limit reached case
-            {
-                if (CurrentSessionTokenSource is null)
-                {
-                    throw new UnreachableException("CurrentSessionTokenSource is null");
-                }
-
-                // Will cause the Task.Delay below to throw a cancellation exception
-                // Code outside of the while loop wont be reached
-                CurrentSessionTokenSource.Cancel();
-            }
-
-            await Task.Delay(20, cancellationToken);
-        }
-
-        CurrentSessionWatch.Stop(); // Time is paused until the next map starts
-
-        if (isActualSkipCancellation) // When its a manual skip and not an automated skip by author medal receive
-        {
-            Status("Skipping the map...");
-
-            // Apply the rules related to manual map skip
-            // This part has a scripting potential too if properly implmented
-
-            Skipped(CurrentSessionMap);
-
-            isActualSkipCancellation = false;
-        }
-
-        Status("Ending the map...");
-
-        StopTrackingCurrentSessionMap();
-
-        // Map is no longer tracked at this point
-    }
-
-    /// <summary>
-    /// Checks if the map hasn't been already played or if it follows current session rules.
-    /// </summary>
-    /// <param name="map"></param>
-    /// <returns>True if valid, false if not valid.</returns>
-    private static bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock)
-    {
-        invalidBlock = null;
-
-        if (AutosaveHeaders.ContainsKey(map.MapUid))
-        {
-            return false;
-        }
-
-        if (Config.Rules.NoUnlimiter)
-        {
-            if (map.Chunks.TryGet(0x3F001000, out _))
-            {
-                return false;
-            }
-            
-            if (OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
-            {
-                foreach (var block in map.GetBlocks())
-                {
-                    var blockName = block.Name.Trim();
-
-                    if (!officialBlocks.Contains(blockName))
-                    {
-                        invalidBlock = blockName;
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private static void StopTrackingCurrentSessionMap()
-    {
-        SkipTokenSource = null;
-        CurrentSessionMap = null;
-        CurrentSessionMapSavePath = null;
-        MapEnded?.Invoke();
     }
 
     /// <summary>
@@ -1244,16 +515,19 @@ public static partial class RandomizerEngine
 
         Status("Ending the session...");
 
-        CurrentSessionTokenSource?.Cancel();
-
         if (CurrentSession is null)
         {
             return;
         }
 
+        CurrentSession.TokenSource.Cancel();
+
         try
         {
-            await CurrentSession; // Kindly waits until the session considers it was cancelled. ClearCurrentSession is called within it.
+            if (CurrentSession.Task is not null)
+            {
+                await CurrentSession.Task; // Kindly waits until the session considers it was cancelled. ClearCurrentSession is called within it.
+            }
         }
         catch (TaskCanceledException)
         {
@@ -1263,70 +537,11 @@ public static partial class RandomizerEngine
         SessionEnding = false;
     }
 
-    public static Task SkipMapAsync()
-    {
-        Status("Requested to skip the map...");
-        isActualSkipCancellation = true;
-        SkipTokenSource?.Cancel();
-        return Task.CompletedTask;
-    }
-
-    public static void OpenFileIngame(string filePath)
-    {
-        if (Config.GameDirectory is null)
-        {
-            throw new Exception("Game directory is null");
-        }
-
-        Logger.LogInformation("Opening {filePath} in TMForever...", filePath);
-
-        var startInfo = new ProcessStartInfo(Path.Combine(Config.GameDirectory, Constants.TmForeverExe), $"/useexedir /singleinst /file=\"{filePath}\"")
-        {
-            
-        };
-        
-        var process = new Process
-        {
-            StartInfo = startInfo
-        };
-        
-        process.Start();
-        
-        try
-        {
-            process.WaitForInputIdle();
-        }
-        catch (InvalidOperationException ex)
-        {
-            Logger.LogWarning(ex, "Could not wait for input.");
-        }
-    }
-
-    public static void OpenAutosaveIngame(string fileName)
-    {
-        if (AutosavesDirectoryPath is null)
-        {
-            throw new Exception("Cannot open an autosave ingame without a valid user data directory path.");
-        }
-
-        OpenFileIngame(Path.Combine(AutosavesDirectoryPath, fileName));
-    }
-
     public static void Exit()
     {
         Logger.LogInformation("Exiting...");
         FlushLog();
         Environment.Exit(0);
-    }
-
-    public static void ReloadMap()
-    {
-        Logger.LogInformation("Reloading the map...");
-
-        if (CurrentSessionMapSavePath is not null)
-        {
-            OpenFileIngame(CurrentSessionMapSavePath);
-        }
     }
 
     public static void FlushLog()
