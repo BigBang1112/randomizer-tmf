@@ -37,7 +37,7 @@ public class MapDownloader
     /// <exception cref="InvalidSessionException"></exception>
     /// <exception cref="MapValidationException"></exception>
     /// <returns>True if map has been prepared successfully, false if soft error/problem appeared (it's possible to ask for another track).</returns>
-    public async Task<bool> PrepareNewMapAsync(CurrentSession currentSession, CancellationToken cancellationToken)
+    public async Task<bool> PrepareNewMapAsync(Session currentSession, CancellationToken cancellationToken)
     {
         var randomResponse = await FetchRandomTrackAsync(cancellationToken);
 

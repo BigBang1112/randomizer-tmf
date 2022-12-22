@@ -58,7 +58,7 @@ public static partial class RandomizerEngine
     public static string? DownloadedDirectoryPath { get; private set; }
     public static string SessionsDirectoryPath => Constants.Sessions;
 
-    public static CurrentSession? CurrentSession { get; private set; }
+    public static Session? CurrentSession { get; private set; }
     
     public static bool HasSessionRunning => CurrentSession is not null;
 
@@ -480,7 +480,7 @@ public static partial class RandomizerEngine
             return;
         }
 
-        CurrentSession = new CurrentSession(
+        CurrentSession = new Session(
             new MapDownloader(Config, Http, Logger),
             Config,
             new TMForever(Config, Logger),

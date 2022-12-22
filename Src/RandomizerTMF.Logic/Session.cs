@@ -1,16 +1,13 @@
-﻿using GBX.NET;
-using GBX.NET.Engines.Game;
+﻿using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Net;
 using TmEssentials;
-using static GBX.NET.Engines.Game.CGameGhost;
 
 namespace RandomizerTMF.Logic;
 
-public class CurrentSession
+public class Session
 {
     private readonly MapDownloader mapDownloader;
     private readonly RandomizerConfig config;
@@ -39,7 +36,7 @@ public class CurrentSession
     
     public StreamWriter? LogWriter { get; set; }
 
-    public CurrentSession(MapDownloader mapDownloader,
+    public Session(MapDownloader mapDownloader,
                           RandomizerConfig config,
                           TMForever game,
                           HttpClient http,
