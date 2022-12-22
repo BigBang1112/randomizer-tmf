@@ -133,7 +133,7 @@ public static class Validator
     {
         invalidBlock = null;
 
-        if (RandomizerEngine.AutosaveHeaders.ContainsKey(map.MapUid))
+        if (AutosaveScanner.AutosaveHeaders.ContainsKey(map.MapUid))
         {
             return false;
         }

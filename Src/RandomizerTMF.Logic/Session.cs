@@ -167,12 +167,12 @@ public class Session
 
         if (Map is null)
         {
-            throw new UnreachableException("CurrentSessionMap is null");
+            throw new UnreachableException("Map is null");
         }
 
         if (Map.FilePath is null)
         {
-            throw new UnreachableException("CurrentSessionMapSavePath is null");
+            throw new UnreachableException("Map.FilePath is null");
         }
 
         // Map starts here

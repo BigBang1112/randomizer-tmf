@@ -31,8 +31,8 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         private set => this.RaiseAndSetIfChanged(ref sessions, value);
     }
 
-    public bool HasAutosavesScanned => RandomizerEngine.HasAutosavesScanned;
-    public int AutosaveScanCount => RandomizerEngine.AutosaveHeaders.Count;
+    public bool HasAutosavesScanned => AutosaveScanner.HasAutosavesScanned;
+    public int AutosaveScanCount => AutosaveScanner.AutosaveHeaders.Count;
 
     public DashboardWindowViewModel()
     {
@@ -64,7 +64,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     
     private async Task ScanSessionsAsync()
     {
-        foreach (var dir in Directory.EnumerateDirectories(RandomizerEngine.SessionsDirectoryPath))
+        foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
         {
             var sessionYml = Path.Combine(dir, "Session.yml");
 
@@ -110,7 +110,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         var cts = new CancellationTokenSource();
 
-        var anythingChanged = Task.Run(RandomizerEngine.ScanAutosaves);
+        var anythingChanged = Task.Run(AutosaveScanner.ScanAutosaves);
 
         await Task.WhenAny(anythingChanged, Task.Run(async () =>
         {
@@ -135,7 +135,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         var cts = new CancellationTokenSource();
 
-        await Task.WhenAny(Task.Run(RandomizerEngine.ScanDetailsFromAutosaves), Task.Run(async () =>
+        await Task.WhenAny(Task.Run(AutosaveScanner.ScanDetailsFromAutosaves), Task.Run(async () =>
         {
             while (true)
             {
@@ -151,7 +151,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
     private static IEnumerable<AutosaveModel> GetAutosaveModels()
     {
-        return RandomizerEngine.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
+        return AutosaveScanner.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
     }
 
     protected override void CloseClick()
@@ -259,7 +259,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
         var autosaveModel = Autosaves[selectedIndex];
 
-        if (!RandomizerEngine.AutosaveHeaders.TryGetValue(autosaveModel.MapUid, out AutosaveHeader? autosave))
+        if (!AutosaveScanner.AutosaveHeaders.TryGetValue(autosaveModel.MapUid, out AutosaveHeader? autosave))
         {
             return;
         }
@@ -272,17 +272,14 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
     public void OpenDownloadedMapsFolderClick()
     {
-        if (RandomizerEngine.DownloadedDirectoryPath is not null)
+        if (FilePathManager.DownloadedDirectoryPath is not null)
         {
-            ProcessUtils.OpenDir(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+            ProcessUtils.OpenDir(FilePathManager.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
         }
     }
 
     public void OpenSessionsFolderClick()
     {
-        if (RandomizerEngine.SessionsDirectoryPath is not null)
-        {
-            ProcessUtils.OpenDir(RandomizerEngine.SessionsDirectoryPath + Path.DirectorySeparatorChar);
-        }
+        ProcessUtils.OpenDir(FilePathManager.SessionsDirectoryPath + Path.DirectorySeparatorChar);
     }
 }

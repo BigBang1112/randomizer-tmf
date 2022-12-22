@@ -71,7 +71,7 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
         {
             GameDirectory = RandomizerEngine.Config.GameDirectory;
             NadeoIni = RandomizerEngine.UpdateGameDirectory(RandomizerEngine.Config.GameDirectory);
-            UserDirectory = RandomizerEngine.UserDataDirectoryPath;
+            UserDirectory = FilePathManager.UserDataDirectoryPath;
         }
     }
 
@@ -99,7 +99,7 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
 
         NadeoIni = RandomizerEngine.UpdateGameDirectory(dir);
 
-        UserDirectory = NadeoIni.NadeoIniException is null ? RandomizerEngine.UserDataDirectoryPath : null;
+        UserDirectory = NadeoIni.NadeoIniException is null ? FilePathManager.UserDataDirectoryPath : null;
     }
 
     public void SaveAndProceedClick()

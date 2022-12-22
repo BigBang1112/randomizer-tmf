@@ -27,7 +27,7 @@ public class MapDownloader
 
     private void Status(string status)
     {
-        
+        RandomizerEngine.OnStatus(status);
     }
     
     /// <summary>
@@ -39,7 +39,7 @@ public class MapDownloader
     /// <returns>True if map has been prepared successfully, false if soft error/problem appeared (it's possible to ask for another track).</returns>
     public async Task<bool> PrepareNewMapAsync(Session currentSession, CancellationToken cancellationToken)
     {
-        var randomResponse = await FetchRandomTrackAsync(cancellationToken);
+        using var randomResponse = await FetchRandomTrackAsync(cancellationToken);
 
         // Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
 
@@ -59,7 +59,7 @@ public class MapDownloader
 
         // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
 
-        var trackGbxResponse = await DownloadMapByTrackIdAsync(requestUri.Host, trackId, cancellationToken);
+        using var trackGbxResponse = await DownloadMapByTrackIdAsync(requestUri.Host, trackId, cancellationToken);
 
         var map = await GetMapFromResponseAsync(trackGbxResponse, cancellationToken);
 
@@ -74,23 +74,26 @@ public class MapDownloader
 
         // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
 
-        await SaveMapAsync(trackGbxResponse, map.MapUid, cancellationToken);
+        var mapSavePath = await SaveMapAsync(trackGbxResponse, map.MapUid, cancellationToken);
 
         var tmxLink = requestUri.ToString();
 
-        currentSession.Map = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now, tmxLink); // The map should be ready to be played now
-
+        currentSession.Map = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now, tmxLink) // The map should be ready to be played now
+        {
+            FilePath = mapSavePath
+        };
+        
         currentSession.Data?.Maps.Add(new()
         {
             Name = TextFormatter.Deformat(map.MapName),
             Uid = map.MapUid,
-            TmxLink = tmxLink
+            TmxLink = tmxLink,
         });
 
         return true;
     }
 
-    private async Task SaveMapAsync(HttpResponseMessage trackGbxResponse, string mapUidFallback, CancellationToken cancellationToken)
+    private async Task<string> SaveMapAsync(HttpResponseMessage trackGbxResponse, string mapUidFallback, CancellationToken cancellationToken)
     {
         Status("Saving the map...");
 
@@ -120,6 +123,8 @@ public class MapDownloader
         await File.WriteAllBytesAsync(mapSavePath, trackData, cancellationToken);
 
         logger.LogInformation("Map saved successfully!");
+
+        return mapSavePath;
     }
 
     private async Task<HttpResponseMessage> FetchRandomTrackAsync(CancellationToken cancellationToken)
@@ -184,7 +189,9 @@ public class MapDownloader
         var trackGbxUrl = $"https://{host}/trackgbx/{trackId}";
 
         logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
-        using var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
+        
+        var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
+        
         trackGbxResponse.EnsureSuccessStatusCode();
 
         return trackGbxResponse;
