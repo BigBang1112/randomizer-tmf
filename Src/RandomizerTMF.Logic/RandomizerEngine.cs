@@ -9,9 +9,6 @@ public static partial class RandomizerEngine
 
     public static HttpClient Http { get; }
 
-    public static string? TmForeverExeFilePath { get; set; }
-    public static string? TmUnlimiterExeFilePath { get; set; }
-
     public static Session? CurrentSession { get; private set; }
     
     public static bool HasSessionRunning => CurrentSession is not null;
@@ -118,59 +115,6 @@ public static partial class RandomizerEngine
     {
         using var reader = new StreamReader(Constants.OfficialBlocksYml);
         return Yaml.Deserializer.Deserialize<Dictionary<string, HashSet<string>>>(reader);
-    }
-
-    public static GameDirInspectResult UpdateGameDirectory(string gameDirectoryPath)
-    {
-        Config.GameDirectory = gameDirectoryPath;
-
-        var nadeoIniFilePath = Path.Combine(gameDirectoryPath, Constants.NadeoIni);
-        var tmForeverExeFilePath = Path.Combine(gameDirectoryPath, Constants.TmForeverExe);
-        var tmUnlimiterExeFilePath = Path.Combine(gameDirectoryPath, Constants.TmInifinityExe);
-
-        var nadeoIniException = default(Exception);
-        var tmForeverExeException = default(Exception);
-        var tmUnlimiterExeException = default(Exception);
-
-        try
-        {
-            var nadeoIni = NadeoIni.Parse(nadeoIniFilePath);
-            var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var newUserDataDirectoryPath = Path.Combine(myDocuments, nadeoIni.UserSubDir);
-
-            if (FilePathManager.UserDataDirectoryPath != newUserDataDirectoryPath)
-            {
-                FilePathManager.UserDataDirectoryPath = newUserDataDirectoryPath;
-
-                AutosaveScanner.ResetAutosaves();
-            }
-        }
-        catch (Exception ex)
-        {
-            nadeoIniException = ex;
-        }
-
-        try
-        {
-            using var fs = File.OpenRead(tmForeverExeFilePath);
-            TmForeverExeFilePath = tmForeverExeFilePath;
-        }
-        catch (Exception ex)
-        {
-            tmForeverExeException = ex;
-        }
-
-        try
-        {
-            using var fs = File.OpenRead(tmUnlimiterExeFilePath);
-            TmUnlimiterExeFilePath = tmUnlimiterExeFilePath;
-        }
-        catch (Exception ex)
-        {
-            tmUnlimiterExeException = ex;
-        }
-
-        return new GameDirInspectResult(nadeoIniException, tmForeverExeException, tmUnlimiterExeException);
     }
 
     public static void SaveConfig()
