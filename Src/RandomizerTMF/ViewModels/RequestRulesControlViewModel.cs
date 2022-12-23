@@ -16,7 +16,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             
             this.RaisePropertyChanged(nameof(IsSiteTMNFChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
     
@@ -30,7 +30,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsSiteTMUFChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -44,7 +44,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsSiteNationsChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -58,7 +58,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsSiteSunriseChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -72,7 +72,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsSiteOriginalChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -89,7 +89,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(IsPrimaryTypeStuntsChecked));
             this.RaisePropertyChanged(nameof(IsPrimaryTypePuzzleChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -106,7 +106,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(IsPrimaryTypeStuntsChecked));
             this.RaisePropertyChanged(nameof(IsPrimaryTypePuzzleChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -123,7 +123,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(IsPrimaryTypeStuntsChecked));
             this.RaisePropertyChanged(nameof(IsPrimaryTypePuzzleChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -140,7 +140,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(IsPrimaryTypeStuntsChecked));
             this.RaisePropertyChanged(nameof(IsPrimaryTypePuzzleChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -161,7 +161,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentSnowChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -182,7 +182,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentDesertChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -203,7 +203,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentRallyChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -224,7 +224,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentIslandChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -245,7 +245,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentCoastChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -266,7 +266,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentBayChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -287,7 +287,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsEnvironmentStadiumChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -308,7 +308,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleSnowChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -329,7 +329,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleDesertChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -350,7 +350,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleRallyChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -371,7 +371,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleIslandChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -392,7 +392,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleCoastChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -413,7 +413,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleBayChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -434,7 +434,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsVehicleStadiumChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -455,7 +455,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsDifficultyBeginnerChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -476,7 +476,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsDifficultyIntermediateChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -497,7 +497,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsDifficultyExpertChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -518,7 +518,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsDifficultyLunaticChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -539,7 +539,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsRouteSingleChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -560,7 +560,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsRouteMultiChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -581,7 +581,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsRouteSymmetricChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -602,7 +602,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsMoodSunriseChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -623,7 +623,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsMoodDayChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -644,7 +644,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsMoodSunsetChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -665,7 +665,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(IsMoodNightChecked));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -678,7 +678,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MapName));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -691,7 +691,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MapAuthor));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -707,7 +707,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(TagIndex));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -723,7 +723,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(LbTypeIndex));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -738,7 +738,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(TimeLimitHour));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -753,7 +753,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(TimeLimitMinute));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -768,7 +768,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(TimeLimitSecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -783,7 +783,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MinATMinute));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -799,7 +799,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MinATSecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -815,7 +815,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MinATMillisecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -831,7 +831,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(MinATSecond));
             this.RaisePropertyChanged(nameof(MinATMillisecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -846,7 +846,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MaxATMinute));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -862,7 +862,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MaxATSecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -878,7 +878,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(MaxATMillisecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -894,7 +894,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
             this.RaisePropertyChanged(nameof(MaxATSecond));
             this.RaisePropertyChanged(nameof(MaxATMillisecond));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -907,7 +907,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(UploadedAfter));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -922,7 +922,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(UploadedBefore));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 
@@ -935,7 +935,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(EqualEnvDistribution));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
     
@@ -948,7 +948,7 @@ public class RequestRulesControlViewModel : WindowViewModelBase
 
             this.RaisePropertyChanged(nameof(EqualVehicleDistribution));
 
-            RandomizerEngine.SaveConfig();
+            RandomizerEngine.Config.Save();
         }
     }
 

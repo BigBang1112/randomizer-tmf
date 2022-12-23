@@ -94,6 +94,6 @@ public class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
             return;
         }
 
-        RandomizerEngine.OpenAutosaveIngame(AutosaveFilePath);
+        new TMForever(RandomizerEngine.Config, RandomizerEngine.Logger).OpenAutosave(AutosaveFilePath);
     }
 }

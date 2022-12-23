@@ -29,7 +29,7 @@ internal static class UpdateDetector
             }
 
             var release = releases[0];
-            var version = release.TagName[1..];
+            var version = release.TagName[1..]; // stips v from vX.X.X
 
             if (string.Equals(version, Program.Version))
             {

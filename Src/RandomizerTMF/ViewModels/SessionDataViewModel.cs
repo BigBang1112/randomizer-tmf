@@ -175,22 +175,16 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
 
     public void OpenSessionFolderClick()
     {
-        if (RandomizerEngine.SessionsDirectoryPath is not null)
-        {
-            ProcessUtils.OpenDir(Path.Combine(RandomizerEngine.SessionsDirectoryPath, Model.Data.StartedAtText) + Path.DirectorySeparatorChar);
-        }
+        ProcessUtils.OpenDir(Path.Combine(FilePathManager.SessionsDirectoryPath, Model.Data.StartedAtText) + Path.DirectorySeparatorChar);
     }
 
     public void OpenReplaysFolderClick()
     {
-        if (RandomizerEngine.SessionsDirectoryPath is not null)
-        {
-            var replaysDir = Path.Combine(RandomizerEngine.SessionsDirectoryPath, Model.Data.StartedAtText, Constants.Replays);
+        var replaysDir = Path.Combine(FilePathManager.SessionsDirectoryPath, Model.Data.StartedAtText, Constants.Replays);
 
-            if (Directory.Exists(replaysDir))
-            {
-                ProcessUtils.OpenDir(replaysDir + Path.DirectorySeparatorChar);
-            }
+        if (Directory.Exists(replaysDir))
+        {
+            ProcessUtils.OpenDir(replaysDir + Path.DirectorySeparatorChar);
         }
     }
 

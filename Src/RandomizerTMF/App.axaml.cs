@@ -50,7 +50,7 @@ namespace RandomizerTMF
 
         private bool IsValidGameDirectory(string? gameDirectory)
         {
-            return !string.IsNullOrWhiteSpace(gameDirectory) && RandomizerEngine.UpdateGameDirectory(gameDirectory) is { NadeoIniException: null, TmForeverException: null };
+            return !string.IsNullOrWhiteSpace(gameDirectory) && FilePathManager.UpdateGameDirectory(gameDirectory) is { NadeoIniException: null, TmForeverException: null };
         }
     }
 }

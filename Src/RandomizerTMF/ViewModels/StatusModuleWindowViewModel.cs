@@ -47,9 +47,9 @@ public class StatusModuleWindowViewModel : WindowViewModelBase
         {
             while (true)
             {
-                if (RandomizerEngine.CurrentSessionWatch is not null)
+                if (RandomizerEngine.CurrentSession?.Watch is not null)
                 {
-                    Time = RandomizerEngine.Config.Rules.TimeLimit - RandomizerEngine.CurrentSessionWatch.Elapsed;
+                    Time = RandomizerEngine.Config.Rules.TimeLimit - RandomizerEngine.CurrentSession.Watch.Elapsed;
                     this.RaisePropertyChanged(nameof(TimeText));
                 }
 

@@ -70,8 +70,8 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
         if (!string.IsNullOrWhiteSpace(RandomizerEngine.Config.GameDirectory))
         {
             GameDirectory = RandomizerEngine.Config.GameDirectory;
-            NadeoIni = RandomizerEngine.UpdateGameDirectory(RandomizerEngine.Config.GameDirectory);
-            UserDirectory = RandomizerEngine.UserDataDirectoryPath;
+            NadeoIni = FilePathManager.UpdateGameDirectory(RandomizerEngine.Config.GameDirectory);
+            UserDirectory = FilePathManager.UserDataDirectoryPath;
         }
     }
 
@@ -97,14 +97,14 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
 
         GameDirectory = dir;
 
-        NadeoIni = RandomizerEngine.UpdateGameDirectory(dir);
+        NadeoIni = FilePathManager.UpdateGameDirectory(dir);
 
-        UserDirectory = NadeoIni.NadeoIniException is null ? RandomizerEngine.UserDataDirectoryPath : null;
+        UserDirectory = NadeoIni.NadeoIniException is null ? FilePathManager.UserDataDirectoryPath : null;
     }
 
     public void SaveAndProceedClick()
     {
-        RandomizerEngine.SaveConfig();
+        RandomizerEngine.Config.Save();
 
         SwitchWindowTo<DashboardWindow, DashboardWindowViewModel>();
     }
