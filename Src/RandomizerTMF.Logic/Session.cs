@@ -83,6 +83,10 @@ public class Session
             Status("Session ended due to error.");
             logger.LogError(ex, "Error during session.");
         }
+        finally
+        {
+            Stop();
+        }
     }
 
     /// <summary>

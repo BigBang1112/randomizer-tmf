@@ -119,7 +119,7 @@ public static partial class RandomizerEngine
     /// <returns></returns>
     public static async Task EndSessionAsync()
     {
-        if (SessionEnding)
+        if (SessionEnding || CurrentSession is null)
         {
             return;
         }
@@ -127,11 +127,6 @@ public static partial class RandomizerEngine
         SessionEnding = true;
 
         OnStatus("Ending the session...");
-
-        if (CurrentSession is null)
-        {
-            return;
-        }
 
         CurrentSession.TokenSource.Cancel();
 

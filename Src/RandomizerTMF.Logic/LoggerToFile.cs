@@ -58,11 +58,18 @@ public class LoggerToFile : ILogger
 
         foreach (var writer in Writers)
         {
-            writer.WriteLine($"[{DateTime.Now}, {logLevel}] {message}");
-
-            if (exception is not null)
+            try
             {
-                writer.WriteLine(exception);
+                writer.WriteLine($"[{DateTime.Now}, {logLevel}] {message}");
+
+                if (exception is not null)
+                {
+                    writer.WriteLine(exception);
+                }
+            }
+            catch
+            {
+                // usually writer of ended session
             }
         }
     }
