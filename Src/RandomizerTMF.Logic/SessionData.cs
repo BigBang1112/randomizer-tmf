@@ -73,7 +73,7 @@ public class SessionData
     {
         logger?.LogInformation("Saving the session data into file...");
 
-        File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), RandomizerEngine.YamlSerializer.Serialize(this));
+        File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
 
         logger?.LogInformation("Session data saved.");
     }

@@ -79,7 +79,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             try
             {
                 var sessionYmlContent = await File.ReadAllTextAsync(sessionYml);
-                sessionData = RandomizerEngine.YamlDeserializer.Deserialize<SessionData>(sessionYmlContent);
+                sessionData = Yaml.Deserializer.Deserialize<SessionData>(sessionYmlContent);
                 sessionDataModel = new SessionDataModel(sessionData);
             }
             catch (Exception ex)

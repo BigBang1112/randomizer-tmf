@@ -1,30 +1,9 @@
-﻿using GBX.NET;
-using GBX.NET.Engines.Game;
-using GBX.NET.Exceptions;
-using Microsoft.Extensions.Logging;
-using RandomizerTMF.Logic.Exceptions;
-using RandomizerTMF.Logic.TypeConverters;
-using System.Diagnostics;
-using TmEssentials;
-using YamlDotNet.Serialization;
+﻿using Microsoft.Extensions.Logging;
 
 namespace RandomizerTMF.Logic;
 
 public static partial class RandomizerEngine
-{    
-    public static ISerializer YamlSerializer { get; } = new SerializerBuilder()
-        .WithTypeConverter(new DateOnlyConverter())
-        .WithTypeConverter(new DateTimeOffsetConverter())
-        .WithTypeConverter(new TimeInt32Converter())
-        .Build();
-
-    public static IDeserializer YamlDeserializer { get; } = new DeserializerBuilder()
-        .WithTypeConverter(new DateOnlyConverter())
-        .WithTypeConverter(new DateTimeOffsetConverter())
-        .WithTypeConverter(new TimeInt32Converter())
-        .IgnoreUnmatchedProperties()
-        .Build();
-
+{
     public static RandomizerConfig Config { get; }
     public static Dictionary<string, HashSet<string>> OfficialBlocks { get; }
 
@@ -116,7 +95,7 @@ public static partial class RandomizerEngine
             try
             {
                 using var reader = new StreamReader(Constants.ConfigYml);
-                config = YamlDeserializer.Deserialize<RandomizerConfig>(reader);
+                config = Yaml.Deserializer.Deserialize<RandomizerConfig>(reader);
             }
             catch (Exception ex)
             {
@@ -138,7 +117,7 @@ public static partial class RandomizerEngine
     private static Dictionary<string, HashSet<string>> GetOfficialBlocks()
     {
         using var reader = new StreamReader(Constants.OfficialBlocksYml);
-        return YamlDeserializer.Deserialize<Dictionary<string, HashSet<string>>>(reader);
+        return Yaml.Deserializer.Deserialize<Dictionary<string, HashSet<string>>>(reader);
     }
 
     public static GameDirInspectResult UpdateGameDirectory(string gameDirectoryPath)
@@ -203,7 +182,7 @@ public static partial class RandomizerEngine
     {
         Logger.LogInformation("Saving the config file...");
         
-        File.WriteAllText(Constants.ConfigYml, YamlSerializer.Serialize(config));
+        File.WriteAllText(Constants.ConfigYml, Yaml.Serializer.Serialize(config));
 
         Logger.LogInformation("Config file saved.");
     }
