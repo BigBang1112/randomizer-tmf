@@ -16,7 +16,7 @@ namespace RandomizerTMF.Views
                 RandomizerEngine.Config.Modules.Control.Width = Convert.ToInt32(Width);
                 RandomizerEngine.Config.Modules.Control.Height = Convert.ToInt32(Height);
 
-                RandomizerEngine.SaveConfig();
+                RandomizerEngine.Config.Save();
             };
 
             Deactivated += (_, _) => { Topmost = false; Topmost = true; };

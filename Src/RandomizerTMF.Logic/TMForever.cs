@@ -45,13 +45,17 @@ public class TMForever
         }
     }
 
-    public void OpenAutosave(string fileName)
+    /// <summary>
+    /// Opens the autosave ingame.
+    /// </summary>
+    /// <param name="relativeFileName">File name relative to the Autosaves folder.</param>
+    public void OpenAutosave(string relativeFileName)
     {
         if (FilePathManager.AutosavesDirectoryPath is null)
         {
             throw new Exception("Cannot open an autosave ingame without a valid user data directory path.");
         }
 
-        OpenFile(Path.Combine(FilePathManager.AutosavesDirectoryPath, fileName));
+        OpenFile(Path.Combine(FilePathManager.AutosavesDirectoryPath, relativeFileName));
     }
 }

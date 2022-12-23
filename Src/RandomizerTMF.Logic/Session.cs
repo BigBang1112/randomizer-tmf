@@ -37,10 +37,10 @@ public class Session
     public StreamWriter? LogWriter { get; set; }
 
     public Session(MapDownloader mapDownloader,
-                          RandomizerConfig config,
-                          TMForever game,
-                          HttpClient http,
-                          ILogger logger)
+                   RandomizerConfig config,
+                   TMForever game,
+                   HttpClient http,
+                   ILogger logger)
     {
         this.mapDownloader = mapDownloader;
         this.config = config;

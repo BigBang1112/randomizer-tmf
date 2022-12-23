@@ -104,7 +104,7 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
 
     public void SaveAndProceedClick()
     {
-        RandomizerEngine.SaveConfig();
+        RandomizerEngine.Config.Save();
 
         SwitchWindowTo<DashboardWindow, DashboardWindowViewModel>();
     }

@@ -16,7 +16,7 @@ namespace RandomizerTMF.Views
                 RandomizerEngine.Config.Modules.Progress.Width = Convert.ToInt32(Width);
                 RandomizerEngine.Config.Modules.Progress.Height = Convert.ToInt32(Height);
 
-                RandomizerEngine.SaveConfig();
+                RandomizerEngine.Config.Save();
             };
 
             Deactivated += (_, _) => { Topmost = false; Topmost = true; };
