@@ -1,5 +1,4 @@
-﻿using RandomizerTMF.Logic.Exceptions;
-using System.Collections;
+﻿using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -11,6 +10,8 @@ public class RequestRules
 {
     private static readonly ESite[] siteValues = Enum.GetValues<ESite>();
     private static readonly EEnvironment[] envValues = Enum.GetValues<EEnvironment>();
+    private static readonly EEnvironment[] sunriseEnvValues = new [] { EEnvironment.Island, EEnvironment.Bay, EEnvironment.Coast };
+    private static readonly EEnvironment[] originalEnvValues = new [] { EEnvironment.Desert, EEnvironment.Snow, EEnvironment.Rally };
 
     // Custom rules that are not part of the official API
 
@@ -75,12 +76,12 @@ public class RequestRules
 
             if (EqualEnvironmentDistribution && prop.Name == nameof(Environment))
             {
-                val = GetRandomEnvironmentThroughSet(Environment);
+                val = GetRandomEnvironmentThroughSet(Environment, site);
             }
 
             if (EqualVehicleDistribution && prop.Name == nameof(Vehicle))
             {
-                val = GetRandomEnvironmentThroughSet(Vehicle);
+                val = GetRandomEnvironmentThroughSet(Vehicle, site);
             }
 
             if (val is null || (val is IEnumerable enumerable && !enumerable.Cast<object>().Any()))
@@ -188,19 +189,24 @@ public class RequestRules
         return true;
     }
 
-    private static EEnvironment GetRandomEnvironment(HashSet<EEnvironment>? container)
+    private static EEnvironment GetRandomEnvironment(HashSet<EEnvironment>? container, ESite site)
     {
-        if (container is null || container.Count == 0)
+        if (container is not null && container.Count != 0)
         {
-            return (EEnvironment)Random.Shared.Next(0, envValues.Length); // Safe in case of EEnvironment
+            return container.ElementAt(Random.Shared.Next(0, container.Count));
         }
         
-        return container.ElementAt(Random.Shared.Next(0, container.Count));
+        return site switch
+        {
+            ESite.Sunrise => sunriseEnvValues[Random.Shared.Next(0, sunriseEnvValues.Length)],
+            ESite.Original => originalEnvValues[Random.Shared.Next(0, originalEnvValues.Length)],
+            _ => (EEnvironment)Random.Shared.Next(0, envValues.Length) // Safe in case of EEnvironment
+        };
     }
 
-    private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(HashSet<EEnvironment>? container)
+    private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(HashSet<EEnvironment>? container, ESite site)
     {
-        return new HashSet<EEnvironment>() { GetRandomEnvironment(container) };
+        return new HashSet<EEnvironment>() { GetRandomEnvironment(container, site) };
     }
 
     private static ESite GetRandomSite(ESite[] matchingSites)
