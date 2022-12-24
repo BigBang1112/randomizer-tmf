@@ -145,6 +145,14 @@ public static class Validator
                 return false;
             }
 
+            if (RandomizerEngine.MapSizes.TryGetValue(map.Collection, out var sizes))
+            {
+                if (map.Size is null || !sizes.Contains(map.Size.Value))
+                {
+                    return false;
+                }
+            }
+
             if (RandomizerEngine.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
             {
                 foreach (var block in map.GetBlocks())

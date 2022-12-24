@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using GBX.NET;
+using Microsoft.Extensions.Logging;
 
 namespace RandomizerTMF.Logic;
 
@@ -6,6 +7,7 @@ public static partial class RandomizerEngine
 {
     public static RandomizerConfig Config { get; }
     public static Dictionary<string, HashSet<string>> OfficialBlocks { get; }
+    public static Dictionary<string, HashSet<Int3>> MapSizes { get; }
 
     public static HttpClient Http { get; }
 
@@ -50,6 +52,10 @@ public static partial class RandomizerEngine
 
         OfficialBlocks = GetOfficialBlocks();
 
+        Logger.LogInformation("Loading map sizes...");
+
+        MapSizes = GetMapSizes();
+
         Logger.LogInformation("Preparing HTTP client...");
 
         var socketHandler = new SocketsHttpHandler()
@@ -81,6 +87,12 @@ public static partial class RandomizerEngine
     {
         using var reader = new StreamReader(Constants.OfficialBlocksYml);
         return Yaml.Deserializer.Deserialize<Dictionary<string, HashSet<string>>>(reader);
+    }
+
+    private static Dictionary<string, HashSet<Int3>> GetMapSizes()
+    {
+        using var reader = new StreamReader(Constants.MapSizesYml);
+        return Yaml.Deserializer.Deserialize<Dictionary<string, HashSet<Int3>>>(reader);
     }
 
     /// <summary>

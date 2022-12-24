@@ -9,12 +9,14 @@ public static class Yaml
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
         .WithTypeConverter(new TimeInt32Converter())
+        .WithTypeConverter(new Int3Converter())
         .Build();
 
     public static IDeserializer Deserializer { get; } = new DeserializerBuilder()
         .WithTypeConverter(new DateOnlyConverter())
         .WithTypeConverter(new DateTimeOffsetConverter())
         .WithTypeConverter(new TimeInt32Converter())
+        .WithTypeConverter(new Int3Converter())
         .IgnoreUnmatchedProperties()
         .Build();
 }
