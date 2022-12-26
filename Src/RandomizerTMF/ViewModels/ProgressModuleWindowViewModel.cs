@@ -1,5 +1,5 @@
 ﻿using Avalonia.Media;
-using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;

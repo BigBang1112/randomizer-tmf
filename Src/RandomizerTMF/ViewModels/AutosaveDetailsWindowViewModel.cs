@@ -1,5 +1,5 @@
 ﻿using GBX.NET.Engines.Game;
-using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Models;
 using TmEssentials;
 

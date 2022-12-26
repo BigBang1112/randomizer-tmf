@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;

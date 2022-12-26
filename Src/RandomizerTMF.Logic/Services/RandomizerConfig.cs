@@ -2,7 +2,7 @@
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
 public interface IRandomizerConfig
 {

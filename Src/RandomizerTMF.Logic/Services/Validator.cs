@@ -1,7 +1,7 @@
 ﻿using GBX.NET.Engines.Game;
 using RandomizerTMF.Logic.Exceptions;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
 public interface IValidator
 {
@@ -143,6 +143,7 @@ public class Validator : IValidator
     /// <summary>
     /// Checks if the map hasn't been already played or if it follows current session rules.
     /// </summary>
+    /// <param name="autosaveScanner">Autosave information.</param>
     /// <param name="map"></param>
     /// <returns>True if valid, false if not valid.</returns>
     public bool ValidateMap(IAutosaveScanner autosaveScanner, CGameCtnChallenge map, out string? invalidBlock)

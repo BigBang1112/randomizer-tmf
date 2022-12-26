@@ -1,4 +1,4 @@
-﻿namespace RandomizerTMF.Logic;
+﻿namespace RandomizerTMF.Logic.Services;
 
 public interface IFilePathManager
 {

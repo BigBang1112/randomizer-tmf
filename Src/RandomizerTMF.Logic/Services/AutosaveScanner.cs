@@ -7,7 +7,7 @@ using RandomizerTMF.Logic.Exceptions;
 using System.Diagnostics;
 using TmEssentials;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
 public interface IAutosaveScanner
 {
@@ -139,7 +139,7 @@ public class AutosaveScanner : IAutosaveScanner
 
             break;
         }
-        
+
         events.OnSessionAutosaveCreatedOrChanged(e.FullPath, replay);
     }
 

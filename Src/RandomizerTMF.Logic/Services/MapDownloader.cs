@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using TmEssentials;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
 public interface IMapDownloader
 {

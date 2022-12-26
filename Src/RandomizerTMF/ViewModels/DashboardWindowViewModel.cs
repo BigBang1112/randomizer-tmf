@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Logic.Exceptions;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;

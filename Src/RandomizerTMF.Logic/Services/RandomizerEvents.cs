@@ -1,7 +1,7 @@
 ﻿using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
 public interface IRandomizerEvents
 {
@@ -49,7 +49,7 @@ public class RandomizerEvents : IRandomizerEvents
     public void OnMapEnded() => MapEnded?.Invoke();
     public void OnMapSkip() => MapSkip?.Invoke();
     public void OnMedalUpdate() => MedalUpdate?.Invoke();
-    
+
     public void OnSessionAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay)
     {
         SessionAutosaveCreatedOrChanged?.Invoke(fileName, replay);

@@ -1,7 +1,7 @@
 ﻿using GBX.NET;
 using Microsoft.Extensions.Logging;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
 public interface IAdditionalData
 {
