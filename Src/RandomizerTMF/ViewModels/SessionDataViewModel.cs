@@ -5,12 +5,11 @@ using ReactiveUI;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using TmEssentials;
 
 namespace RandomizerTMF.ViewModels;
 
-public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
+internal class SessionDataViewModel : WindowWithTopBarViewModelBase
 {
     private ObservableCollection<SessionDataReplayModel> replays = new();
     private SessionDataMapModel? selectedMap;
@@ -63,7 +62,7 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
     /// <summary>
     /// Should be only used for window preview
     /// </summary>
-    public SessionDataViewModel() : this(new(new()
+    public SessionDataViewModel() : this(new(), new(new()
     {
         StartedAt = DateTimeOffset.Now,
         Maps = new List<SessionDataMap>()
@@ -92,7 +91,7 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
         TopBarViewModel.Title = "Session";
     }
 
-    public SessionDataViewModel(SessionDataModel model)
+    public SessionDataViewModel(TopBarViewModel topBarViewModel, SessionDataModel model) : base(topBarViewModel)
     {
         Model = model;
         Rules = ConstructRules();
@@ -188,12 +187,9 @@ public partial class SessionDataViewModel : WindowWithTopBarViewModelBase
         }
     }
 
-    [GeneratedRegex("[a-z][A-Z]")]
-    private static partial Regex SentenceCaseRegex();
-
     // THX https://stackoverflow.com/a/1211435/3923447
     private static string ToSentenceCase(string str)
     {
-        return SentenceCaseRegex().Replace(str, m => $"{m.Value[0]} {char.ToLower(m.Value[1])}");
+        return CompiledRegex.SentenceCaseRegex().Replace(str, m => $"{m.Value[0]} {char.ToLower(m.Value[1])}");
     }
 }

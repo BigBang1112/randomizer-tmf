@@ -1,16 +1,13 @@
 ﻿using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
-using System.Collections.Immutable;
-using System.Diagnostics;
 using TmEssentials;
 using YamlDotNet.Serialization;
-using static GBX.NET.Engines.Game.CGameGhost;
 
 namespace RandomizerTMF.Logic;
 
 public class SessionData
 {
-    private readonly RandomizerConfig config;
+    private readonly IRandomizerConfig config;
     private readonly ILogger? logger;
 
     public string? Version { get; set; }
@@ -25,12 +22,12 @@ public class SessionData
 
     public List<SessionDataMap> Maps { get; set; } = new();
 
-    public SessionData() : this(null, DateTimeOffset.Now, new(), null)
+    public SessionData() : this(null, DateTimeOffset.Now, new RandomizerConfig(), null)
     {
         
     }
 
-    private SessionData(string? version, DateTimeOffset startedAt, RandomizerConfig config, ILogger? logger)
+    private SessionData(string? version, DateTimeOffset startedAt, IRandomizerConfig config, ILogger? logger)
     {
         Version = version;
         StartedAt = startedAt;
@@ -43,7 +40,7 @@ public class SessionData
         DirectoryPath = Path.Combine(FilePathManager.SessionsDirectoryPath, StartedAtText);
     }
 
-    public static SessionData Initialize(RandomizerConfig config, ILogger logger)
+    public static SessionData Initialize(IRandomizerConfig config, ILogger logger)
     {
         var startedAt = DateTimeOffset.Now;
 

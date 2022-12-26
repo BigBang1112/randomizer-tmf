@@ -3,14 +3,22 @@ using System.Diagnostics;
 
 namespace RandomizerTMF.Logic;
 
-public class TMForever
+public interface ITMForever
 {
-    private readonly RandomizerConfig config;
+    void OpenAutosave(string relativeFileName);
+    void OpenFile(string filePath);
+}
+
+public class TMForever : ITMForever
+{
+    private readonly IRandomizerConfig config;
+    private readonly IFilePathManager filePathManager;
     private readonly ILogger logger;
 
-    public TMForever(RandomizerConfig config, ILogger logger)
+    public TMForever(IRandomizerConfig config, IFilePathManager filePathManager, ILogger logger)
     {
         this.config = config;
+        this.filePathManager = filePathManager;
         this.logger = logger;
     }
 
@@ -51,11 +59,11 @@ public class TMForever
     /// <param name="relativeFileName">File name relative to the Autosaves folder.</param>
     public void OpenAutosave(string relativeFileName)
     {
-        if (FilePathManager.AutosavesDirectoryPath is null)
+        if (filePathManager.AutosavesDirectoryPath is null)
         {
             throw new Exception("Cannot open an autosave ingame without a valid user data directory path.");
         }
 
-        OpenFile(Path.Combine(FilePathManager.AutosavesDirectoryPath, relativeFileName));
+        OpenFile(Path.Combine(filePathManager.AutosavesDirectoryPath, relativeFileName));
     }
 }

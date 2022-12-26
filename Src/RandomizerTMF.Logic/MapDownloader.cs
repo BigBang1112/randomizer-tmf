@@ -5,31 +5,49 @@ using RandomizerTMF.Logic.Exceptions;
 using System.Diagnostics;
 using System.Net;
 using TmEssentials;
-using System.Threading;
 
 namespace RandomizerTMF.Logic;
 
-public class MapDownloader
+public interface IMapDownloader
 {
-    private readonly RandomizerConfig config;
+    Task<bool> PrepareNewMapAsync(Session currentSession, CancellationToken cancellationToken);
+}
+
+public class MapDownloader : IMapDownloader
+{
+    private readonly IRandomizerEvents events;
+    private readonly IRandomizerConfig config;
+    private readonly IFilePathManager filePathManager;
+    private readonly IAutosaveScanner autosaveScanner;
+    private readonly IValidator validator;
     private readonly HttpClient http;
     private readonly ILogger logger;
 
     private static readonly int requestMaxAttempts = 10;
     private static int requestAttempt;
 
-    public MapDownloader(RandomizerConfig config, HttpClient http, ILogger logger)
+    public MapDownloader(IRandomizerEvents events,
+                         IRandomizerConfig config,
+                         IFilePathManager filePathManager,
+                         IAutosaveScanner autosaveScanner,
+                         IValidator validator,
+                         HttpClient http,
+                         ILogger logger)
     {
+        this.events = events;
         this.config = config;
+        this.filePathManager = filePathManager;
+        this.autosaveScanner = autosaveScanner;
+        this.validator = validator;
         this.http = http;
         this.logger = logger;
     }
 
     private void Status(string status)
     {
-        RandomizerEngine.OnStatus(status);
+        events.OnStatus(status);
     }
-    
+
     /// <summary>
     /// Requests, downloads, and allocates the map.
     /// </summary>
@@ -82,7 +100,7 @@ public class MapDownloader
         {
             FilePath = mapSavePath
         };
-        
+
         currentSession.Data?.Maps.Add(new()
         {
             Name = TextFormatter.Deformat(map.MapName),
@@ -97,13 +115,13 @@ public class MapDownloader
     {
         Status("Saving the map...");
 
-        if (FilePathManager.DownloadedDirectoryPath is null)
+        if (filePathManager.DownloadedDirectoryPath is null)
         {
             throw new UnreachableException("Cannot update autosaves without a valid user data directory path.");
         }
 
-        logger.LogDebug("Ensuring {dir} exists...", FilePathManager.DownloadedDirectoryPath);
-        Directory.CreateDirectory(FilePathManager.DownloadedDirectoryPath); // Ensures the directory really exists
+        logger.LogDebug("Ensuring {dir} exists...", filePathManager.DownloadedDirectoryPath);
+        Directory.CreateDirectory(filePathManager.DownloadedDirectoryPath); // Ensures the directory really exists
 
         logger.LogDebug("Preparing the file name...");
 
@@ -113,7 +131,7 @@ public class MapDownloader
         // Validates the file name and fixes it if needed
         fileName = FilePathManager.ClearFileName(fileName);
 
-        var mapSavePath = Path.Combine(FilePathManager.DownloadedDirectoryPath, fileName);
+        var mapSavePath = Path.Combine(filePathManager.DownloadedDirectoryPath, fileName);
 
         logger.LogInformation("Saving the map as {fileName}...", mapSavePath);
 
@@ -148,7 +166,7 @@ public class MapDownloader
         }
 
         randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
-        
+
         return randomResponse;
     }
 
@@ -189,9 +207,9 @@ public class MapDownloader
         var trackGbxUrl = $"https://{host}/trackgbx/{trackId}";
 
         logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
-        
+
         var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
-        
+
         trackGbxResponse.EnsureSuccessStatusCode();
 
         return trackGbxResponse;
@@ -221,11 +239,11 @@ public class MapDownloader
 
         requestAttempt = 0;
 
-        if (Validator.ValidateMap(config, map, out string? invalidBlock))
+        if (validator.ValidateMap(autosaveScanner, map, out string? invalidBlock))
         {
             return;
         }
-        
+
         // Attempts another track if invalid
         requestAttempt++;
 

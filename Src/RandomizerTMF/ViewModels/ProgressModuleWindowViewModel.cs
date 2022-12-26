@@ -4,17 +4,23 @@ using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class ProgressModuleWindowViewModel : WindowViewModelBase
+internal class ProgressModuleWindowViewModel : ModuleWindowViewModelBase
 {
-    public int AuthorMedalCount => RandomizerEngine.CurrentSession?.AuthorMaps.Count ?? 0;
-    public int GoldMedalCount => RandomizerEngine.CurrentSession?.GoldMaps.Count ?? 0;
-    public int SkipCount => RandomizerEngine.CurrentSession?.SkippedMaps.Count ?? 0;
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerEvents events;
+
+    public int AuthorMedalCount => engine.CurrentSession?.AuthorMaps.Count ?? 0;
+    public int GoldMedalCount => engine.CurrentSession?.GoldMaps.Count ?? 0;
+    public int SkipCount => engine.CurrentSession?.SkippedMaps.Count ?? 0;
     public IBrush SkipColor => SkipCount == 0 ? Brushes.LightGreen : Brushes.Orange;
 
-    public ProgressModuleWindowViewModel()
-	{
-        RandomizerEngine.MedalUpdate += RandomizerMedalUpdate;
-        RandomizerEngine.MapSkip += RandomizerMapSkip;
+    public ProgressModuleWindowViewModel(IRandomizerEngine engine, IRandomizerEvents events, IRandomizerConfig config) : base(config)
+    {
+        this.engine = engine;
+        this.events = events;
+
+        events.MedalUpdate += RandomizerMedalUpdate;
+        events.MapSkip += RandomizerMapSkip;
     }
 
     private void RandomizerMedalUpdate()

@@ -3,13 +3,16 @@ using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class StatusModuleWindowViewModel : WindowViewModelBase
+internal class StatusModuleWindowViewModel : ModuleWindowViewModelBase
 {
     private Task? updateTimeTask;
     private CancellationTokenSource? updateTimeCancellationTokenSource;
 
     private string statusText = "Idle";
     private float timeOpacity = 1f;
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerEvents events;
+    private readonly IRandomizerConfig config;
 
     public TimeSpan Time { get; private set; }
     public string TimeText => Time.ToString("h':'mm':'ss");
@@ -26,13 +29,17 @@ public class StatusModuleWindowViewModel : WindowViewModelBase
         private set => this.RaiseAndSetIfChanged(ref timeOpacity, value);
     }
 
-    public StatusModuleWindowViewModel()
+    public StatusModuleWindowViewModel(IRandomizerEngine engine, IRandomizerEvents events, IRandomizerConfig config) : base(config)
     {
-        Time = RandomizerEngine.Config.Rules.TimeLimit;
+        this.engine = engine;
+        this.events = events;
+        this.config = config;
+        
+        Time = config.Rules.TimeLimit;
 
-        RandomizerEngine.MapStarted += RandomizerMapStarted;
-        RandomizerEngine.MapEnded += RandomizerMapEnded;
-        RandomizerEngine.Status += RandomizerStatus;
+        events.MapStarted += RandomizerMapStarted;
+        events.MapEnded += RandomizerMapEnded;
+        events.Status += RandomizerStatus;
     }
 
     private void RandomizerStatus(string status)
@@ -47,9 +54,9 @@ public class StatusModuleWindowViewModel : WindowViewModelBase
         {
             while (true)
             {
-                if (RandomizerEngine.CurrentSession?.Watch is not null)
+                if (engine.CurrentSession?.Watch is not null)
                 {
-                    Time = RandomizerEngine.Config.Rules.TimeLimit - RandomizerEngine.CurrentSession.Watch.Elapsed;
+                    Time = config.Rules.TimeLimit - engine.CurrentSession.Watch.Elapsed;
                     this.RaisePropertyChanged(nameof(TimeText));
                 }
 

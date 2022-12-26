@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Collections.Immutable;
 
 namespace RandomizerTMF.Logic;
 
@@ -6,16 +7,21 @@ public class LoggerToFile : ILogger
 {
     internal LogScope? CurrentScope { get; set; }
 
-    public IList<StreamWriter> Writers { get; set; }
-
-    public LoggerToFile(params StreamWriter[] writers)
-    {
-        Writers = writers;
-    }
+    public ImmutableArray<StreamWriter> Writers { get; private set; }
 
     public LoggerToFile(StreamWriter writer)
     {
-        Writers = new List<StreamWriter> { writer };
+        Writers = ImmutableArray.Create(writer);
+    }
+
+    public void SetSessionWriter(StreamWriter writer)
+    {
+        Writers = ImmutableArray.Create(Writers[0], writer);
+    }
+
+    public void RemoveSessionWriter()
+    {
+        Writers = ImmutableArray.Create(Writers[0]);
     }
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull

@@ -9,9 +9,12 @@ namespace RandomizerTMF.Logic;
 
 public class Session
 {
-    private readonly MapDownloader mapDownloader;
-    private readonly RandomizerConfig config;
-    private readonly TMForever game;
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerEvents events;
+    private readonly IMapDownloader mapDownloader;
+    private readonly IValidator validator;
+    private readonly IRandomizerConfig config;
+    private readonly ITMForever game;
     private readonly HttpClient http;
     private readonly ILogger logger;
 
@@ -36,22 +39,28 @@ public class Session
     
     public StreamWriter? LogWriter { get; set; }
 
-    public Session(MapDownloader mapDownloader,
-                   RandomizerConfig config,
-                   TMForever game,
+    public Session(IRandomizerEngine engine,
+                   IRandomizerEvents events,
+                   IMapDownloader mapDownloader,
+                   IValidator validator,
+                   IRandomizerConfig config,
+                   ITMForever game,
                    HttpClient http,
                    ILogger logger)
     {
+        this.engine = engine;
+        this.events = events;
         this.mapDownloader = mapDownloader;
+        this.validator = validator;
         this.config = config;
         this.game = game;
         this.http = http;
         this.logger = logger;
     }
 
-    private static void Status(string status)
+    private void Status(string status)
     {
-        RandomizerEngine.OnStatus(status);
+        events.OnStatus(status);
     }
 
     public void Start()
@@ -102,7 +111,7 @@ public class Session
             throw new UnreachableException("Game directory is null");
         }
 
-        Validator.ValidateRules(config.Rules);
+        validator.ValidateRules(config.Rules);
         
         Data = SessionData.Initialize(config, logger);
 
@@ -113,7 +122,7 @@ public class Session
 
         if (logger is LoggerToFile loggerToFile) // Maybe needs to be nicer
         {
-            loggerToFile.Writers = ImmutableArray.Create(LogWriter, RandomizerEngine.LogWriter);
+            loggerToFile.SetSessionWriter(LogWriter);
         }
 
         while (true)
@@ -188,8 +197,8 @@ public class Session
         Watch.Start();
 
         SkipTokenSource = new CancellationTokenSource();
-        
-        RandomizerEngine.OnMapStarted();
+
+        events.OnMapStarted();
 
         Status("Playing the map...");
 
@@ -240,7 +249,7 @@ public class Session
     {
         SkipTokenSource = null;
         Map = null;
-        RandomizerEngine.OnMapEnded();
+        events.OnMapEnded();
     }
     
     private void SkipManually(SessionMap map)
@@ -256,7 +265,7 @@ public class Session
         // In other words, if the player received at least a gold medal, the skip is forgiven
 
         // MapSkip event is thrown to update the UI
-        RandomizerEngine.OnMapSkip();
+        events.OnMapSkip();
     }
 
     internal void AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
@@ -339,7 +348,7 @@ public class Session
         map.LastTimestamp = Watch.Elapsed;
         Data?.SetMapResult(map, Constants.GoldMedal);
 
-        RandomizerEngine.OnMedalUpdate();
+        events.OnMedalUpdate();
     }
 
     private void AuthorMedalReceived(SessionMap map)
@@ -349,7 +358,7 @@ public class Session
         map.LastTimestamp = Watch.Elapsed;
         Data?.SetMapResult(map, Constants.AuthorMedal);
 
-        RandomizerEngine.OnMedalUpdate();
+        events.OnMedalUpdate();
     }
 
     public void Stop()

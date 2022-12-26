@@ -1,22 +1,40 @@
 ﻿using Microsoft.Extensions.Logging;
-using RandomizerTMF.Logic;
 using RandomizerTMF.Models;
 using System.Net.Http.Json;
 
 namespace RandomizerTMF;
 
-internal static class UpdateDetector
+internal interface IUpdateDetector
 {
-    public static string? UpdateCheckResult { get; private set; }
-    public static bool IsNewUpdate { get; private set; }
-    public static event Action? UpdateChecked;
+    bool IsNewUpdate { get; }
+    string? UpdateCheckResult { get; }
 
-    public static async void RequestNewUpdateAsync()
+    event Action? UpdateChecked;
+
+    void RequestNewUpdateAsync();
+}
+
+internal class UpdateDetector : IUpdateDetector
+{
+    private readonly HttpClient http;
+    private readonly ILogger logger;
+
+    public string? UpdateCheckResult { get; private set; }
+    public bool IsNewUpdate { get; private set; }
+    public event Action? UpdateChecked;
+
+    public UpdateDetector(HttpClient http, ILogger logger)
+    {
+        this.http = http;
+        this.logger = logger;
+    }
+
+    public async void RequestNewUpdateAsync()
     {
         try
         {
             // Handle rate limiting better
-            var response = await RandomizerEngine.Http.GetAsync("https://api.github.com/repos/bigbang1112/randomizer-tmf/releases");
+            var response = await http.GetAsync("https://api.github.com/repos/bigbang1112/randomizer-tmf/releases");
 
             response.EnsureSuccessStatusCode();
 
@@ -49,7 +67,7 @@ internal static class UpdateDetector
         }
         catch (Exception ex)
         {
-            RandomizerEngine.Logger.LogError(ex, "Exception when requesting an update.");
+            logger.LogError(ex, "Exception when requesting an update.");
             UpdateCheckResult = ex.GetType().Name;
         }
         finally

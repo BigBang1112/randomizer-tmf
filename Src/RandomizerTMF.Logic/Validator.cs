@@ -3,13 +3,29 @@ using RandomizerTMF.Logic.Exceptions;
 
 namespace RandomizerTMF.Logic;
 
-public static class Validator
+public interface IValidator
 {
+    bool ValidateMap(IAutosaveScanner autosaveScanner, CGameCtnChallenge map, out string? invalidBlock);
+    void ValidateRequestRules(RequestRules requestRules);
+    void ValidateRules(RandomizerRules rules);
+}
+
+public class Validator : IValidator
+{
+    private readonly IAdditionalData additionalData;
+    private readonly IRandomizerConfig config;
+
+    public Validator(IAdditionalData additionalData, IRandomizerConfig config)
+    {
+        this.additionalData = additionalData;
+        this.config = config;
+    }
+
     /// <summary>
     /// Validates the session rules. This should be called right before the session start and after loading the modules.
     /// </summary>
     /// <exception cref="RuleValidationException"></exception>
-    public static void ValidateRules(RandomizerRules rules)
+    public void ValidateRules(RandomizerRules rules)
     {
         if (rules.TimeLimit == TimeSpan.Zero)
         {
@@ -24,7 +40,7 @@ public static class Validator
         ValidateRequestRules(rules.RequestRules);
     }
 
-    public static void ValidateRequestRules(RequestRules requestRules)
+    public void ValidateRequestRules(RequestRules requestRules)
     {
         foreach (var primaryType in Enum.GetValues<EPrimaryType>())
         {
@@ -123,17 +139,17 @@ public static class Validator
             throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange.");
         }
     }
-    
+
     /// <summary>
     /// Checks if the map hasn't been already played or if it follows current session rules.
     /// </summary>
     /// <param name="map"></param>
     /// <returns>True if valid, false if not valid.</returns>
-    public static bool ValidateMap(RandomizerConfig config, CGameCtnChallenge map, out string? invalidBlock)
+    public bool ValidateMap(IAutosaveScanner autosaveScanner, CGameCtnChallenge map, out string? invalidBlock)
     {
         invalidBlock = null;
 
-        if (AutosaveScanner.AutosaveHeaders.ContainsKey(map.MapUid))
+        if (autosaveScanner.AutosaveHeaders.ContainsKey(map.MapUid))
         {
             return false;
         }
@@ -145,7 +161,7 @@ public static class Validator
                 return false;
             }
 
-            if (RandomizerEngine.MapSizes.TryGetValue(map.Collection, out var sizes))
+            if (additionalData.MapSizes.TryGetValue(map.Collection, out var sizes))
             {
                 if (map.Size is null || !sizes.Contains(map.Size.Value))
                 {
@@ -153,7 +169,7 @@ public static class Validator
                 }
             }
 
-            if (RandomizerEngine.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            if (additionalData.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
             {
                 foreach (var block in map.GetBlocks())
                 {

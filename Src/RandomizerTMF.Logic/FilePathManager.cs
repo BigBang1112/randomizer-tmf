@@ -1,13 +1,27 @@
 ﻿namespace RandomizerTMF.Logic;
 
-public static class FilePathManager
+public interface IFilePathManager
 {
-    private static string? userDataDirectoryPath;
-    
+    string? AutosavesDirectoryPath { get; }
+    string? DownloadedDirectoryPath { get; }
+    string? TmForeverExeFilePath { get; }
+    string? TmUnlimiterExeFilePath { get; }
+    string? UserDataDirectoryPath { get; set; }
+
+    event Action UserDataDirectoryPathUpdated;
+
+    GameDirInspectResult UpdateGameDirectory(string gameDirectoryPath);
+}
+
+public class FilePathManager : IFilePathManager
+{
+    private readonly IRandomizerConfig config;
+    private string? userDataDirectoryPath;
+
     /// <summary>
     /// General directory of the user data. It also sets the <see cref="AutosavesDirectoryPath"/>, <see cref="DownloadedDirectoryPath"/>, and <see cref="AutosaveWatcher"/> path with it.
     /// </summary>
-    public static string? UserDataDirectoryPath
+    public string? UserDataDirectoryPath
     {
         get => userDataDirectoryPath;
         set
@@ -16,29 +30,36 @@ public static class FilePathManager
 
             AutosavesDirectoryPath = userDataDirectoryPath is null ? null : Path.Combine(userDataDirectoryPath, Constants.Tracks, Constants.Replays, Constants.Autosaves);
             DownloadedDirectoryPath = userDataDirectoryPath is null ? null
-                : Path.Combine(userDataDirectoryPath, Constants.Tracks, Constants.Challenges, Constants.Downloaded, string.IsNullOrWhiteSpace(RandomizerEngine.Config.DownloadedMapsDirectory)
+                : Path.Combine(userDataDirectoryPath, Constants.Tracks, Constants.Challenges, Constants.Downloaded, string.IsNullOrWhiteSpace(config.DownloadedMapsDirectory)
                     ? Constants.DownloadedMapsDirectory
-                    : RandomizerEngine.Config.DownloadedMapsDirectory);
+                    : config.DownloadedMapsDirectory);
 
-            AutosaveScanner.AutosaveWatcher.Path = AutosavesDirectoryPath ?? "";
+            UserDataDirectoryPathUpdated?.Invoke();
         }
     }
 
-    public static string? AutosavesDirectoryPath { get; private set; }
-    public static string? DownloadedDirectoryPath { get; private set; }
-    public const string SessionsDirectoryPath = Constants.Sessions;
+    public string? AutosavesDirectoryPath { get; private set; }
+    public string? DownloadedDirectoryPath { get; private set; }
+    public static string SessionsDirectoryPath = Constants.Sessions;
 
-    public static string? TmForeverExeFilePath { get; private set; }
-    public static string? TmUnlimiterExeFilePath { get; private set; }
+    public string? TmForeverExeFilePath { get; private set; }
+    public string? TmUnlimiterExeFilePath { get; private set; }
+
+    public event Action? UserDataDirectoryPathUpdated;
+
+    public FilePathManager(IRandomizerConfig config)
+    {
+        this.config = config;
+    }
 
     public static string ClearFileName(string fileName)
     {
         return string.Join('_', fileName.Split(Path.GetInvalidFileNameChars()));
     }
 
-    public static GameDirInspectResult UpdateGameDirectory(string gameDirectoryPath)
+    public GameDirInspectResult UpdateGameDirectory(string gameDirectoryPath)
     {
-        RandomizerEngine.Config.GameDirectory = gameDirectoryPath;
+        config.GameDirectory = gameDirectoryPath;
 
         var nadeoIniFilePath = Path.Combine(gameDirectoryPath, Constants.NadeoIni);
         var tmForeverExeFilePath = Path.Combine(gameDirectoryPath, Constants.TmForeverExe);
@@ -57,8 +78,6 @@ public static class FilePathManager
             if (UserDataDirectoryPath != newUserDataDirectoryPath)
             {
                 UserDataDirectoryPath = newUserDataDirectoryPath;
-
-                AutosaveScanner.ResetAutosaves();
             }
         }
         catch (Exception ex)
