@@ -18,7 +18,6 @@ public class MapDownloader : IMapDownloader
     private readonly IRandomizerEvents events;
     private readonly IRandomizerConfig config;
     private readonly IFilePathManager filePathManager;
-    private readonly IAutosaveScanner autosaveScanner;
     private readonly IValidator validator;
     private readonly HttpClient http;
     private readonly ILogger logger;
@@ -29,7 +28,6 @@ public class MapDownloader : IMapDownloader
     public MapDownloader(IRandomizerEvents events,
                          IRandomizerConfig config,
                          IFilePathManager filePathManager,
-                         IAutosaveScanner autosaveScanner,
                          IValidator validator,
                          HttpClient http,
                          ILogger logger)
@@ -37,7 +35,6 @@ public class MapDownloader : IMapDownloader
         this.events = events;
         this.config = config;
         this.filePathManager = filePathManager;
-        this.autosaveScanner = autosaveScanner;
         this.validator = validator;
         this.http = http;
         this.logger = logger;
@@ -239,7 +236,7 @@ public class MapDownloader : IMapDownloader
 
         requestAttempt = 0;
 
-        if (validator.ValidateMap(autosaveScanner, map, out string? invalidBlock))
+        if (validator.ValidateMap(map, out string? invalidBlock))
         {
             return;
         }

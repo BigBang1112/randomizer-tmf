@@ -5,18 +5,20 @@ namespace RandomizerTMF.Logic.Services;
 
 public interface IValidator
 {
-    bool ValidateMap(IAutosaveScanner autosaveScanner, CGameCtnChallenge map, out string? invalidBlock);
+    bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock);
     void ValidateRequestRules(RequestRules requestRules);
     void ValidateRules(RandomizerRules rules);
 }
 
 public class Validator : IValidator
 {
+    private readonly IAutosaveScanner autosaveScanner;
     private readonly IAdditionalData additionalData;
     private readonly IRandomizerConfig config;
 
-    public Validator(IAdditionalData additionalData, IRandomizerConfig config)
+    public Validator(IAutosaveScanner autosaveScanner, IAdditionalData additionalData, IRandomizerConfig config)
     {
+        this.autosaveScanner = autosaveScanner;
         this.additionalData = additionalData;
         this.config = config;
     }
@@ -146,7 +148,7 @@ public class Validator : IValidator
     /// <param name="autosaveScanner">Autosave information.</param>
     /// <param name="map"></param>
     /// <returns>True if valid, false if not valid.</returns>
-    public bool ValidateMap(IAutosaveScanner autosaveScanner, CGameCtnChallenge map, out string? invalidBlock)
+    public bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock)
     {
         invalidBlock = null;
 
