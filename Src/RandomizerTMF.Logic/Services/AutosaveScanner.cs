@@ -140,7 +140,7 @@ public class AutosaveScanner : IAutosaveScanner
             break;
         }
 
-        events.OnSessionAutosaveCreatedOrChanged(e.FullPath, replay);
+        events.OnAutosaveCreatedOrChanged(e.FullPath, replay);
     }
 
     /// <summary>

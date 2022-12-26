@@ -10,13 +10,11 @@ namespace RandomizerTMF.Logic;
 
 public class Session
 {
-    private readonly IRandomizerEngine engine;
     private readonly IRandomizerEvents events;
     private readonly IMapDownloader mapDownloader;
     private readonly IValidator validator;
     private readonly IRandomizerConfig config;
     private readonly ITMForever game;
-    private readonly HttpClient http;
     private readonly ILogger logger;
 
     private bool isActualSkipCancellation;
@@ -40,22 +38,18 @@ public class Session
     
     public StreamWriter? LogWriter { get; set; }
 
-    public Session(IRandomizerEngine engine,
-                   IRandomizerEvents events,
+    public Session(IRandomizerEvents events,
                    IMapDownloader mapDownloader,
                    IValidator validator,
                    IRandomizerConfig config,
                    ITMForever game,
-                   HttpClient http,
                    ILogger logger)
     {
-        this.engine = engine;
         this.events = events;
         this.mapDownloader = mapDownloader;
         this.validator = validator;
         this.config = config;
         this.game = game;
-        this.http = http;
         this.logger = logger;
     }
 
@@ -132,7 +126,12 @@ public class Session
 
             try
             {
-                await mapDownloader.PrepareNewMapAsync(this, cancellationToken);
+                if (!await mapDownloader.PrepareNewMapAsync(this, cancellationToken))
+                {
+                    await Task.Delay(500, cancellationToken);
+                    continue;
+                }
+                
                 Data?.Save(); // May not be super necessary?
             }
             catch (HttpRequestException)
@@ -195,11 +194,7 @@ public class Session
 
         game.OpenFile(Map.FilePath);
 
-        Watch.Start();
-
-        SkipTokenSource = new CancellationTokenSource();
-
-        events.OnMapStarted();
+        SkipTokenSource = StartTrackingMap();
 
         Status("Playing the map...");
 
@@ -246,8 +241,18 @@ public class Session
         // Map is no longer tracked at this point
     }
 
-    public void StopTrackingMap()
+    private CancellationTokenSource StartTrackingMap()
     {
+        Watch.Start();
+        events.AutosaveCreatedOrChanged += AutosaveCreatedOrChanged;
+        events.OnMapStarted();
+        
+        return new CancellationTokenSource();
+    }
+
+    private void StopTrackingMap()
+    {
+        events.AutosaveCreatedOrChanged -= AutosaveCreatedOrChanged;
         SkipTokenSource = null;
         Map = null;
         events.OnMapEnded();
@@ -269,7 +274,7 @@ public class Session
         events.OnMapSkip();
     }
 
-    internal void AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
+    private void AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
     {
         try
         {

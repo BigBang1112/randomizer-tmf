@@ -62,6 +62,7 @@ public class MapDownloader : IMapDownloader
 
         if (requestUri is null)
         {
+            logger.LogWarning("RequestUri of /trackrandom is null");
             return false;
         }
 
@@ -69,6 +70,7 @@ public class MapDownloader : IMapDownloader
 
         if (trackId is null)
         {
+            logger.LogWarning("TrackId of Uri redirect is null");
             return false;
         }
 
@@ -80,6 +82,7 @@ public class MapDownloader : IMapDownloader
 
         if (map is null)
         {
+            logger.LogWarning("Map object from /trackgbx is null");
             return false;
         }
 

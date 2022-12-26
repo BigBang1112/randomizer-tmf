@@ -10,14 +10,14 @@ public interface IRandomizerEvents
     event Action? MapStarted;
     event Action? MedalUpdate;
     event Action<string>? Status;
-    event Action<string, CGameCtnReplayRecord> SessionAutosaveCreatedOrChanged;
+    event Action<string, CGameCtnReplayRecord> AutosaveCreatedOrChanged;
 
     void OnMapEnded();
     void OnMapSkip();
     void OnMapStarted();
     void OnMedalUpdate();
     void OnStatus(string status);
-    void OnSessionAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay);
+    void OnAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay);
 }
 
 public class RandomizerEvents : IRandomizerEvents
@@ -29,7 +29,7 @@ public class RandomizerEvents : IRandomizerEvents
     public event Action? MapEnded;
     public event Action? MapSkip;
     public event Action? MedalUpdate;
-    public event Action<string, CGameCtnReplayRecord>? SessionAutosaveCreatedOrChanged;
+    public event Action<string, CGameCtnReplayRecord>? AutosaveCreatedOrChanged;
 
     public RandomizerEvents(ILogger logger)
     {
@@ -50,8 +50,8 @@ public class RandomizerEvents : IRandomizerEvents
     public void OnMapSkip() => MapSkip?.Invoke();
     public void OnMedalUpdate() => MedalUpdate?.Invoke();
 
-    public void OnSessionAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay)
+    public void OnAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay)
     {
-        SessionAutosaveCreatedOrChanged?.Invoke(fileName, replay);
+        AutosaveCreatedOrChanged?.Invoke(fileName, replay);
     }
 }

@@ -66,7 +66,7 @@ public class RandomizerEngine : IRandomizerEngine
             return;
         }
 
-        CurrentSession = new Session(this, events, mapDownloader, validator, config, game, http, logger);
+        CurrentSession = new Session(events, mapDownloader, validator, config, game, logger);
         CurrentSession.Start();
     }
 
