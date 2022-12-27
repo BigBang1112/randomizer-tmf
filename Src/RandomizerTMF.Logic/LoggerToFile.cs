@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
+using System.Text;
 
 namespace RandomizerTMF.Logic;
 
@@ -62,11 +63,28 @@ public class LoggerToFile : ILogger
 
         // CurrentScope is not utilized
 
+        var builder = new StringBuilder("[");
+        builder.Append(DateTime.Now.ToString());
+        builder.Append(", ");
+        builder.Append(logLevel);
+        builder.Append("] ");
+
+        var scope = CurrentScope;
+
+        while (scope is not null)
+        {
+            builder.Append(scope);
+            builder.Append(" => ");
+            scope = scope.Parent;
+        }
+
+        builder.Append(message);
+
         foreach (var writer in Writers)
         {
             try
             {
-                writer.WriteLine($"[{DateTime.Now}, {logLevel}] {message}");
+                writer.WriteLine(builder);
 
                 if (exception is not null)
                 {
