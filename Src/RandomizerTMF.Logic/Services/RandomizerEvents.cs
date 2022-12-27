@@ -67,7 +67,7 @@ public class RandomizerEvents : IRandomizerEvents
     {
         MapStarted?.Invoke();
         
-        discord.SessionStatus("Playing a map");
+        discord.SessionDetails("Playing a map");
     }
 
     public void OnMapEnded()
@@ -75,6 +75,7 @@ public class RandomizerEvents : IRandomizerEvents
         MapEnded?.Invoke();
 
         discord.SessionDefaultAsset();
+        discord.SessionDetails("Map ended");
     }
 
     public void OnMapSkip() => MapSkip?.Invoke();

@@ -11,7 +11,7 @@ public interface IDiscordRichPresence
     void SessionStart(DateTime start);
     void SessionPredictEnd(DateTime end);
     void SessionMap(string mapName, string imageUrl, string env);
-    void SessionStatus(string status);
+    void SessionDetails(string details);
     void AddToSessionPredictEnd(TimeSpan pausedTime);
     void SessionState(int atCount = 0, int goldCount = 0, int skipCount = 0);
     void SessionDefaultAsset();
@@ -42,9 +42,9 @@ internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
         Default("Idle");
     }
 
-    public void SessionStatus(string status)
+    public void SessionDetails(string details)
     {
-        client.UpdateDetails(status);
+        client.UpdateDetails(details);
     }
 
     public void SessionStart(DateTime start)
@@ -114,7 +114,7 @@ internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
 
     public void SessionDefaultAsset()
     {
-        client.UpdateLargeAsset("primary");
+        client.UpdateLargeAsset("primary", "");
         client.UpdateSmallAsset();
     }
 
