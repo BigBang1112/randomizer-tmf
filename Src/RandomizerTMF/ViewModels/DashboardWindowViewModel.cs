@@ -23,6 +23,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     private readonly IAutosaveScanner autosaveScanner;
     private readonly ITMForever game;
     private readonly IUpdateDetector updateDetector;
+    private readonly IDiscordRichPresence discord;
     private readonly ILogger logger;
 
     public RequestRulesControlViewModel RequestRulesControlViewModel { get; set; }
@@ -52,6 +53,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                                     IAutosaveScanner autosaveScanner,
                                     ITMForever game,
                                     IUpdateDetector updateDetector,
+                                    IDiscordRichPresence discord,
                                     ILogger logger) : base(topBarViewModel)
     {
         this.engine = engine;
@@ -61,9 +63,12 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         this.autosaveScanner = autosaveScanner;
         this.game = game;
         this.updateDetector = updateDetector;
+        this.discord = discord;
         this.logger = logger;
         
         RequestRulesControlViewModel = new(config);
+
+        discord.InDashboard();
     }
 
     protected internal override void OnInit()
@@ -207,6 +212,9 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             OpenMessageBox("Validation problem", ex.Message);
             return;
         }
+
+        discord.Idle();
+        discord.SessionState();
 
         App.Modules = new Window[]
         {

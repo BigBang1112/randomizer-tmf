@@ -11,6 +11,7 @@ public interface IRandomizerEvents
     event Action? MedalUpdate;
     event Action<string>? Status;
     event Action<string, CGameCtnReplayRecord> AutosaveCreatedOrChanged;
+    event Action? FirstMapStarted;
 
     void OnMapEnded();
     void OnMapSkip();
@@ -18,11 +19,15 @@ public interface IRandomizerEvents
     void OnMedalUpdate();
     void OnStatus(string status);
     void OnAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay);
+    void OnFirstMapStarted();
+    void OnTimeResume(TimeSpan pausedTime);
 }
 
 public class RandomizerEvents : IRandomizerEvents
 {
+    private readonly IRandomizerConfig config;
     private readonly ILogger logger;
+    private readonly IDiscordRichPresence discord;
 
     public event Action<string>? Status;
     public event Action? MapStarted;
@@ -30,10 +35,13 @@ public class RandomizerEvents : IRandomizerEvents
     public event Action? MapSkip;
     public event Action? MedalUpdate;
     public event Action<string, CGameCtnReplayRecord>? AutosaveCreatedOrChanged;
+    public event Action? FirstMapStarted;
 
-    public RandomizerEvents(ILogger logger)
+    public RandomizerEvents(IRandomizerConfig config, ILogger logger, IDiscordRichPresence discord)
     {
+        this.config = config;
         this.logger = logger;
+        this.discord = discord;
     }
 
     public void OnStatus(string status)
@@ -45,13 +53,40 @@ public class RandomizerEvents : IRandomizerEvents
         Status?.Invoke(status);
     }
 
-    public void OnMapStarted() => MapStarted?.Invoke();
-    public void OnMapEnded() => MapEnded?.Invoke();
+    public void OnFirstMapStarted()
+    {
+        FirstMapStarted?.Invoke();
+
+        var now = DateTime.UtcNow;
+        
+        discord.SessionStart(now);
+        discord.SessionPredictEnd(now + config.Rules.TimeLimit);
+    }
+
+    public void OnMapStarted()
+    {
+        MapStarted?.Invoke();
+        
+        discord.SessionStatus("Playing a map");
+    }
+
+    public void OnMapEnded()
+    {
+        MapEnded?.Invoke();
+
+        discord.SessionDefaultAsset();
+    }
+
     public void OnMapSkip() => MapSkip?.Invoke();
     public void OnMedalUpdate() => MedalUpdate?.Invoke();
 
     public void OnAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay)
     {
         AutosaveCreatedOrChanged?.Invoke(fileName, replay);
+    }
+
+    public void OnTimeResume(TimeSpan pausedTime)
+    {
+        discord.AddToSessionPredictEnd(pausedTime);
     }
 }

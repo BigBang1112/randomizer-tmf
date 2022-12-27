@@ -20,7 +20,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Version>1.0.3</Version>
+		<Version>1.1.0</Version>
 		<PublishSingleFile>true</PublishSingleFile>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	</PropertyGroup>

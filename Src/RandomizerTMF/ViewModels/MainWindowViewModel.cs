@@ -69,7 +69,11 @@ internal class MainWindowViewModel : WindowWithTopBarViewModelBase
 
     public bool IsSaveAndProceedEnabled => NadeoIni is not null && NadeoIni.NadeoIniException is null && NadeoIni.TmForeverException is null && NadeoIni.TmUnlimiterException is null or FileNotFoundException;
 
-    public MainWindowViewModel(TopBarViewModel topBarViewModel, IRandomizerEngine engine, IRandomizerConfig config, IFilePathManager filePathManager) : base(topBarViewModel)
+    public MainWindowViewModel(TopBarViewModel topBarViewModel,
+                               IRandomizerEngine engine,
+                               IRandomizerConfig config,
+                               IFilePathManager filePathManager,
+                               IDiscordRichPresence discord) : base(topBarViewModel)
     {
         this.engine = engine;
         this.config = config;
@@ -81,6 +85,8 @@ internal class MainWindowViewModel : WindowWithTopBarViewModelBase
             NadeoIni = filePathManager.UpdateGameDirectory(config.GameDirectory);
             UserDirectory = filePathManager.UserDataDirectoryPath;
         }
+
+        discord.Configuring();
     }
 
     protected override void CloseClick()

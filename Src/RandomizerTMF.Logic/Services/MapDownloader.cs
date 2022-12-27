@@ -18,6 +18,7 @@ public class MapDownloader : IMapDownloader
     private readonly IRandomizerEvents events;
     private readonly IRandomizerConfig config;
     private readonly IFilePathManager filePathManager;
+    private readonly IDiscordRichPresence discord;
     private readonly IValidator validator;
     private readonly HttpClient http;
     private readonly ILogger logger;
@@ -28,6 +29,7 @@ public class MapDownloader : IMapDownloader
     public MapDownloader(IRandomizerEvents events,
                          IRandomizerConfig config,
                          IFilePathManager filePathManager,
+                         IDiscordRichPresence discord,
                          IValidator validator,
                          HttpClient http,
                          ILogger logger)
@@ -35,6 +37,7 @@ public class MapDownloader : IMapDownloader
         this.events = events;
         this.config = config;
         this.filePathManager = filePathManager;
+        this.discord = discord;
         this.validator = validator;
         this.http = http;
         this.logger = logger;
@@ -101,12 +104,16 @@ public class MapDownloader : IMapDownloader
             FilePath = mapSavePath
         };
 
+        var mapName = TextFormatter.Deformat(map.MapName);
+
         currentSession.Data?.Maps.Add(new()
         {
-            Name = TextFormatter.Deformat(map.MapName),
+            Name = mapName,
             Uid = map.MapUid,
             TmxLink = tmxLink,
         });
+
+        discord.SessionMap(mapName, $"https://{requestUri.Host}/trackshow/{trackId}/image/1", map.Collection);
 
         return true;
     }

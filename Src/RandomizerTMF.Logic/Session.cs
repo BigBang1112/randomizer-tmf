@@ -18,7 +18,8 @@ public class Session
     private readonly ILogger logger;
 
     private bool isActualSkipCancellation;
-    
+    private DateTime watchTemporaryStopTimestamp;
+
     public Stopwatch Watch { get; } = new();
     public CancellationTokenSource TokenSource { get; } = new();
 
@@ -194,7 +195,14 @@ public class Session
 
         game.OpenFile(Map.FilePath);
 
+        if (Watch.ElapsedTicks == 0)
+        {
+            events.OnFirstMapStarted();
+        }
+
         SkipTokenSource = StartTrackingMap();
+
+        events.OnMapStarted(); // This has to be called after SkipTokenSource is set
 
         Status("Playing the map...");
 
@@ -221,7 +229,8 @@ public class Session
         }
 
         Watch.Stop(); // Time is paused until the next map starts
-
+        watchTemporaryStopTimestamp = DateTime.UtcNow;
+        
         if (isActualSkipCancellation) // When its a manual skip and not an automated skip by author medal receive
         {
             Status("Skipping the map...");
@@ -243,9 +252,14 @@ public class Session
 
     private CancellationTokenSource StartTrackingMap()
     {
+        if (Watch.ElapsedTicks > 0)
+        {
+            events.OnTimeResume(DateTime.UtcNow - watchTemporaryStopTimestamp);
+        }
+        
         Watch.Start();
+
         events.AutosaveCreatedOrChanged += AutosaveCreatedOrChanged;
-        events.OnMapStarted();
         
         return new CancellationTokenSource();
     }

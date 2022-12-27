@@ -20,7 +20,7 @@ public class RandomizerEngine : IRandomizerEngine
     private readonly IMapDownloader mapDownloader;
     private readonly IValidator validator;
     private readonly ITMForever game;
-    private readonly HttpClient http;
+    private readonly IDiscordRichPresence discord;
     private readonly ILogger logger;
 
     public static string? Version { get; } = typeof(RandomizerEngine).Assembly.GetName().Version?.ToString(3);
@@ -34,7 +34,7 @@ public class RandomizerEngine : IRandomizerEngine
                             IMapDownloader mapDownloader,
                             IValidator validator,
                             ITMForever game,
-                            HttpClient http,
+                            IDiscordRichPresence discord,
                             ILogger logger)
     {
         this.config = config;
@@ -42,7 +42,7 @@ public class RandomizerEngine : IRandomizerEngine
         this.mapDownloader = mapDownloader;
         this.validator = validator;
         this.game = game;
-        this.http = http;
+        this.discord = discord;
         this.logger = logger;
 
         logger.LogInformation("Starting Randomizer Engine...");
@@ -54,6 +54,21 @@ public class RandomizerEngine : IRandomizerEngine
         GBX.NET.Lzo.SetLzo(typeof(GBX.NET.LZO.MiniLZO));
 
         logger.LogInformation("Randomizer TMF initialized.");
+
+        events.MedalUpdate += ScoreChanged;
+        events.MapSkip += ScoreChanged;
+    }
+
+    private void ScoreChanged()
+    {
+        if (CurrentSession is null)
+        {
+            discord.SessionState();
+        }
+        else
+        {
+            discord.SessionState(CurrentSession.AuthorMaps.Count, CurrentSession.GoldMaps.Count, CurrentSession.SkippedMaps.Count);
+        }
     }
 
     /// <summary>

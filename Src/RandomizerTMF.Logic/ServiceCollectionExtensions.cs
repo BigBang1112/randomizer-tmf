@@ -43,6 +43,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IFilePathManager, FilePathManager>();
         services.AddSingleton<IAutosaveScanner, AutosaveScanner>();
         services.AddSingleton<IAdditionalData, AdditionalData>();
+        services.AddSingleton<IDiscordRichPresence, DiscordRichPresence>();
+        services.AddSingleton<DiscordRpcLogger>();
 
         return services;
     }
