@@ -1,4 +1,6 @@
-﻿namespace RandomizerTMF.Logic.Services;
+﻿using System.IO.Abstractions;
+
+namespace RandomizerTMF.Logic.Services;
 
 public interface IFilePathManager
 {
@@ -16,6 +18,7 @@ public interface IFilePathManager
 public class FilePathManager : IFilePathManager
 {
     private readonly IRandomizerConfig config;
+    private readonly IFileSystem fileSystem;
     private string? userDataDirectoryPath;
 
     /// <summary>
@@ -40,16 +43,17 @@ public class FilePathManager : IFilePathManager
 
     public string? AutosavesDirectoryPath { get; private set; }
     public string? DownloadedDirectoryPath { get; private set; }
-    public static string SessionsDirectoryPath = Constants.Sessions;
+    public static string SessionsDirectoryPath { get; } = Constants.Sessions;
 
     public string? TmForeverExeFilePath { get; private set; }
     public string? TmUnlimiterExeFilePath { get; private set; }
 
     public event Action? UserDataDirectoryPathUpdated;
 
-    public FilePathManager(IRandomizerConfig config)
+    public FilePathManager(IRandomizerConfig config, IFileSystem fileSystem)
     {
         this.config = config;
+        this.fileSystem = fileSystem;
     }
 
     public static string ClearFileName(string fileName)
@@ -71,7 +75,7 @@ public class FilePathManager : IFilePathManager
 
         try
         {
-            var nadeoIni = NadeoIni.Parse(nadeoIniFilePath);
+            var nadeoIni = NadeoIni.Parse(nadeoIniFilePath, fileSystem);
             var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var newUserDataDirectoryPath = Path.Combine(myDocuments, nadeoIni.UserSubDir);
 
@@ -87,7 +91,7 @@ public class FilePathManager : IFilePathManager
 
         try
         {
-            using var fs = File.OpenRead(tmForeverExeFilePath);
+            using var fs = fileSystem.File.OpenRead(tmForeverExeFilePath);
             TmForeverExeFilePath = tmForeverExeFilePath;
         }
         catch (Exception ex)
@@ -97,7 +101,7 @@ public class FilePathManager : IFilePathManager
 
         try
         {
-            using var fs = File.OpenRead(tmUnlimiterExeFilePath);
+            using var fs = fileSystem.File.OpenRead(tmUnlimiterExeFilePath);
             TmUnlimiterExeFilePath = tmUnlimiterExeFilePath;
         }
         catch (Exception ex)

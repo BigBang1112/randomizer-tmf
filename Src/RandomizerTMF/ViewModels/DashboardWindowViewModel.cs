@@ -205,7 +205,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         try
         {
-            validator.ValidateRules(config.Rules);
+            validator.ValidateRules();
         }
         catch (RuleValidationException ex)
         {

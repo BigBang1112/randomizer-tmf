@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.IO.Abstractions;
 
 namespace RandomizerTMF.Logic.Services;
 
@@ -22,6 +23,7 @@ public class RandomizerEngine : IRandomizerEngine
     private readonly ITMForever game;
     private readonly IDiscordRichPresence discord;
     private readonly ILogger logger;
+    private readonly IFileSystem fileSystem;
 
     public static string? Version { get; } = typeof(RandomizerEngine).Assembly.GetName().Version?.ToString(3);
 
@@ -35,7 +37,8 @@ public class RandomizerEngine : IRandomizerEngine
                             IValidator validator,
                             ITMForever game,
                             IDiscordRichPresence discord,
-                            ILogger logger)
+                            ILogger logger,
+                            IFileSystem fileSystem)
     {
         this.config = config;
         this.events = events;
@@ -44,6 +47,7 @@ public class RandomizerEngine : IRandomizerEngine
         this.game = game;
         this.discord = discord;
         this.logger = logger;
+        this.fileSystem = fileSystem;
 
         logger.LogInformation("Starting Randomizer Engine...");
 
@@ -81,7 +85,7 @@ public class RandomizerEngine : IRandomizerEngine
             return;
         }
 
-        CurrentSession = new Session(events, mapDownloader, validator, config, game, logger);
+        CurrentSession = new Session(events, mapDownloader, validator, config, game, logger, fileSystem);
         CurrentSession.Start();
     }
 

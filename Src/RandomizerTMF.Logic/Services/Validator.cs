@@ -6,8 +6,8 @@ namespace RandomizerTMF.Logic.Services;
 public interface IValidator
 {
     bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock);
-    void ValidateRequestRules(RequestRules requestRules);
-    void ValidateRules(RandomizerRules rules);
+    void ValidateRequestRules();
+    void ValidateRules();
 }
 
 public class Validator : IValidator
@@ -27,8 +27,10 @@ public class Validator : IValidator
     /// Validates the session rules. This should be called right before the session start and after loading the modules.
     /// </summary>
     /// <exception cref="RuleValidationException"></exception>
-    public void ValidateRules(RandomizerRules rules)
+    public void ValidateRules()
     {
+        var rules = config.Rules;
+
         if (rules.TimeLimit == TimeSpan.Zero)
         {
             throw new RuleValidationException("Time limit cannot be 0:00:00.");
@@ -39,11 +41,13 @@ public class Validator : IValidator
             throw new RuleValidationException("Time limit cannot be above 9:59:59.");
         }
 
-        ValidateRequestRules(rules.RequestRules);
+        ValidateRequestRules();
     }
 
-    public void ValidateRequestRules(RequestRules requestRules)
+    public void ValidateRequestRules()
     {
+        var requestRules = config.Rules.RequestRules;
+        
         foreach (var primaryType in Enum.GetValues<EPrimaryType>())
         {
             if (primaryType is EPrimaryType.Race)
@@ -164,25 +168,34 @@ public class Validator : IValidator
                 return false;
             }
 
-            if (additionalData.MapSizes.TryGetValue(map.Collection, out var sizes))
+            if (map.Size is null)
             {
-                if (map.Size is null || !sizes.Contains(map.Size.Value))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (additionalData.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            if (!additionalData.MapSizes.TryGetValue(map.Collection, out var sizes))
             {
-                foreach (var block in map.GetBlocks())
-                {
-                    var blockName = block.Name.Trim();
+                return false;
+            }
 
-                    if (!officialBlocks.Contains(blockName))
-                    {
-                        invalidBlock = blockName;
-                        return false;
-                    }
+            if (!sizes.Contains(map.Size.Value))
+            {
+                return false;
+            }
+
+            if (!additionalData.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            {
+                return false;
+            }
+            
+            foreach (var block in map.GetBlocks())
+            {
+                var blockName = block.Name.Trim();
+
+                if (!officialBlocks.Contains(blockName))
+                {
+                    invalidBlock = blockName;
+                    return false;
                 }
             }
         }

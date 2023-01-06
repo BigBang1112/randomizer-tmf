@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Services;
+using System.IO.Abstractions;
 
 namespace RandomizerTMF.Logic;
 
@@ -45,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAdditionalData, AdditionalData>();
         services.AddSingleton<IDiscordRichPresence, DiscordRichPresence>();
         services.AddSingleton<DiscordRpcLogger>();
+        services.AddSingleton<IFileSystem, FileSystem>();
 
         return services;
     }

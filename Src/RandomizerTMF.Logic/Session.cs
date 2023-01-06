@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.Services;
-using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO.Abstractions;
 using TmEssentials;
 
 namespace RandomizerTMF.Logic;
@@ -16,7 +16,8 @@ public class Session
     private readonly IRandomizerConfig config;
     private readonly ITMForever game;
     private readonly ILogger logger;
-
+    private readonly IFileSystem fileSystem;
+    
     private bool isActualSkipCancellation;
     private DateTime watchTemporaryStopTimestamp;
 
@@ -44,7 +45,8 @@ public class Session
                    IValidator validator,
                    IRandomizerConfig config,
                    ITMForever game,
-                   ILogger logger)
+                   ILogger logger,
+                   IFileSystem fileSystem)
     {
         this.events = events;
         this.mapDownloader = mapDownloader;
@@ -52,6 +54,7 @@ public class Session
         this.config = config;
         this.game = game;
         this.logger = logger;
+        this.fileSystem = fileSystem;
     }
 
     private void Status(string status)
@@ -107,9 +110,9 @@ public class Session
             throw new UnreachableException("Game directory is null");
         }
 
-        validator.ValidateRules(config.Rules);
+        validator.ValidateRules();
         
-        Data = SessionData.Initialize(config, logger);
+        Data = SessionData.Initialize(config, logger, fileSystem);
 
         LogWriter = new StreamWriter(Path.Combine(Data.DirectoryPath, Constants.SessionLog))
         {
