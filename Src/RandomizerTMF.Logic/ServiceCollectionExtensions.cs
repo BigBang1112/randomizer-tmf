@@ -50,6 +50,16 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<DiscordRpcLogger>();
         services.AddSingleton<IRandomGenerator, RandomGenerator>();
 
+        services.AddSingleton<IFileSystemWatcher, FileSystemWatcherWrapper>(provider =>
+        {
+            return new FileSystemWatcherWrapper(provider.GetRequiredService<IFileSystem>())
+            {
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+                Filter = "*.Replay.gbx",
+                Path = provider.GetRequiredService<IFilePathManager>().AutosavesDirectoryPath ?? ""
+            };
+        });
+
         return services;
     }
 }

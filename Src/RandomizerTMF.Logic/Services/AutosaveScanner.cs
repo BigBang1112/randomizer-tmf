@@ -6,6 +6,7 @@ using GBX.NET.Exceptions;
 using RandomizerTMF.Logic.Exceptions;
 using System.Diagnostics;
 using TmEssentials;
+using System.IO.Abstractions;
 
 namespace RandomizerTMF.Logic.Services;
 
@@ -13,7 +14,6 @@ public interface IAutosaveScanner
 {
     ConcurrentDictionary<string, AutosaveDetails> AutosaveDetails { get; }
     ConcurrentDictionary<string, AutosaveHeader> AutosaveHeaders { get; }
-    FileSystemWatcher AutosaveWatcher { get; }
     bool HasAutosavesScanned { get; }
 
     void ResetAutosaves();
@@ -24,8 +24,10 @@ public interface IAutosaveScanner
 public class AutosaveScanner : IAutosaveScanner
 {
     private readonly IRandomizerEvents events;
+    private readonly IFileSystemWatcher watcher;
     private readonly IFilePathManager filePathManager;
     private readonly IRandomizerConfig config;
+    private readonly IFileSystem fileSystem;
     private readonly ILogger logger;
 
     private bool hasAutosavesScanned;
@@ -40,40 +42,35 @@ public class AutosaveScanner : IAutosaveScanner
         private set
         {
             hasAutosavesScanned = value;
-            AutosaveWatcher.EnableRaisingEvents = value;
+            watcher.EnableRaisingEvents = value;
         }
     }
 
     public ConcurrentDictionary<string, AutosaveHeader> AutosaveHeaders { get; } = new();
     public ConcurrentDictionary<string, AutosaveDetails> AutosaveDetails { get; } = new();
-
-    public FileSystemWatcher AutosaveWatcher { get; }
+    
 
     public AutosaveScanner(IRandomizerEvents events,
+                           IFileSystemWatcher watcher,
                            IFilePathManager filePathManager,
                            IRandomizerConfig config,
+                           IFileSystem fileSystem,
                            ILogger logger)
     {
         this.events = events;
+        this.watcher = watcher;
         this.filePathManager = filePathManager;
         this.config = config;
+        this.fileSystem = fileSystem;
         this.logger = logger;
 
-        filePathManager.UserDataDirectoryPathUpdated += FilePathManager_UserDataDirectoryPathUpdated;
-
-        AutosaveWatcher = new FileSystemWatcher
-        {
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
-            Filter = "*.Replay.gbx",
-            Path = filePathManager.AutosavesDirectoryPath ?? ""
-        };
-
-        AutosaveWatcher.Changed += OnAutosaveCreatedOrChanged;
+        filePathManager.UserDataDirectoryPathUpdated += UserDataDirectoryPathUpdated;
+        watcher.Changed += OnAutosaveCreatedOrChanged;
     }
 
-    private void FilePathManager_UserDataDirectoryPathUpdated()
+    private void UserDataDirectoryPathUpdated()
     {
-        AutosaveWatcher.Path = filePathManager.AutosavesDirectoryPath ?? "";
+        watcher.Path = filePathManager.AutosavesDirectoryPath ?? "";
         ResetAutosaves();
     }
 
@@ -82,7 +79,7 @@ public class AutosaveScanner : IAutosaveScanner
     private void OnAutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
     {
         // Hack to fix the issue of this event sometimes running twice
-        var lastWriteTime = File.GetLastWriteTime(e.FullPath);
+        var lastWriteTime = fileSystem.File.GetLastWriteTime(e.FullPath);
 
         if (lastWriteTime == lastAutosaveUpdate)
         {
@@ -104,7 +101,9 @@ public class AutosaveScanner : IAutosaveScanner
 
                 logger.LogInformation("Analyzing a new file {autosavePath} in autosaves folder...", e.FullPath);
 
-                if (GameBox.ParseNode(e.FullPath) is not CGameCtnReplayRecord r)
+                using var stream = fileSystem.File.OpenRead(e.FullPath);
+
+                if (GameBox.ParseNode(stream) is not CGameCtnReplayRecord r)
                 {
                     logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
                     return;
@@ -157,11 +156,13 @@ public class AutosaveScanner : IAutosaveScanner
 
         var anythingChanged = false;
 
-        foreach (var file in Directory.EnumerateFiles(filePathManager.AutosavesDirectoryPath).AsParallel())
+        foreach (var fileName in fileSystem.Directory.EnumerateFiles(filePathManager.AutosavesDirectoryPath).AsParallel())
         {
             try
             {
-                if (GameBox.ParseNodeHeader(file) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
+                using var stream = fileSystem.File.OpenRead(fileName);
+
+                if (GameBox.ParseNodeHeader(stream) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
                 {
                     continue;
                 }
@@ -173,7 +174,7 @@ public class AutosaveScanner : IAutosaveScanner
                     continue;
                 }
 
-                AutosaveHeaders.TryAdd(mapUid, new AutosaveHeader(Path.GetFileName(file), replay));
+                AutosaveHeaders.TryAdd(mapUid, new AutosaveHeader(Path.GetFileName(fileName), replay));
 
                 anythingChanged = true;
             }
@@ -221,7 +222,9 @@ public class AutosaveScanner : IAutosaveScanner
     {
         var autosavePath = Path.Combine(filePathManager.AutosavesDirectoryPath!, AutosaveHeaders[autosaveFileName].FilePath); // Forgive because it's a private method
 
-        if (GameBox.ParseNode(autosavePath) is not CGameCtnReplayRecord { Time: not null } replay)
+        using var stream = fileSystem.File.OpenRead(autosavePath);
+
+        if (GameBox.ParseNode(stream) is not CGameCtnReplayRecord { Time: not null } replay)
         {
             return;
         }
