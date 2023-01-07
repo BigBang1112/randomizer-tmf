@@ -81,6 +81,11 @@ internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
 
     public void SessionState(int atCount = 0, int goldCount = 0, int skipCount = 0)
     {
+        client.UpdateState(BuildState(atCount, goldCount, skipCount));
+    }
+
+    internal static string BuildState(int atCount, int goldCount, int skipCount)
+    {
         var builder = new StringBuilder();
 
         builder.Append(atCount);
@@ -109,7 +114,7 @@ internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
             builder.Append('s');
         }
 
-        client.UpdateState(builder.ToString());
+        return builder.ToString();
     }
 
     public void SessionDefaultAsset()

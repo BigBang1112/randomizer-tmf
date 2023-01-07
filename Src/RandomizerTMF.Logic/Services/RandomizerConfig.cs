@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.IO.Abstractions;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -20,6 +21,7 @@ public interface IRandomizerConfig
 public class RandomizerConfig : IRandomizerConfig
 {
     private readonly ILogger? logger;
+    private readonly IFileSystem? fileSystem;
 
     public string? GameDirectory { get; set; }
     public string? DownloadedMapsDirectory { get; set; } = Constants.DownloadedMapsDirectory;
@@ -43,26 +45,27 @@ public class RandomizerConfig : IRandomizerConfig
 
     }
 
-    public RandomizerConfig(ILogger logger)
+    public RandomizerConfig(ILogger logger, IFileSystem fileSystem)
     {
         this.logger = logger;
+        this.fileSystem = fileSystem;
     }
 
     /// <summary>
     /// This method should be ran only at the start of the randomizer engine.
     /// </summary>
     /// <returns></returns>
-    public static RandomizerConfig GetOrCreate(ILogger logger)
+    public static RandomizerConfig GetOrCreate(ILogger logger, IFileSystem fileSystem)
     {
         var config = default(RandomizerConfig);
 
-        if (File.Exists(Constants.ConfigYml))
+        if (fileSystem.File.Exists(Constants.ConfigYml) == true)
         {
             logger.LogInformation("Config file found, loading...");
 
             try
             {
-                using var reader = new StreamReader(Constants.ConfigYml);
+                using var reader = fileSystem.File.OpenText(Constants.ConfigYml);
                 config = Yaml.Deserializer.Deserialize<RandomizerConfig>(reader);
             }
             catch (YamlException ex)
@@ -78,7 +81,7 @@ public class RandomizerConfig : IRandomizerConfig
         if (config is null)
         {
             logger.LogInformation("Config file not found or is corrupted, creating a new one...");
-            config = new RandomizerConfig(logger);
+            config = new RandomizerConfig(logger, fileSystem);
         }
 
         config.Save();
@@ -90,7 +93,7 @@ public class RandomizerConfig : IRandomizerConfig
     {
         logger?.LogInformation("Saving the config file...");
 
-        File.WriteAllText(Constants.ConfigYml, Yaml.Serializer.Serialize(this));
+        fileSystem?.File.WriteAllText(Constants.ConfigYml, Yaml.Serializer.Serialize(this));
 
         logger?.LogInformation("Config file saved.");
     }

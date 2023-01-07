@@ -21,6 +21,7 @@ public class MapDownloader : IMapDownloader
     private readonly IDiscordRichPresence discord;
     private readonly IValidator validator;
     private readonly HttpClient http;
+    private readonly IRandomGenerator random;
     private readonly ILogger logger;
 
     private static readonly int requestMaxAttempts = 10;
@@ -32,6 +33,7 @@ public class MapDownloader : IMapDownloader
                          IDiscordRichPresence discord,
                          IValidator validator,
                          HttpClient http,
+                         IRandomGenerator random,
                          ILogger logger)
     {
         this.events = events;
@@ -40,6 +42,7 @@ public class MapDownloader : IMapDownloader
         this.discord = discord;
         this.validator = validator;
         this.http = http;
+        this.random = random;
         this.logger = logger;
     }
 
@@ -157,7 +160,7 @@ public class MapDownloader : IMapDownloader
         Status("Fetching random track...");
 
         // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = config.Rules.RequestRules.ToUrl();
+        var requestUrl = config.Rules.RequestRules.ToUrl(random);
 
         logger.LogDebug("Requesting generated URL: {url}", requestUrl);
         var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);

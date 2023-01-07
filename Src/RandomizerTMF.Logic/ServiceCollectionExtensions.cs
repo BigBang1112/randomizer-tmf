@@ -30,10 +30,12 @@ public static class ServiceCollectionExtensions
             http.DefaultRequestHeaders.UserAgent.TryParseAdd($"Randomizer TMF {RandomizerEngine.Version}");
             return http;
         });
-        
+
+        services.AddSingleton<IFileSystem, FileSystem>();
+
         services.AddSingleton<IRandomizerConfig, RandomizerConfig>(provider =>
         {
-            return RandomizerConfig.GetOrCreate(provider.GetRequiredService<ILogger>());
+            return RandomizerConfig.GetOrCreate(provider.GetRequiredService<ILogger>(), provider.GetRequiredService<IFileSystem>());
         });
 
         services.AddSingleton<IRandomizerEngine, RandomizerEngine>();
@@ -46,7 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAdditionalData, AdditionalData>();
         services.AddSingleton<IDiscordRichPresence, DiscordRichPresence>();
         services.AddSingleton<DiscordRpcLogger>();
-        services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<IRandomGenerator, RandomGenerator>();
 
         return services;
     }

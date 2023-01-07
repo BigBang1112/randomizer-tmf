@@ -382,7 +382,7 @@ public class ValidatorTests
     public void ValidateMap_AutosavesContainUid_ReturnsFalse()
     {
         var autosaveHeaders = new ConcurrentDictionary<string, AutosaveHeader>();
-        autosaveHeaders["mapuid"] = new AutosaveHeader("path/to/file.Replay.Gbx", (CGameCtnReplayRecord)Activator.CreateInstance(typeof(CGameCtnReplayRecord), nonPublic: true)!);
+        autosaveHeaders["mapuid"] = new AutosaveHeader("path/to/file.Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>());
 
         var mockAutosaveScanner = new Mock<IAutosaveScanner>();
         mockAutosaveScanner.SetupGet(x => x.AutosaveHeaders).Returns(autosaveHeaders);
@@ -393,7 +393,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
@@ -420,7 +420,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
@@ -441,7 +441,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Chunks.Add(new SkippableChunk<CGameCtnChallenge>(map, Array.Empty<byte>(), 0x3F001000));
 
@@ -463,7 +463,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Size = null;
 
@@ -488,7 +488,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (45, 32, 45);
@@ -517,7 +517,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (255, 32, 255);
@@ -547,7 +547,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (45, 32, 45);
@@ -580,7 +580,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (45, 32, 45);
@@ -614,7 +614,7 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = (CGameCtnChallenge)Activator.CreateInstance(typeof(CGameCtnChallenge), nonPublic: true)!;
+        var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (45, 32, 45);

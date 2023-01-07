@@ -48,10 +48,8 @@ public class SessionData
         DirectoryPath = Path.Combine(FilePathManager.SessionsDirectoryPath, StartedAtText);
     }
 
-    public static SessionData Initialize(IRandomizerConfig config, ILogger logger, IFileSystem fileSystem)
+    internal static SessionData Initialize(DateTimeOffset startedAt, IRandomizerConfig config, ILogger logger, IFileSystem fileSystem)
     {
-        var startedAt = DateTimeOffset.Now;
-
         var data = new SessionData(RandomizerEngine.Version, startedAt, config, logger, fileSystem);
 
         fileSystem.Directory.CreateDirectory(data.DirectoryPath);
@@ -61,15 +59,17 @@ public class SessionData
         return data;
     }
 
+    public static SessionData Initialize(IRandomizerConfig config, ILogger logger, IFileSystem fileSystem)
+    {
+        return Initialize(DateTimeOffset.Now, config, logger, fileSystem);
+    }
+
     public void SetMapResult(SessionMap map, string result)
     {
-        var dataMap = Maps.FirstOrDefault(x => x.Uid == map.MapUid);
+        var dataMap = Maps.First(x => x.Uid == map.MapUid);
 
-        if (dataMap is not null)
-        {
-            dataMap.Result = result;
-            dataMap.LastTimestamp = map.LastTimestamp;
-        }
+        dataMap.Result = result;
+        dataMap.LastTimestamp = map.LastTimestamp;
 
         Save();
     }
@@ -83,12 +83,17 @@ public class SessionData
         logger?.LogInformation("Session data saved.");
     }
 
+    internal void InternalSetReadOnlySessionYml()
+    {
+        var sessionYmlFile = Path.Combine(DirectoryPath, Constants.SessionYml);
+        fileSystem?.File.SetAttributes(sessionYmlFile, fileSystem.File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
+    }
+
     public void SetReadOnlySessionYml()
     {
         try
         {
-            var sessionYmlFile = Path.Combine(DirectoryPath, Constants.SessionYml);
-            fileSystem?.File.SetAttributes(sessionYmlFile, fileSystem.File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
+            InternalSetReadOnlySessionYml();
         }
         catch (Exception ex)
         {
@@ -100,8 +105,8 @@ public class SessionData
     {
         var score = map.Map.Mode switch
         {
-            CGameCtnChallenge.PlayMode.Stunts => replay.GetGhosts().First().StuntScore + "_",
-            CGameCtnChallenge.PlayMode.Platform => replay.GetGhosts().First().Respawns + "_",
+            CGameCtnChallenge.PlayMode.Stunts => replay.GetGhosts(alsoInClips: false).First().StuntScore + "_",
+            CGameCtnChallenge.PlayMode.Platform => replay.GetGhosts(alsoInClips: false).First().Respawns + "_",
             _ => ""
         } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
 
@@ -122,7 +127,7 @@ public class SessionData
             fileSystem.File.Copy(fullPath, replayFilePath, overwrite: true);
         }
         
-        Maps.FirstOrDefault(x => x.Uid == map.MapUid)?
+        Maps.First(x => x.Uid == map.MapUid)?
             .Replays
             .Add(new()
             {
