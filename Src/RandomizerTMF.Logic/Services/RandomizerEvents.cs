@@ -1,5 +1,6 @@
 ﻿using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
+using TmEssentials;
 
 namespace RandomizerTMF.Logic.Services;
 
@@ -7,7 +8,7 @@ public interface IRandomizerEvents
 {
     event Action? MapEnded;
     event Action? MapSkip;
-    event Action? MapStarted;
+    event Action<SessionMap>? MapStarted;
     event Action? MedalUpdate;
     event Action<string>? Status;
     event Action<string, CGameCtnReplayRecord> AutosaveCreatedOrChanged;
@@ -15,7 +16,7 @@ public interface IRandomizerEvents
 
     void OnMapEnded();
     void OnMapSkip();
-    void OnMapStarted();
+    void OnMapStarted(SessionMap map);
     void OnMedalUpdate();
     void OnStatus(string status);
     void OnAutosaveCreatedOrChanged(string fileName, CGameCtnReplayRecord replay);
@@ -30,7 +31,7 @@ public class RandomizerEvents : IRandomizerEvents
     private readonly IDiscordRichPresence discord;
 
     public event Action<string>? Status;
-    public event Action? MapStarted;
+    public event Action<SessionMap>? MapStarted;
     public event Action? MapEnded;
     public event Action? MapSkip;
     public event Action? MedalUpdate;
@@ -63,11 +64,11 @@ public class RandomizerEvents : IRandomizerEvents
         discord.SessionPredictEnd(now + config.Rules.TimeLimit);
     }
 
-    public void OnMapStarted()
+    public void OnMapStarted(SessionMap map)
     {
-        MapStarted?.Invoke();
-        
-        discord.SessionDetails("Playing a map");
+        MapStarted?.Invoke(map);
+
+        discord.SessionDetails("Playing " + TextFormatter.Deformat(map.Map.MapName));
     }
 
     public void OnMapEnded()

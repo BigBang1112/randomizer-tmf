@@ -1,4 +1,5 @@
-﻿using RandomizerTMF.Logic.Services;
+﻿using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
@@ -47,7 +48,7 @@ internal class StatusModuleWindowViewModel : ModuleWindowViewModelBase
         StatusText = status;
     }
 
-    private void RandomizerMapStarted()
+    private void RandomizerMapStarted(SessionMap map)
     {
         updateTimeCancellationTokenSource = new CancellationTokenSource();
         updateTimeTask = Task.Run(async () =>

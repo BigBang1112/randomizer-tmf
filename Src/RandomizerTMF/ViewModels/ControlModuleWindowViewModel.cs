@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using RandomizerTMF.Logic;
 using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Views;
 using ReactiveUI;
@@ -28,7 +29,7 @@ internal class ControlModuleWindowViewModel : ModuleWindowViewModelBase
         events.MapEnded += RandomizerMapEnded;
     }
 
-    private void RandomizerMapStarted()
+    private void RandomizerMapStarted(SessionMap map)
     {
         this.RaisePropertyChanged(nameof(PrimaryButtonEnabled));
         this.RaisePropertyChanged(nameof(ReloadMapButtonEnabled));

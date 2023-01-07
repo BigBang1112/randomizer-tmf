@@ -53,12 +53,13 @@ public class RandomizerEventsTests
         var mockLogger = new Mock<ILogger>();
         var mockDiscord = new Mock<IDiscordRichPresence>();
         var events = new RandomizerEvents(config, mockLogger.Object, mockDiscord.Object);
+        var sessionMap = new SessionMap(NodeInstance.Create<CGameCtnChallenge>(), DateTimeOffset.Now, "https://tmuf.exchange/trackshow/69");
 
         var eventRaised = false;
-        events.MapStarted += () => eventRaised = true;
+        events.MapStarted += (map) => eventRaised = true;
 
         // Act
-        events.OnMapStarted();
+        events.OnMapStarted(sessionMap);
 
         // Assert
         Assert.True(eventRaised);

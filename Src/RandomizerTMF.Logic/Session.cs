@@ -205,7 +205,7 @@ public class Session
 
         SkipTokenSource = StartTrackingMap();
 
-        events.OnMapStarted(); // This has to be called after SkipTokenSource is set
+        events.OnMapStarted(Map); // This has to be called after SkipTokenSource is set
 
         Status("Playing the map...");
 
