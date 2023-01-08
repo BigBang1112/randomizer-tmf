@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDiscordRichPresence, DiscordRichPresence>();
         services.AddSingleton<DiscordRpcLogger>();
         services.AddSingleton<IRandomGenerator, RandomGenerator>();
+        services.AddSingleton<IGbxService, GbxService>();
 
         services.AddSingleton<IFileSystemWatcher, FileSystemWatcherWrapper>(provider =>
         {

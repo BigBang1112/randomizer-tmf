@@ -28,6 +28,7 @@ public class AutosaveScanner : IAutosaveScanner
     private readonly IFilePathManager filePathManager;
     private readonly IRandomizerConfig config;
     private readonly IFileSystem fileSystem;
+    private readonly IGbxService gbx;
     private readonly ILogger logger;
 
     private bool hasAutosavesScanned;
@@ -39,7 +40,7 @@ public class AutosaveScanner : IAutosaveScanner
     public bool HasAutosavesScanned
     {
         get => hasAutosavesScanned;
-        private set
+        internal set
         {
             hasAutosavesScanned = value;
             watcher.EnableRaisingEvents = value;
@@ -55,6 +56,7 @@ public class AutosaveScanner : IAutosaveScanner
                            IFilePathManager filePathManager,
                            IRandomizerConfig config,
                            IFileSystem fileSystem,
+                           IGbxService gbx,
                            ILogger logger)
     {
         this.events = events;
@@ -62,13 +64,14 @@ public class AutosaveScanner : IAutosaveScanner
         this.filePathManager = filePathManager;
         this.config = config;
         this.fileSystem = fileSystem;
+        this.gbx = gbx;
         this.logger = logger;
 
         filePathManager.UserDataDirectoryPathUpdated += UserDataDirectoryPathUpdated;
         watcher.Changed += OnAutosaveCreatedOrChanged;
     }
 
-    private void UserDataDirectoryPathUpdated()
+    internal void UserDataDirectoryPathUpdated()
     {
         watcher.Path = filePathManager.AutosavesDirectoryPath ?? "";
         ResetAutosaves();
@@ -76,7 +79,7 @@ public class AutosaveScanner : IAutosaveScanner
 
     private static DateTime lastAutosaveUpdate = DateTime.MinValue;
 
-    private void OnAutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
+    internal void OnAutosaveCreatedOrChanged(object sender, FileSystemEventArgs e)
     {
         // Hack to fix the issue of this event sometimes running twice
         var lastWriteTime = fileSystem.File.GetLastWriteTime(e.FullPath);
@@ -160,23 +163,10 @@ public class AutosaveScanner : IAutosaveScanner
         {
             try
             {
-                using var stream = fileSystem.File.OpenRead(fileName);
-
-                if (GameBox.ParseNodeHeader(stream) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
+                if (ProcessAutosaveHeader(fileName))
                 {
-                    continue;
+                    anythingChanged = true;
                 }
-
-                var mapUid = replay.MapInfo.Id;
-
-                if (AutosaveHeaders.ContainsKey(mapUid))
-                {
-                    continue;
-                }
-
-                AutosaveHeaders.TryAdd(mapUid, new AutosaveHeader(Path.GetFileName(fileName), replay));
-
-                anythingChanged = true;
             }
             catch (NotAGbxException)
             {
@@ -193,22 +183,29 @@ public class AutosaveScanner : IAutosaveScanner
         return anythingChanged;
     }
 
+    internal bool ProcessAutosaveHeader(string fileName)
+    {
+        using var stream = fileSystem.File.OpenRead(fileName);
+
+        if (gbx.ParseHeader(stream) is not CGameCtnReplayRecord replay || replay.MapInfo is null)
+        {
+            return false;
+        }
+
+        return AutosaveHeaders.TryAdd(replay.MapInfo.Id, new AutosaveHeader(Path.GetFileName(fileName), replay));
+    }
+
     /// <summary>
     /// Scans autosave details (mostly the map inside the replay and getting its info) that are then used to display more detailed information about a list of maps. Only some replay properties are stored to value memory.
     /// </summary>
     /// <exception cref="Exception"></exception>
     public void ScanDetailsFromAutosaves()
     {
-        if (filePathManager.AutosavesDirectoryPath is null)
-        {
-            throw new Exception("Cannot update autosaves without a valid user data directory path.");
-        }
-
-        foreach (var autosave in AutosaveHeaders.Keys)
+        foreach (var autosaveMapUid in AutosaveHeaders.Keys)
         {
             try
             {
-                UpdateAutosaveDetail(autosave);
+                UpdateAutosaveDetail(autosaveMapUid);
             }
             catch (Exception ex)
             {
@@ -218,13 +215,18 @@ public class AutosaveScanner : IAutosaveScanner
         }
     }
 
-    private void UpdateAutosaveDetail(string autosaveFileName)
+    internal void UpdateAutosaveDetail(string autosaveMapUid)
     {
-        var autosavePath = Path.Combine(filePathManager.AutosavesDirectoryPath!, AutosaveHeaders[autosaveFileName].FilePath); // Forgive because it's a private method
+        if (filePathManager.AutosavesDirectoryPath is null)
+        {
+            throw new ImportantPropertyNullException("Cannot update autosave details without a valid autosaves directory.");
+        }
+        
+        var autosavePath = Path.Combine(filePathManager.AutosavesDirectoryPath, AutosaveHeaders[autosaveMapUid].FilePath);
 
         using var stream = fileSystem.File.OpenRead(autosavePath);
 
-        if (GameBox.ParseNode(stream) is not CGameCtnReplayRecord { Time: not null } replay)
+        if (gbx.Parse(stream) is not CGameCtnReplayRecord { Time: not null } replay)
         {
             return;
         }
@@ -254,9 +256,9 @@ public class AutosaveScanner : IAutosaveScanner
             _ => mapCar
         };
 
-        var ghost = replay.GetGhosts().FirstOrDefault();
+        var ghost = replay.GetGhosts(alsoInClips: false).FirstOrDefault();
 
-        AutosaveDetails[autosaveFileName] = new(
+        AutosaveDetails[autosaveMapUid] = new(
             replay.Time.Value,
             Score: ghost?.StuntScore,
             Respawns: ghost?.Respawns,
