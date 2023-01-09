@@ -312,12 +312,18 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         });
     }
 
-    public void OpenDownloadedMapsFolderClick()
+    public bool OpenDownloadedMapsFolderClick()
     {
-        if (filePathManager.DownloadedDirectoryPath is not null)
+        if (!Directory.Exists(filePathManager.DownloadedDirectoryPath))
         {
-            ProcessUtils.OpenDir(filePathManager.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+            OpenMessageBox("Directory not found", "Downloaded maps directory has not been yet created.");
+            
+            return false;
         }
+        
+        ProcessUtils.OpenDir(filePathManager.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+        
+        return true;
     }
 
     public void OpenSessionsFolderClick()
