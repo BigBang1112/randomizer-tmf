@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.IO.Abstractions;
+using System.Reflection;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -69,6 +70,8 @@ public class RandomizerConfig : IRandomizerConfig
             {
                 using var reader = fileSystem.File.OpenText(Constants.ConfigYml);
                 config = Yaml.Deserializer.Deserialize<RandomizerConfig>(reader);
+                typeof(RandomizerConfig).GetField(nameof(logger), BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(config, logger);
+                typeof(RandomizerConfig).GetField(nameof(fileSystem), BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(config, fileSystem);
             }
             catch (YamlException ex)
             {

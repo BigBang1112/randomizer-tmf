@@ -25,9 +25,13 @@ public class SessionData
 
     public List<SessionDataMap> Maps { get; set; } = new();
 
-    public SessionData() : this(null, DateTimeOffset.Now, new RandomizerConfig(), null, null)
+    public SessionData() : this(version: null, // will be overwriten by deserialization
+                                DateTimeOffset.Now, // will be overwriten by deserialization
+                                new RandomizerConfig(), // unused in read-only state
+                                logger: null, // unused in read-only state
+                                fileSystem: null) // unused in read-only state
     {
-        
+        // This is legit only for read-only use cases and for YAML deserialization!
     }
 
     private SessionData(string? version,
