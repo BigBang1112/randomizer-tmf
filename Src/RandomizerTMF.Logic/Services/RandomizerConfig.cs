@@ -14,6 +14,7 @@ public interface IRandomizerConfig
     int ReplayParseFailDelayMs { get; set; }
     int ReplayParseFailRetries { get; set; }
     RandomizerRules Rules { get; set; }
+    bool DisableAutosaveDetailScan { get; set; }
 
     void Save();
 }
@@ -39,6 +40,7 @@ public class RandomizerConfig : IRandomizerConfig
 
     public int ReplayParseFailRetries { get; set; } = 10;
     public int ReplayParseFailDelayMs { get; set; } = 50;
+    public bool DisableAutosaveDetailScan { get; set; } = false;
 
     public RandomizerConfig()
     {

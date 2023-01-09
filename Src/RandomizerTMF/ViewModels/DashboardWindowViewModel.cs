@@ -86,7 +86,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
         var anythingChanged = await ScanAutosavesAsync();
 
-        if (anythingChanged)
+        if (anythingChanged && !config.DisableAutosaveDetailScan)
         {
             await UpdateAutosavesWithFullParseAsync();
         }
