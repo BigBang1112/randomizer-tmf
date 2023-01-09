@@ -22,10 +22,11 @@ public class MapDownloader : IMapDownloader
     private readonly IValidator validator;
     private readonly HttpClient http;
     private readonly IRandomGenerator random;
+    private readonly IDelayService delayService;
     private readonly ILogger logger;
 
-    private static readonly int requestMaxAttempts = 10;
-    private static int requestAttempt;
+    private readonly int requestMaxAttempts = 10;
+    private int requestAttempt;
 
     public MapDownloader(IRandomizerEvents events,
                          IRandomizerConfig config,
@@ -34,15 +35,17 @@ public class MapDownloader : IMapDownloader
                          IValidator validator,
                          HttpClient http,
                          IRandomGenerator random,
+                         IDelayService delayService,
                          ILogger logger)
     {
         this.events = events;
         this.config = config;
         this.filePathManager = filePathManager;
-        this.discord = discord;
+        this.discord = discord; // After PrepareNewMapAsync refactor no longer needed
         this.validator = validator;
         this.http = http;
         this.random = random;
+        this.delayService = delayService;
         this.logger = logger;
     }
 
@@ -180,7 +183,7 @@ public class MapDownloader : IMapDownloader
         return randomResponse;
     }
 
-    private Uri? GetRequestUriFromResponse(HttpResponseMessage response)
+    internal Uri? GetRequestUriFromResponse(HttpResponseMessage response)
     {
         if (response.RequestMessage is null)
         {
@@ -197,7 +200,7 @@ public class MapDownloader : IMapDownloader
         return response.RequestMessage.RequestUri;
     }
 
-    private string? GetTrackIdFromUri(Uri uri)
+    internal string? GetTrackIdFromUri(Uri uri)
     {
         var trackId = uri.Segments.LastOrDefault();
 
@@ -210,7 +213,7 @@ public class MapDownloader : IMapDownloader
         return trackId;
     }
 
-    private async Task<HttpResponseMessage> DownloadMapByTrackIdAsync(string host, string trackId, CancellationToken cancellationToken)
+    internal async Task<HttpResponseMessage> DownloadMapByTrackIdAsync(string host, string trackId, CancellationToken cancellationToken)
     {
         Status($"Downloading track {trackId}...");
 
@@ -243,14 +246,13 @@ public class MapDownloader : IMapDownloader
         return null;
     }
 
-    private async Task ValidateMapAsync(CGameCtnChallenge map, CancellationToken cancellationToken)
+    internal async Task ValidateMapAsync(CGameCtnChallenge map, CancellationToken cancellationToken)
     {
         Status("Validating the map...");
 
-        requestAttempt = 0;
-
         if (validator.ValidateMap(map, out string? invalidBlock))
         {
+            requestAttempt = 0;
             return;
         }
 
@@ -261,7 +263,7 @@ public class MapDownloader : IMapDownloader
         {
             Status($"{invalidBlock} in {map.Collection}");
             logger.LogInformation("Map is invalid because {invalidBlock} is not valid for the {env} environment.", invalidBlock, map.Collection);
-            await Task.Delay(500, cancellationToken);
+            await delayService.Delay(500, cancellationToken);
         }
 
         Status($"Map is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");
