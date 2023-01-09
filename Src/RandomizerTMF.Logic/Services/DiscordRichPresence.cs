@@ -20,11 +20,14 @@ public interface IDiscordRichPresence
 internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
 {    
     private readonly DiscordRpcClient client;
+    private readonly IRandomizerConfig config;
 
-    public DiscordRichPresence(DiscordRpcLogger discordLogger)
+    public DiscordRichPresence(DiscordRpcLogger discordLogger, IRandomizerConfig config)
     {
         client = new DiscordRpcClient("1048435107494637618", logger: discordLogger);
         client.Initialize();
+        
+        this.config = config;
     }
 
     public void InDashboard()
@@ -75,7 +78,11 @@ internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
             case "speed": envRemap = "desert"; break;
         }
 
-        client.UpdateLargeAsset(imageUrl, mapName);
+        if (!config.DiscordRichPresence.DisableMapThumbnail)
+        {
+            client.UpdateLargeAsset(imageUrl, mapName);
+        }
+        
         client.UpdateSmallAsset(envRemap, env);
     }
 
