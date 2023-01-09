@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Views;
 using ReactiveUI;
@@ -6,8 +7,10 @@ using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class TopBarViewModel : ViewModelBase
+internal class TopBarViewModel : ViewModelBase
 {
+    private readonly IUpdateDetector? updateDetector;
+    
     private string? title = Constants.Title;
     private bool minimizeButtonEnabled = true;
 
@@ -23,7 +26,7 @@ public class TopBarViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref minimizeButtonEnabled, value);
     }
 
-    public bool IsNewUpdate => UpdateDetector.IsNewUpdate;
+    public bool IsNewUpdate => updateDetector?.IsNewUpdate ?? false;
 
     public static string? Version => Program.Version;
     public static string? VersionTooltip => $"About Randomizer TMF {Program.Version}";
@@ -34,9 +37,14 @@ public class TopBarViewModel : ViewModelBase
     public event Action? CloseClick;
     public event Action? MinimizeClick;
 
-    public TopBarViewModel()
+    public TopBarViewModel(IUpdateDetector? updateDetector = null)
     {
-        UpdateDetector.UpdateChecked += () => this.RaisePropertyChanged(nameof(IsNewUpdate));
+        this.updateDetector = updateDetector;
+
+        if (updateDetector is not null)
+        {
+            updateDetector.UpdateChecked += () => this.RaisePropertyChanged(nameof(IsNewUpdate));
+        }
     }
 
     public void OnCloseClick()
@@ -56,8 +64,16 @@ public class TopBarViewModel : ViewModelBase
 
     public void VersionClick()
     {
+        if (Program.ServiceProvider is null)
+        {
+            throw new UnreachableException("ServiceProvider is null");
+        }
+
+        var topBarViewModel = Program.ServiceProvider.GetRequiredService<TopBarViewModel>();
+        var updateDetector = Program.ServiceProvider.GetRequiredService<IUpdateDetector>();
+
         var window = new AboutWindow();
-        var viewModel = new AboutWindowViewModel() { Window = window };
+        var viewModel = new AboutWindowViewModel(topBarViewModel, updateDetector) { Window = window };
         viewModel.OnInit();
         window.DataContext = viewModel;
         window.ShowDialog(WindowOwner ?? App.MainWindow); // The parent window

@@ -1,4 +1,4 @@
-﻿using RandomizerTMF.Logic.Exceptions;
+﻿using RandomizerTMF.Logic.Services;
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
@@ -11,6 +11,8 @@ public class RequestRules
 {
     private static readonly ESite[] siteValues = Enum.GetValues<ESite>();
     private static readonly EEnvironment[] envValues = Enum.GetValues<EEnvironment>();
+    private static readonly EEnvironment[] sunriseEnvValues = new [] { EEnvironment.Island, EEnvironment.Bay, EEnvironment.Coast };
+    private static readonly EEnvironment[] originalEnvValues = new [] { EEnvironment.Desert, EEnvironment.Snow, EEnvironment.Rally };
 
     // Custom rules that are not part of the official API
 
@@ -45,7 +47,7 @@ public class RequestRules
     public TimeInt32? AuthorTimeMin { get; set; }
     public TimeInt32? AuthorTimeMax { get; set; }
 
-    public string ToUrl() // Not very efficient but does the job done fast enough
+    public string ToUrl(IRandomGenerator random) // Not very efficient but does the job done fast enough
     {
         var b = new StringBuilder("https://");
 
@@ -54,7 +56,7 @@ public class RequestRules
             .ToArray();
 
         // If Site is Any, then it picks from sites that are valid within environments and cars
-        var site = GetRandomSite(matchingSites.Length == 0
+        var site = GetRandomSite(random, matchingSites.Length == 0
             ? siteValues.Where(x => x is not ESite.Any
             && IsSiteValidWithEnvironments(x)
             && IsSiteValidWithVehicles(x)
@@ -75,12 +77,12 @@ public class RequestRules
 
             if (EqualEnvironmentDistribution && prop.Name == nameof(Environment))
             {
-                val = GetRandomEnvironmentThroughSet(Environment);
+                val = GetRandomEnvironmentThroughSet(random, Environment, site);
             }
 
             if (EqualVehicleDistribution && prop.Name == nameof(Vehicle))
             {
-                val = GetRandomEnvironmentThroughSet(Vehicle);
+                val = GetRandomEnvironmentThroughSet(random, Vehicle, site);
             }
 
             if (val is null || (val is IEnumerable enumerable && !enumerable.Cast<object>().Any()))
@@ -188,24 +190,29 @@ public class RequestRules
         return true;
     }
 
-    private static EEnvironment GetRandomEnvironment(HashSet<EEnvironment>? container)
+    private static EEnvironment GetRandomEnvironment(IRandomGenerator random, HashSet<EEnvironment>? container, ESite site)
     {
-        if (container is null || container.Count == 0)
+        if (container is not null && container.Count != 0)
         {
-            return (EEnvironment)Random.Shared.Next(0, envValues.Length); // Safe in case of EEnvironment
+            return container.ElementAt(random.Next(container.Count));
         }
         
-        return container.ElementAt(Random.Shared.Next(0, container.Count));
+        return site switch
+        {
+            ESite.Sunrise => sunriseEnvValues[random.Next(sunriseEnvValues.Length)],
+            ESite.Original => originalEnvValues[random.Next(originalEnvValues.Length)],
+            _ => (EEnvironment)random.Next(envValues.Length) // Safe in case of EEnvironment
+        };
     }
 
-    private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(HashSet<EEnvironment>? container)
+    private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(IRandomGenerator random, HashSet<EEnvironment>? container, ESite site)
     {
-        return new HashSet<EEnvironment>() { GetRandomEnvironment(container) };
+        return new HashSet<EEnvironment>() { GetRandomEnvironment(random, container, site) };
     }
 
-    private static ESite GetRandomSite(ESite[] matchingSites)
+    private static ESite GetRandomSite(IRandomGenerator random, ESite[] matchingSites)
     {
-        return matchingSites[Random.Shared.Next(matchingSites.Length)];
+        return matchingSites[random.Next(matchingSites.Length)];
     }
 
     private static string GetSiteUrl(ESite site) => site switch

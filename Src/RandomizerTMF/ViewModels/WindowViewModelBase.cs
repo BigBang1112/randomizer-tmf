@@ -1,26 +1,34 @@
 ﻿using Avalonia.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using RandomizerTMF.Views;
+using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class WindowViewModelBase : ViewModelBase
+internal class WindowViewModelBase : ViewModelBase
 {
-    public Window Window { get; init; } = default!;
+    public Window Window { get; internal set; } = default!;
 
     public void SwitchWindowTo<TWindow, TViewModel>()
-        where TWindow : Window, new()
-        where TViewModel : WindowViewModelBase, new()
+        where TWindow : Window
+        where TViewModel : WindowViewModelBase
     {
         _ = OpenWindow<TWindow, TViewModel>();
         Window.Close();
     }
 
     public static TWindow OpenWindow<TWindow, TViewModel>()
-        where TWindow : Window, new()
-        where TViewModel : WindowViewModelBase, new()
+        where TWindow : Window
+        where TViewModel : WindowViewModelBase
     {
-        var window = new TWindow();
-        var viewModel = new TViewModel() { Window = window };
+        if (Program.ServiceProvider is null)
+        {
+            throw new UnreachableException("ServiceProvider is null");
+        }
+
+        var window = Program.ServiceProvider.GetRequiredService<TWindow>();
+        var viewModel = Program.ServiceProvider.GetRequiredService<TViewModel>();
+        viewModel.Window = window;
         viewModel.OnInit();
         window.DataContext = viewModel;
         window.Show();
@@ -52,8 +60,15 @@ public class WindowViewModelBase : ViewModelBase
 
     public MessageWindow OpenMessageBox(string title, string content)
     {
+        if (Program.ServiceProvider is null)
+        {
+            throw new UnreachableException("ServiceProvider is null");
+        }
+        
+        var topBarViewModel = Program.ServiceProvider.GetRequiredService<TopBarViewModel>();
+        
         var window = new MessageWindow() { Title = title };
-        var viewModel = new MessageWindowViewModel() { Window = window, Content = content };
+        var viewModel = new MessageWindowViewModel(topBarViewModel) { Window = window, Content = content };
         viewModel.OnInit();
         window.DataContext = viewModel;
         window.ShowDialog(Window); // The parent window

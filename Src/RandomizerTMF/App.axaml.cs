@@ -1,10 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using RandomizerTMF.Logic;
+using Microsoft.Extensions.DependencyInjection;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.ViewModels;
 using RandomizerTMF.Views;
+using System.Diagnostics;
 
 namespace RandomizerTMF
 {
@@ -21,26 +22,35 @@ namespace RandomizerTMF
 
         public override void OnFrameworkInitializationCompleted()
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            if (Program.ServiceProvider is null)
             {
-                if (IsValidGameDirectory(RandomizerEngine.Config.GameDirectory))
+                throw new UnreachableException("Service provider is null");
+            }
+
+            if (ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var config = Program.ServiceProvider.GetRequiredService<IRandomizerConfig>();
+                var filePathManager = Program.ServiceProvider.GetRequiredService<IFilePathManager>();
+
+                Window window;
+                WindowViewModelBase viewModel;
+
+                if (IsValidGameDirectory(filePathManager, config.GameDirectory))
                 {
-                    desktop.MainWindow = new DashboardWindow();
-
-                    var viewModel = new DashboardWindowViewModel { Window = desktop.MainWindow };
-                    desktop.MainWindow.DataContext = viewModel;
-
-                    viewModel.OnInit();
+                    window = Program.ServiceProvider.GetRequiredService<DashboardWindow>();
+                    viewModel = Program.ServiceProvider.GetRequiredService<DashboardWindowViewModel>();
                 }
                 else
                 {
-                    desktop.MainWindow = new MainWindow();
-
-                    var viewModel = new MainWindowViewModel { Window = desktop.MainWindow };
-                    desktop.MainWindow.DataContext = viewModel;
-
-                    viewModel.OnInit();
+                    window = Program.ServiceProvider.GetRequiredService<MainWindow>();
+                    viewModel = Program.ServiceProvider.GetRequiredService<MainWindowViewModel>();
                 }
+
+                desktop.MainWindow = window;
+                viewModel.Window = window;
+                window.DataContext = viewModel;
+
+                viewModel.OnInit();
 
                 MainWindow = desktop.MainWindow;
             }
@@ -48,9 +58,9 @@ namespace RandomizerTMF
             base.OnFrameworkInitializationCompleted();
         }
 
-        private bool IsValidGameDirectory(string? gameDirectory)
+        private bool IsValidGameDirectory(IFilePathManager filePathManager, string? gameDirectory)
         {
-            return !string.IsNullOrWhiteSpace(gameDirectory) && FilePathManager.UpdateGameDirectory(gameDirectory) is { NadeoIniException: null, TmForeverException: null };
+            return !string.IsNullOrWhiteSpace(gameDirectory) && filePathManager.UpdateGameDirectory(gameDirectory) is { NadeoIniException: null, TmForeverException: null };
         }
     }
 }

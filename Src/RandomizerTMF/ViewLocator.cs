@@ -4,7 +4,7 @@ using RandomizerTMF.ViewModels;
 
 namespace RandomizerTMF;
 
-public class ViewLocator : IDataTemplate
+internal class ViewLocator : IDataTemplate
 {
     public IControl Build(object data)
     {

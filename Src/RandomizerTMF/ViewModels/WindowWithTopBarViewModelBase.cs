@@ -1,12 +1,12 @@
 ﻿namespace RandomizerTMF.ViewModels;
 
-public class WindowWithTopBarViewModelBase : WindowViewModelBase
+internal class WindowWithTopBarViewModelBase : WindowViewModelBase
 {
     public TopBarViewModel TopBarViewModel { get; set; }
     
-    public WindowWithTopBarViewModelBase()
+    public WindowWithTopBarViewModelBase(TopBarViewModel topBarViewModel)
 	{
-        TopBarViewModel = new();
+        TopBarViewModel = topBarViewModel;
         TopBarViewModel.CloseClick += CloseClick;
         TopBarViewModel.MinimizeClick += MinimizeClick;
     }

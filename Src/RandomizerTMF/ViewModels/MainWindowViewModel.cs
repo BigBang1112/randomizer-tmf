@@ -1,16 +1,20 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
 using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Views;
 using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class MainWindowViewModel : WindowWithTopBarViewModelBase
+internal class MainWindowViewModel : WindowWithTopBarViewModelBase
 {
     private string? gameDirectory;
     private string? userDirectory;
     private GameDirInspectResult? nadeoIni;
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerConfig config;
+    private readonly IFilePathManager filePathManager;
 
     public string? GameDirectory
     {
@@ -65,19 +69,29 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
 
     public bool IsSaveAndProceedEnabled => NadeoIni is not null && NadeoIni.NadeoIniException is null && NadeoIni.TmForeverException is null && NadeoIni.TmUnlimiterException is null or FileNotFoundException;
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(TopBarViewModel topBarViewModel,
+                               IRandomizerEngine engine,
+                               IRandomizerConfig config,
+                               IFilePathManager filePathManager,
+                               IDiscordRichPresence discord) : base(topBarViewModel)
     {
-        if (!string.IsNullOrWhiteSpace(RandomizerEngine.Config.GameDirectory))
+        this.engine = engine;
+        this.config = config;
+        this.filePathManager = filePathManager;
+        
+        if (!string.IsNullOrWhiteSpace(config.GameDirectory))
         {
-            GameDirectory = RandomizerEngine.Config.GameDirectory;
-            NadeoIni = FilePathManager.UpdateGameDirectory(RandomizerEngine.Config.GameDirectory);
-            UserDirectory = FilePathManager.UserDataDirectoryPath;
+            GameDirectory = config.GameDirectory;
+            NadeoIni = filePathManager.UpdateGameDirectory(config.GameDirectory);
+            UserDirectory = filePathManager.UserDataDirectoryPath;
         }
+
+        discord.Configuring();
     }
 
     protected override void CloseClick()
     {
-        RandomizerEngine.Exit();
+        engine.Exit();
     }
 
     protected override void MinimizeClick()
@@ -97,14 +111,14 @@ public class MainWindowViewModel : WindowWithTopBarViewModelBase
 
         GameDirectory = dir;
 
-        NadeoIni = FilePathManager.UpdateGameDirectory(dir);
+        NadeoIni = filePathManager.UpdateGameDirectory(dir);
 
-        UserDirectory = NadeoIni.NadeoIniException is null ? FilePathManager.UserDataDirectoryPath : null;
+        UserDirectory = NadeoIni.NadeoIniException is null ? filePathManager.UserDataDirectoryPath : null;
     }
 
     public void SaveAndProceedClick()
     {
-        RandomizerEngine.Config.Save();
+        config.Save();
 
         SwitchWindowTo<DashboardWindow, DashboardWindowViewModel>();
     }

@@ -2,7 +2,7 @@
 
 namespace RandomizerTMF.ViewModels;
 
-public class MessageWindowViewModel : WindowWithTopBarViewModelBase
+internal class MessageWindowViewModel : WindowWithTopBarViewModelBase
 {
     private string content = "";
 
@@ -12,7 +12,7 @@ public class MessageWindowViewModel : WindowWithTopBarViewModelBase
         set => this.RaiseAndSetIfChanged(ref content, value);
     }
 
-    public MessageWindowViewModel()
+    public MessageWindowViewModel(TopBarViewModel topBarViewModel) : base(topBarViewModel)
     {
         TopBarViewModel.MinimizeButtonEnabled = false;
     }

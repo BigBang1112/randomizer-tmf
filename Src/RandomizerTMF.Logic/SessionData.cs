@@ -1,17 +1,17 @@
 ﻿using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
-using System.Collections.Immutable;
-using System.Diagnostics;
+using RandomizerTMF.Logic.Services;
+using System.IO.Abstractions;
 using TmEssentials;
 using YamlDotNet.Serialization;
-using static GBX.NET.Engines.Game.CGameGhost;
 
 namespace RandomizerTMF.Logic;
 
 public class SessionData
 {
-    private readonly RandomizerConfig config;
+    private readonly IRandomizerConfig config;
     private readonly ILogger? logger;
+    private readonly IFileSystem? fileSystem;
 
     public string? Version { get; set; }
     public DateTimeOffset StartedAt { get; set; }
@@ -25,46 +25,55 @@ public class SessionData
 
     public List<SessionDataMap> Maps { get; set; } = new();
 
-    public SessionData() : this(null, DateTimeOffset.Now, new(), null)
+    public SessionData() : this(version: null, // will be overwriten by deserialization
+                                DateTimeOffset.Now, // will be overwriten by deserialization
+                                new RandomizerConfig(), // unused in read-only state
+                                logger: null, // unused in read-only state
+                                fileSystem: null) // unused in read-only state
     {
-        
+        // This is legit only for read-only use cases and for YAML deserialization!
     }
 
-    private SessionData(string? version, DateTimeOffset startedAt, RandomizerConfig config, ILogger? logger)
+    private SessionData(string? version,
+                        DateTimeOffset startedAt,
+                        IRandomizerConfig config,
+                        ILogger? logger,
+                        IFileSystem? fileSystem)
     {
         Version = version;
         StartedAt = startedAt;
         
         this.config = config;
         this.logger = logger;
-
+        this.fileSystem = fileSystem;
+        
         Rules = config.Rules;
 
         DirectoryPath = Path.Combine(FilePathManager.SessionsDirectoryPath, StartedAtText);
     }
 
-    public static SessionData Initialize(RandomizerConfig config, ILogger logger)
+    internal static SessionData Initialize(DateTimeOffset startedAt, IRandomizerConfig config, ILogger logger, IFileSystem fileSystem)
     {
-        var startedAt = DateTimeOffset.Now;
+        var data = new SessionData(RandomizerEngine.Version, startedAt, config, logger, fileSystem);
 
-        var data = new SessionData(RandomizerEngine.Version, startedAt, config, logger);
-
-        Directory.CreateDirectory(data.DirectoryPath);
+        fileSystem.Directory.CreateDirectory(data.DirectoryPath);
 
         data.Save();
 
         return data;
     }
 
+    public static SessionData Initialize(IRandomizerConfig config, ILogger logger, IFileSystem fileSystem)
+    {
+        return Initialize(DateTimeOffset.Now, config, logger, fileSystem);
+    }
+
     public void SetMapResult(SessionMap map, string result)
     {
-        var dataMap = Maps.FirstOrDefault(x => x.Uid == map.MapUid);
+        var dataMap = Maps.First(x => x.Uid == map.MapUid);
 
-        if (dataMap is not null)
-        {
-            dataMap.Result = result;
-            dataMap.LastTimestamp = map.LastTimestamp;
-        }
+        dataMap.Result = result;
+        dataMap.LastTimestamp = map.LastTimestamp;
 
         Save();
     }
@@ -73,17 +82,22 @@ public class SessionData
     {
         logger?.LogInformation("Saving the session data into file...");
 
-        File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
+        fileSystem?.File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
 
         logger?.LogInformation("Session data saved.");
+    }
+
+    internal void InternalSetReadOnlySessionYml()
+    {
+        var sessionYmlFile = Path.Combine(DirectoryPath, Constants.SessionYml);
+        fileSystem?.File.SetAttributes(sessionYmlFile, fileSystem.File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
     }
 
     public void SetReadOnlySessionYml()
     {
         try
         {
-            var sessionYmlFile = Path.Combine(DirectoryPath, Constants.SessionYml);
-            File.SetAttributes(sessionYmlFile, File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
+            InternalSetReadOnlySessionYml();
         }
         catch (Exception ex)
         {
@@ -95,8 +109,8 @@ public class SessionData
     {
         var score = map.Map.Mode switch
         {
-            CGameCtnChallenge.PlayMode.Stunts => replay.GetGhosts().First().StuntScore + "_",
-            CGameCtnChallenge.PlayMode.Platform => replay.GetGhosts().First().Respawns + "_",
+            CGameCtnChallenge.PlayMode.Stunts => replay.GetGhosts(alsoInClips: false).First().StuntScore + "_",
+            CGameCtnChallenge.PlayMode.Platform => replay.GetGhosts(alsoInClips: false).First().Respawns + "_",
             _ => ""
         } + replay.Time.ToTmString(useHundredths: true, useApostrophe: true);
 
@@ -111,10 +125,13 @@ public class SessionData
         var replaysDir = Path.Combine(DirectoryPath, Constants.Replays);
         var replayFilePath = Path.Combine(replaysDir, replayFileName);
 
-        Directory.CreateDirectory(replaysDir);
-        File.Copy(fullPath, replayFilePath, overwrite: true);
-
-        Maps.FirstOrDefault(x => x.Uid == map.MapUid)?
+        if (fileSystem is not null)
+        {
+            fileSystem.Directory.CreateDirectory(replaysDir);
+            fileSystem.File.Copy(fullPath, replayFilePath, overwrite: true);
+        }
+        
+        Maps.First(x => x.Uid == map.MapUid)?
             .Replays
             .Add(new()
             {

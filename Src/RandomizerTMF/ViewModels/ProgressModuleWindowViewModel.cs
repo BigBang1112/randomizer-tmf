@@ -1,20 +1,25 @@
 ﻿using Avalonia.Media;
-using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class ProgressModuleWindowViewModel : WindowViewModelBase
+internal class ProgressModuleWindowViewModel : ModuleWindowViewModelBase
 {
-    public int AuthorMedalCount => RandomizerEngine.CurrentSession?.AuthorMaps.Count ?? 0;
-    public int GoldMedalCount => RandomizerEngine.CurrentSession?.GoldMaps.Count ?? 0;
-    public int SkipCount => RandomizerEngine.CurrentSession?.SkippedMaps.Count ?? 0;
-    public IBrush SkipColor => SkipCount == 0 ? Brushes.LightGreen : Brushes.Orange;
+    private readonly IRandomizerEngine engine;
 
-    public ProgressModuleWindowViewModel()
-	{
-        RandomizerEngine.MedalUpdate += RandomizerMedalUpdate;
-        RandomizerEngine.MapSkip += RandomizerMapSkip;
+    public int AuthorMedalCount => engine.CurrentSession?.AuthorMaps.Count ?? 0;
+    public int GoldMedalCount => engine.CurrentSession?.GoldMaps.Count ?? 0;
+    public int SkipCount => engine.CurrentSession?.SkippedMaps.Count ?? 0;
+    public IBrush SkipColor => SkipCount == 0 ? Brushes.LightGreen : Brushes.Orange;
+    public string SkipText => SkipCount == 1 ? "SKIP" : "SKIPS";
+
+    public ProgressModuleWindowViewModel(IRandomizerEngine engine, IRandomizerEvents events, IRandomizerConfig config) : base(config)
+    {
+        this.engine = engine;
+
+        events.MedalUpdate += RandomizerMedalUpdate;
+        events.MapSkip += RandomizerMapSkip;
     }
 
     private void RandomizerMedalUpdate()
@@ -27,5 +32,6 @@ public class ProgressModuleWindowViewModel : WindowViewModelBase
     {
         this.RaisePropertyChanged(nameof(SkipCount));
         this.RaisePropertyChanged(nameof(SkipColor));
+        this.RaisePropertyChanged(nameof(SkipText));
     }
 }
