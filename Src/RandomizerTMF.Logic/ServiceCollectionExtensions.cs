@@ -50,6 +50,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<DiscordRpcLogger>();
         services.AddSingleton<IRandomGenerator, RandomGenerator>();
         services.AddSingleton<IGbxService, GbxService>();
+        services.AddTransient<ISession, Session>();
+        services.AddSingleton<Func<ISession>>(provider => () => provider.GetRequiredService<ISession>());
 
         services.AddSingleton<IFileSystemWatcher, FileSystemWatcherWrapper>(provider =>
         {

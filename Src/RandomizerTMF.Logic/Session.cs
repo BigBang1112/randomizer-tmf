@@ -8,7 +8,26 @@ using TmEssentials;
 
 namespace RandomizerTMF.Logic;
 
-public class Session
+public interface ISession
+{
+    Dictionary<string, SessionMap> AuthorMaps { get; }
+    SessionData? Data { get; }
+    Dictionary<string, SessionMap> GoldMaps { get; }
+    StreamWriter? LogWriter { get; set; }
+    SessionMap? Map { get; set; }
+    Dictionary<string, SessionMap> SkippedMaps { get; }
+    CancellationTokenSource? SkipTokenSource { get; }
+    Task? Task { get; }
+    CancellationTokenSource TokenSource { get; }
+    Stopwatch Watch { get; }
+
+    void ReloadMap();
+    Task SkipMapAsync();
+    void Start();
+    void Stop();
+}
+
+public class Session : ISession
 {
     private readonly IRandomizerEvents events;
     private readonly IMapDownloader mapDownloader;
@@ -17,7 +36,7 @@ public class Session
     private readonly ITMForever game;
     private readonly ILogger logger;
     private readonly IFileSystem fileSystem;
-    
+
     private bool isActualSkipCancellation;
     private DateTime watchTemporaryStopTimestamp;
 
@@ -30,14 +49,14 @@ public class Session
 
     public SessionMap? Map { get; set; }
 
-    public SessionData? Data { get; set; }
+    public SessionData? Data { get; private set; }
 
     // This "trilogy" handles the storage of played maps. If the player didn't receive at least gold and didn't skip it, it is not counted in the progress.
     // It may (?) be better to wrap the CGameCtnChallenge into "CompletedMap" and have status of it being "gold", "author", or "skipped", and better handle that to make it script-friendly.
     public Dictionary<string, SessionMap> GoldMaps { get; } = new();
     public Dictionary<string, SessionMap> AuthorMaps { get; } = new();
     public Dictionary<string, SessionMap> SkippedMaps { get; } = new();
-    
+
     public StreamWriter? LogWriter { get; set; }
 
     public Session(IRandomizerEvents events,
@@ -66,7 +85,7 @@ public class Session
     {
         Task = Task.Run(() => RunSessionSafeAsync(TokenSource.Token), TokenSource.Token);
     }
-    
+
     /// <summary>
     /// Runs the session in a way it won't ever throw an exception. Clears the session after its end as well.
     /// </summary>
@@ -111,13 +130,11 @@ public class Session
         }
 
         validator.ValidateRules();
-        
+
         Data = SessionData.Initialize(config, logger, fileSystem);
 
-        LogWriter = new StreamWriter(Path.Combine(Data.DirectoryPath, Constants.SessionLog))
-        {
-            AutoFlush = true
-        };
+        LogWriter = fileSystem.File.CreateText(Path.Combine(Data.DirectoryPath, Constants.SessionLog));
+        LogWriter.AutoFlush = true;
 
         if (logger is LoggerToFile loggerToFile) // Maybe needs to be nicer
         {
@@ -135,7 +152,7 @@ public class Session
                     await Task.Delay(500, cancellationToken);
                     continue;
                 }
-                
+
                 Data?.Save(); // May not be super necessary?
             }
             catch (HttpRequestException)
@@ -233,7 +250,7 @@ public class Session
 
         Watch.Stop(); // Time is paused until the next map starts
         watchTemporaryStopTimestamp = DateTime.UtcNow;
-        
+
         if (isActualSkipCancellation) // When its a manual skip and not an automated skip by author medal receive
         {
             Status("Skipping the map...");
@@ -259,22 +276,22 @@ public class Session
         {
             events.OnTimeResume(DateTime.UtcNow - watchTemporaryStopTimestamp);
         }
-        
+
         Watch.Start();
 
-        events.AutosaveCreatedOrChanged += AutosaveCreatedOrChanged;
-        
+        events.AutosaveCreatedOrChanged += AutosaveCreatedOrChangedSafe;
+
         return new CancellationTokenSource();
     }
 
     private void StopTrackingMap()
     {
-        events.AutosaveCreatedOrChanged -= AutosaveCreatedOrChanged;
+        events.AutosaveCreatedOrChanged -= AutosaveCreatedOrChangedSafe;
         SkipTokenSource = null;
         Map = null;
         events.OnMapEnded();
     }
-    
+
     private void SkipManually(SessionMap map)
     {
         // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
@@ -291,78 +308,85 @@ public class Session
         events.OnMapSkip();
     }
 
-    private void AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
+    private void AutosaveCreatedOrChangedSafe(string fullPath, CGameCtnReplayRecord replay)
     {
         try
         {
-            // Current session map autosave update section
-
-            if (replay.MapInfo is null)
-            {
-                logger.LogWarning("Found autosave {autosavePath} with missing map info.", fullPath);
-                return;
-            }
-
-            if (Map is null)
-            {
-                logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while no session is running.", fullPath, replay.MapInfo.Id);
-                return;
-            }
-
-            if (Map.MapInfo != replay.MapInfo)
-            {
-                logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while the current session map is {currentSessionMapUid}.", fullPath, replay.MapInfo.Id, Map.MapInfo.Id);
-                return;
-            }
-            
-            Status("Copying the autosave...");
-
-            Data?.UpdateFromAutosave(fullPath, Map, replay, Watch.Elapsed);
-
-            Status("Checking the autosave...");
-
-            // New autosave from the current map, save it into session for progression reasons
-
-            // The following part has a scriptable potential
-            // There are different medal rules for each gamemode (and where to look for validating)
-            // So that's why the code looks like this for the time being
-
-            if (Map.ChallengeParameters?.AuthorTime is null)
-            {
-                logger.LogWarning("Found autosave {autosavePath} for map {mapName} ({mapUid}) that has no author time.",
-                    fullPath,
-                    TextFormatter.Deformat(Map.Map.MapName).Trim(),
-                    replay.MapInfo.Id);
-
-                SkipTokenSource?.Cancel();
-            }
-            else
-            {
-                var ghost = replay.GetGhosts().First();
-
-                if ((Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= Map.ChallengeParameters.AuthorTime)
-                 || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ((Map.ChallengeParameters.AuthorScore > 0 && ghost.Respawns <= Map.ChallengeParameters.AuthorScore) || (ghost.Respawns == 0 && replay.Time <= Map.ChallengeParameters.AuthorTime)))
-                 || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= Map.ChallengeParameters.AuthorScore))
-                {
-                    AuthorMedalReceived(Map);
-
-                    SkipTokenSource?.Cancel();
-                }
-                else if ((Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= Map.ChallengeParameters.GoldTime)
-                      || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ghost.Respawns <= Map.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
-                      || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= Map.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
-                {
-                    GoldMedalReceived(Map);
-                }
-            }
-
-            Status("Playing the map...");
+            _ = AutosaveCreatedOrChanged(fullPath, replay);
         }
         catch (Exception ex)
         {
             Status("Error when checking the autosave...");
             logger.LogError(ex, "Error when checking the autosave {autosavePath}.", fullPath);
         }
+    }
+
+    private bool AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
+    {
+        // Current session map autosave update section
+
+        if (replay.MapInfo is null)
+        {
+            logger.LogWarning("Found autosave {autosavePath} with missing map info.", fullPath);
+            return false;
+        }
+
+        if (Map is null)
+        {
+            logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while no session is running.", fullPath, replay.MapInfo.Id);
+            return false;
+        }
+
+        if (Map.MapInfo != replay.MapInfo)
+        {
+            logger.LogWarning("Found autosave {autosavePath} for map {mapUid} while the current session map is {currentSessionMapUid}.", fullPath, replay.MapInfo.Id, Map.MapInfo.Id);
+            return false;
+        }
+
+        Status("Copying the autosave...");
+
+        Data?.UpdateFromAutosave(fullPath, Map, replay, Watch.Elapsed);
+
+        Status("Checking the autosave...");
+
+        // New autosave from the current map, save it into session for progression reasons
+
+        // The following part has a scriptable potential
+        // There are different medal rules for each gamemode (and where to look for validating)
+        // So that's why the code looks like this for the time being
+
+        if (Map.ChallengeParameters?.AuthorTime is null)
+        {
+            logger.LogWarning("Found autosave {autosavePath} for map {mapName} ({mapUid}) that has no author time.",
+                fullPath,
+                TextFormatter.Deformat(Map.Map.MapName).Trim(),
+                replay.MapInfo.Id);
+
+            SkipTokenSource?.Cancel();
+        }
+        else
+        {
+            var ghost = replay.GetGhosts().First();
+
+            if ((Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= Map.ChallengeParameters.AuthorTime)
+                || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ((Map.ChallengeParameters.AuthorScore > 0 && ghost.Respawns <= Map.ChallengeParameters.AuthorScore) || (ghost.Respawns == 0 && replay.Time <= Map.ChallengeParameters.AuthorTime)))
+                || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= Map.ChallengeParameters.AuthorScore))
+            {
+                AuthorMedalReceived(Map);
+
+                SkipTokenSource?.Cancel();
+            }
+            else if ((Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= Map.ChallengeParameters.GoldTime)
+                    || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ghost.Respawns <= Map.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
+                    || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= Map.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
+            {
+                GoldMedalReceived(Map);
+            }
+        }
+
+        Status("Playing the map...");
+
+        return true;
     }
 
     private void GoldMedalReceived(SessionMap map)

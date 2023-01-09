@@ -5,7 +5,7 @@ namespace RandomizerTMF.Logic.Services;
 
 public interface IRandomizerEngine
 {
-    Session? CurrentSession { get; }
+    ISession? CurrentSession { get; }
     bool HasSessionRunning { get; }
     bool SessionEnding { get; }
 
@@ -18,40 +18,32 @@ public class RandomizerEngine : IRandomizerEngine
 {
     private readonly IRandomizerConfig config;
     private readonly IRandomizerEvents events;
-    private readonly IMapDownloader mapDownloader;
-    private readonly IValidator validator;
-    private readonly ITMForever game;
     private readonly IDiscordRichPresence discord;
     private readonly ILogger logger;
-    private readonly IFileSystem fileSystem;
+    private readonly Func<ISession> session;
 
     public static string? Version { get; } = typeof(RandomizerEngine).Assembly.GetName().Version?.ToString(3);
 
-    public Session? CurrentSession { get; private set; }
+    public ISession? CurrentSession { get; private set; }
     public bool HasSessionRunning => CurrentSession is not null;
     public bool SessionEnding { get; private set; }
 
     public RandomizerEngine(IRandomizerConfig config,
                             IRandomizerEvents events,
-                            IMapDownloader mapDownloader,
-                            IValidator validator,
-                            ITMForever game,
                             IDiscordRichPresence discord,
+                            IFileSystem fileSystem,
                             ILogger logger,
-                            IFileSystem fileSystem)
+                            Func<ISession> session)
     {
         this.config = config;
         this.events = events;
-        this.mapDownloader = mapDownloader;
-        this.validator = validator;
-        this.game = game;
         this.discord = discord;
         this.logger = logger;
-        this.fileSystem = fileSystem;
+        this.session = session;
 
         logger.LogInformation("Starting Randomizer Engine...");
 
-        Directory.CreateDirectory(FilePathManager.SessionsDirectoryPath);
+        fileSystem.Directory.CreateDirectory(FilePathManager.SessionsDirectoryPath);
 
         logger.LogInformation("Predefining LZO algorithm...");
 
@@ -85,7 +77,7 @@ public class RandomizerEngine : IRandomizerEngine
             return;
         }
 
-        CurrentSession = new Session(events, mapDownloader, validator, config, game, logger, fileSystem);
+        CurrentSession = session();
         CurrentSession.Start();
     }
 
