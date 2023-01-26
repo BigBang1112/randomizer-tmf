@@ -5,6 +5,7 @@ using RandomizerTMF.Logic.Exceptions;
 using System.Diagnostics;
 using System.Net;
 using TmEssentials;
+using System.IO.Abstractions;
 
 namespace RandomizerTMF.Logic.Services;
 
@@ -23,6 +24,8 @@ public class MapDownloader : IMapDownloader
     private readonly HttpClient http;
     private readonly IRandomGenerator random;
     private readonly IDelayService delayService;
+    private readonly IFileSystem fileSystem;
+    private readonly IGbxService gbxService;
     private readonly ILogger logger;
 
     private readonly int requestMaxAttempts = 10;
@@ -36,6 +39,8 @@ public class MapDownloader : IMapDownloader
                          HttpClient http,
                          IRandomGenerator random,
                          IDelayService delayService,
+                         IFileSystem fileSystem,
+                         IGbxService gbxService,
                          ILogger logger)
     {
         this.events = events;
@@ -46,6 +51,8 @@ public class MapDownloader : IMapDownloader
         this.http = http;
         this.random = random;
         this.delayService = delayService;
+        this.fileSystem = fileSystem;
+        this.gbxService = gbxService;
         this.logger = logger;
     }
 
@@ -77,7 +84,7 @@ public class MapDownloader : IMapDownloader
 
         var trackId = GetTrackIdFromUri(requestUri);
 
-        if (trackId is null)
+        if (trackId is null) // Cannot really happen
         {
             logger.LogWarning("TrackId of Uri redirect is null");
             return false;
@@ -124,7 +131,7 @@ public class MapDownloader : IMapDownloader
         return true;
     }
 
-    private async Task<string> SaveMapAsync(HttpResponseMessage trackGbxResponse, string mapUidFallback, CancellationToken cancellationToken)
+    internal async Task<string> SaveMapAsync(HttpResponseMessage trackGbxResponse, string mapUidFallback, CancellationToken cancellationToken)
     {
         Status("Saving the map...");
 
@@ -134,7 +141,7 @@ public class MapDownloader : IMapDownloader
         }
 
         logger.LogDebug("Ensuring {dir} exists...", filePathManager.DownloadedDirectoryPath);
-        Directory.CreateDirectory(filePathManager.DownloadedDirectoryPath); // Ensures the directory really exists
+        fileSystem.Directory.CreateDirectory(filePathManager.DownloadedDirectoryPath); // Ensures the directory really exists
 
         logger.LogDebug("Preparing the file name...");
 
@@ -151,14 +158,14 @@ public class MapDownloader : IMapDownloader
         // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
         var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
 
-        await File.WriteAllBytesAsync(mapSavePath, trackData, cancellationToken);
+        await fileSystem.File.WriteAllBytesAsync(mapSavePath, trackData, cancellationToken);
 
         logger.LogInformation("Map saved successfully!");
 
         return mapSavePath;
     }
 
-    private async Task<HttpResponseMessage> FetchRandomTrackAsync(CancellationToken cancellationToken)
+    internal async Task<HttpResponseMessage> FetchRandomTrackAsync(CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
 
@@ -236,7 +243,7 @@ public class MapDownloader : IMapDownloader
 
         Status("Parsing the map...");
 
-        if (GameBox.ParseNode(stream) is CGameCtnChallenge map)
+        if (gbxService.Parse(stream) is CGameCtnChallenge map)
         {
             return map;
         }
