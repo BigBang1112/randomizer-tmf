@@ -46,7 +46,7 @@ internal class UpdateDetector : IUpdateDetector
                 return;
             }
 
-            var release = releases[0];
+            var release = releases.First(r => !r.Prerelease);
             var version = release.TagName[1..]; // stips v from vX.X.X
 
             if (string.Equals(version, Program.Version))
