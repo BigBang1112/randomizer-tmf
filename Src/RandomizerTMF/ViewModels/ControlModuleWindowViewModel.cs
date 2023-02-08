@@ -1,28 +1,35 @@
 ﻿using Avalonia.Media;
 using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Views;
 using ReactiveUI;
 
 namespace RandomizerTMF.ViewModels;
 
-public class ControlModuleWindowViewModel : WindowViewModelBase
+internal class ControlModuleWindowViewModel : ModuleWindowViewModelBase
 {
-    public string PrimaryButtonText => RandomizerEngine.HasSessionRunning ? "SKIP" : "START";
-    public string SecondaryButtonText => RandomizerEngine.HasSessionRunning ? "END SESSION" : "CLOSE";
-    public bool PrimaryButtonEnabled => !RandomizerEngine.HasSessionRunning || (RandomizerEngine.HasSessionRunning && CanSkip);
-    public bool ReloadMapButtonEnabled => RandomizerEngine.HasSessionRunning && CanSkip; // CanSkip is mostly a hack
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerEvents events;
 
-    public IBrush PrimaryButtonBackground => RandomizerEngine.HasSessionRunning ? new SolidColorBrush(new Color(255, 127, 96, 0)) : Brushes.DarkGreen;
+    public string PrimaryButtonText => engine.HasSessionRunning ? "SKIP" : "START";
+    public string SecondaryButtonText => engine.HasSessionRunning ? "END SESSION" : "CLOSE";
+    public bool PrimaryButtonEnabled => !engine.HasSessionRunning || (engine.HasSessionRunning && CanSkip);
+    public bool ReloadMapButtonEnabled => engine.HasSessionRunning && CanSkip; // CanSkip is mostly a hack
 
-    public bool CanSkip => RandomizerEngine.SkipTokenSource is not null;
+    public IBrush PrimaryButtonBackground => engine.HasSessionRunning ? new SolidColorBrush(new Color(255, 127, 96, 0)) : Brushes.DarkGreen;
 
-    public ControlModuleWindowViewModel()
+    public bool CanSkip => engine.CurrentSession?.SkipTokenSource is not null;
+
+    public ControlModuleWindowViewModel(IRandomizerEngine engine, IRandomizerEvents events, IRandomizerConfig config) : base(config)
     {
-        RandomizerEngine.MapStarted += RandomizerMapStarted;
-        RandomizerEngine.MapEnded += RandomizerMapEnded;
+        this.engine = engine;
+        this.events = events;
+        
+        events.MapStarted += RandomizerMapStarted;
+        events.MapEnded += RandomizerMapEnded;
     }
 
-    private void RandomizerMapStarted()
+    private void RandomizerMapStarted(SessionMap map)
     {
         this.RaisePropertyChanged(nameof(PrimaryButtonEnabled));
         this.RaisePropertyChanged(nameof(ReloadMapButtonEnabled));
@@ -36,13 +43,13 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
 
     public async Task PrimaryButtonClick()
     {
-        if (RandomizerEngine.HasSessionRunning)
+        if (engine.CurrentSession is not null)
         {
-            await RandomizerEngine.SkipMapAsync();
+            await engine.CurrentSession.SkipMapAsync();
             return;
         }
         
-        await RandomizerEngine.StartSessionAsync();
+        engine.StartSession();
 
         this.RaisePropertyChanged(nameof(PrimaryButtonText));
         this.RaisePropertyChanged(nameof(SecondaryButtonText));
@@ -54,7 +61,7 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
 
     public void ReloadMapButtonClick()
     {
-        RandomizerEngine.ReloadMap();
+        engine.CurrentSession?.ReloadMap();
     }
 
     public async Task SecondaryButtonClick()
@@ -63,9 +70,9 @@ public class ControlModuleWindowViewModel : WindowViewModelBase
 
         // If yes, freeze the button
 
-        if (RandomizerEngine.HasSessionRunning)
+        if (engine.HasSessionRunning)
         {
-            await RandomizerEngine.EndSessionAsync();
+            await engine.EndSessionAsync();
         }
 
         OpenWindow<DashboardWindow, DashboardWindowViewModel>();

@@ -1,21 +1,28 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Collections.Immutable;
+using System.Text;
 
 namespace RandomizerTMF.Logic;
 
 public class LoggerToFile : ILogger
 {
-    private readonly IList<StreamWriter> writers;
-
     internal LogScope? CurrentScope { get; set; }
 
-    public LoggerToFile(params StreamWriter[] writers)
-    {
-        this.writers = writers;
-    }
+    public ImmutableArray<StreamWriter> Writers { get; private set; }
 
     public LoggerToFile(StreamWriter writer)
     {
-        writers = new List<StreamWriter> { writer };
+        Writers = ImmutableArray.Create(writer);
+    }
+
+    public void SetSessionWriter(StreamWriter writer)
+    {
+        Writers = ImmutableArray.Create(Writers[0], writer);
+    }
+
+    public void RemoveSessionWriter()
+    {
+        Writers = ImmutableArray.Create(Writers[0]);
     }
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull
@@ -56,13 +63,37 @@ public class LoggerToFile : ILogger
 
         // CurrentScope is not utilized
 
-        foreach (var writer in writers)
-        {
-            writer.WriteLine($"[{DateTime.Now}, {logLevel}] {message}");
+        var builder = new StringBuilder("[");
+        builder.Append(DateTime.Now.ToString());
+        builder.Append(", ");
+        builder.Append(logLevel);
+        builder.Append("] ");
 
-            if (exception is not null)
+        var scope = CurrentScope;
+
+        while (scope is not null)
+        {
+            builder.Append(scope);
+            builder.Append(" => ");
+            scope = scope.Parent;
+        }
+
+        builder.Append(message);
+
+        foreach (var writer in Writers)
+        {
+            try
             {
-                writer.WriteLine(exception);
+                writer.WriteLine(builder);
+
+                if (exception is not null)
+                {
+                    writer.WriteLine(exception);
+                }
+            }
+            catch
+            {
+                // usually writer of ended session
             }
         }
     }

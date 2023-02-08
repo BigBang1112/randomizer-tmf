@@ -1,12 +1,14 @@
 ﻿using GBX.NET.Engines.Game;
-using RandomizerTMF.Logic;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Models;
 using TmEssentials;
 
 namespace RandomizerTMF.ViewModels;
 
-public class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
+internal class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
 {
+    private readonly ITMForever? game;
+
     public AutosaveModel AutosaveModel { get; }
     public string? AutosaveFilePath { get; }
 
@@ -46,7 +48,7 @@ public class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
     /// <summary>
     /// Example view model, should not be normally used.
     /// </summary>
-    public AutosaveDetailsWindowViewModel()
+    public AutosaveDetailsWindowViewModel() : base(new TopBarViewModel(null))
     {
         AutosaveModel = new(mapUid: "", new(
             Time: TimeInt32.Zero,
@@ -66,8 +68,13 @@ public class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
         TopBarViewModel.MinimizeButtonEnabled = false;
     }
 
-    public AutosaveDetailsWindowViewModel(AutosaveModel autosaveModel, string autosaveFilePath)
+    public AutosaveDetailsWindowViewModel(TopBarViewModel topBarViewModel,
+                                          ITMForever game,
+                                          AutosaveModel autosaveModel,
+                                          string autosaveFilePath) : base(topBarViewModel)
     {
+        this.game = game;
+        
         AutosaveModel = autosaveModel;
         AutosaveFilePath = autosaveFilePath;
 
@@ -94,6 +101,6 @@ public class AutosaveDetailsWindowViewModel : WindowWithTopBarViewModelBase
             return;
         }
 
-        RandomizerEngine.OpenAutosaveIngame(AutosaveFilePath);
+        game?.OpenAutosave(AutosaveFilePath);
     }
 }

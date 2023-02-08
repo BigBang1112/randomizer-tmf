@@ -1,21 +1,20 @@
 ﻿using RandomizerTMF.Models;
-using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class SessionMapViewModel : WindowWithTopBarViewModelBase
+internal class SessionMapViewModel : WindowWithTopBarViewModelBase
 {
     public PlayedMapModel Model { get; }
 
     /// <summary>
     /// Should be used only for previews
     /// </summary>
-    public SessionMapViewModel() : this(null!)
+    public SessionMapViewModel() : this(new(null), null!)
     {
 
     }
 
-	public SessionMapViewModel(PlayedMapModel model)
+	public SessionMapViewModel(TopBarViewModel topBarViewModel, PlayedMapModel model) : base(topBarViewModel)
     {
         Model = model;
 

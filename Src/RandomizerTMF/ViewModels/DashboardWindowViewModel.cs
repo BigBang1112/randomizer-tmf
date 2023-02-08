@@ -1,7 +1,9 @@
 ﻿using Avalonia.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic;
 using RandomizerTMF.Logic.Exceptions;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
@@ -10,14 +12,23 @@ using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
+internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 {
     private ObservableCollection<AutosaveModel> autosaves = new();
     private ObservableCollection<SessionDataModel> sessions = new();
-    
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerConfig config;
+    private readonly IValidator validator;
+    private readonly IFilePathManager filePathManager;
+    private readonly IAutosaveScanner autosaveScanner;
+    private readonly ITMForever game;
+    private readonly IUpdateDetector updateDetector;
+    private readonly IDiscordRichPresence discord;
+    private readonly ILogger logger;
+
     public RequestRulesControlViewModel RequestRulesControlViewModel { get; set; }
 
-    public string? GameDirectory => RandomizerEngine.Config.GameDirectory;
+    public string? GameDirectory => config.GameDirectory;
 
     public ObservableCollection<AutosaveModel> Autosaves
     {
@@ -31,12 +42,33 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         private set => this.RaiseAndSetIfChanged(ref sessions, value);
     }
 
-    public bool HasAutosavesScanned => RandomizerEngine.HasAutosavesScanned;
-    public int AutosaveScanCount => RandomizerEngine.AutosaveHeaders.Count;
+    public bool HasAutosavesScanned => autosaveScanner.HasAutosavesScanned;
+    public int AutosaveScanCount => autosaveScanner.AutosaveHeaders.Count;
 
-    public DashboardWindowViewModel()
+    public DashboardWindowViewModel(TopBarViewModel topBarViewModel,
+                                    IRandomizerEngine engine,
+                                    IRandomizerConfig config,
+                                    IValidator validator,
+                                    IFilePathManager filePathManager,
+                                    IAutosaveScanner autosaveScanner,
+                                    ITMForever game,
+                                    IUpdateDetector updateDetector,
+                                    IDiscordRichPresence discord,
+                                    ILogger logger) : base(topBarViewModel)
     {
-        RequestRulesControlViewModel = new();
+        this.engine = engine;
+        this.config = config;
+        this.validator = validator;
+        this.filePathManager = filePathManager;
+        this.autosaveScanner = autosaveScanner;
+        this.game = game;
+        this.updateDetector = updateDetector;
+        this.discord = discord;
+        this.logger = logger;
+        
+        RequestRulesControlViewModel = new(config);
+
+        discord.InDashboard();
     }
 
     protected internal override void OnInit()
@@ -54,7 +86,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
         var anythingChanged = await ScanAutosavesAsync();
 
-        if (anythingChanged)
+        if (anythingChanged && !config.DisableAutosaveDetailScan)
         {
             await UpdateAutosavesWithFullParseAsync();
         }
@@ -64,7 +96,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     
     private async Task ScanSessionsAsync()
     {
-        foreach (var dir in Directory.EnumerateDirectories(RandomizerEngine.SessionsDirectoryPath))
+        foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
         {
             var sessionYml = Path.Combine(dir, "Session.yml");
 
@@ -79,12 +111,12 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             try
             {
                 var sessionYmlContent = await File.ReadAllTextAsync(sessionYml);
-                sessionData = RandomizerEngine.YamlDeserializer.Deserialize<SessionData>(sessionYmlContent);
+                sessionData = Yaml.Deserializer.Deserialize<SessionData>(sessionYmlContent);
                 sessionDataModel = new SessionDataModel(sessionData);
             }
             catch (Exception ex)
             {
-                RandomizerEngine.Logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
+                logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
                 continue;
             }
 
@@ -110,7 +142,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         var cts = new CancellationTokenSource();
 
-        var anythingChanged = Task.Run(RandomizerEngine.ScanAutosaves);
+        var anythingChanged = Task.Run(autosaveScanner.ScanAutosaves);
 
         await Task.WhenAny(anythingChanged, Task.Run(async () =>
         {
@@ -135,7 +167,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         var cts = new CancellationTokenSource();
 
-        await Task.WhenAny(Task.Run(RandomizerEngine.ScanDetailsFromAutosaves), Task.Run(async () =>
+        await Task.WhenAny(Task.Run(autosaveScanner.ScanDetailsFromAutosaves), Task.Run(async () =>
         {
             while (true)
             {
@@ -149,14 +181,14 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         Autosaves = new(GetAutosaveModels());
     }
 
-    private static IEnumerable<AutosaveModel> GetAutosaveModels()
+    private IEnumerable<AutosaveModel> GetAutosaveModels()
     {
-        return RandomizerEngine.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
+        return autosaveScanner.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
     }
 
     protected override void CloseClick()
     {
-        RandomizerEngine.Exit();
+        engine.Exit();
     }
 
     protected override void MinimizeClick()
@@ -173,7 +205,7 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         try
         {
-            RandomizerEngine.ValidateRules();
+            validator.ValidateRules();
         }
         catch (RuleValidationException ex)
         {
@@ -181,20 +213,23 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             return;
         }
 
+        discord.Idle();
+        discord.SessionState();
+
         App.Modules = new Window[]
         {
-            OpenModule<ControlModuleWindow, ControlModuleWindowViewModel>(RandomizerEngine.Config.Modules.Control),
-            OpenModule<StatusModuleWindow, StatusModuleWindowViewModel>(RandomizerEngine.Config.Modules.Status),
-            OpenModule<ProgressModuleWindow, ProgressModuleWindowViewModel>(RandomizerEngine.Config.Modules.Progress),
-            OpenModule<HistoryModuleWindow, HistoryModuleWindowViewModel>(RandomizerEngine.Config.Modules.History)
+            OpenModule<ControlModuleWindow, ControlModuleWindowViewModel>(config.Modules.Control),
+            OpenModule<StatusModuleWindow, StatusModuleWindowViewModel>(config.Modules.Status),
+            OpenModule<ProgressModuleWindow, ProgressModuleWindowViewModel>(config.Modules.Progress),
+            OpenModule<HistoryModuleWindow, HistoryModuleWindowViewModel>(config.Modules.History)
         };
 
         Window.Close();
     }
 
     private static TWindow OpenModule<TWindow, TViewModel>(ModuleConfig config)
-        where TWindow : Window, new()
-        where TViewModel : WindowViewModelBase, new()
+        where TWindow : Window
+        where TViewModel : WindowViewModelBase
     {
         var window = OpenWindow<TWindow, TViewModel>();
 
@@ -243,8 +278,15 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         }
 
         var sessionModel = Sessions[selectedIndex];
+        
+        if (Program.ServiceProvider is null)
+        {
+            throw new UnreachableException("ServiceProvider is null");
+        }
 
-        OpenDialog<SessionDataWindow>(window => new SessionDataViewModel(sessionModel)
+        var topBarViewModel = Program.ServiceProvider.GetRequiredService<TopBarViewModel>();
+
+        OpenDialog<SessionDataWindow>(window => new SessionDataViewModel(topBarViewModel, sessionModel)
         {
             Window = window
         });
@@ -259,30 +301,33 @@ public class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
         var autosaveModel = Autosaves[selectedIndex];
 
-        if (!RandomizerEngine.AutosaveHeaders.TryGetValue(autosaveModel.MapUid, out AutosaveHeader? autosave))
+        if (!autosaveScanner.AutosaveHeaders.TryGetValue(autosaveModel.MapUid, out AutosaveHeader? autosave))
         {
             return;
         }
 
-        OpenDialog<AutosaveDetailsWindow>(window => new AutosaveDetailsWindowViewModel(autosaveModel, autosave.FilePath)
+        OpenDialog<AutosaveDetailsWindow>(window => new AutosaveDetailsWindowViewModel(new TopBarViewModel(updateDetector), game, autosaveModel, autosave.FilePath)
         {
             Window = window
         });
     }
 
-    public void OpenDownloadedMapsFolderClick()
+    public bool OpenDownloadedMapsFolderClick()
     {
-        if (RandomizerEngine.DownloadedDirectoryPath is not null)
+        if (!Directory.Exists(filePathManager.DownloadedDirectoryPath))
         {
-            ProcessUtils.OpenDir(RandomizerEngine.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+            OpenMessageBox("Directory not found", "Downloaded maps directory has not been yet created.");
+            
+            return false;
         }
+        
+        ProcessUtils.OpenDir(filePathManager.DownloadedDirectoryPath + Path.DirectorySeparatorChar);
+        
+        return true;
     }
 
     public void OpenSessionsFolderClick()
     {
-        if (RandomizerEngine.SessionsDirectoryPath is not null)
-        {
-            ProcessUtils.OpenDir(RandomizerEngine.SessionsDirectoryPath + Path.DirectorySeparatorChar);
-        }
+        ProcessUtils.OpenDir(FilePathManager.SessionsDirectoryPath + Path.DirectorySeparatorChar);
     }
 }

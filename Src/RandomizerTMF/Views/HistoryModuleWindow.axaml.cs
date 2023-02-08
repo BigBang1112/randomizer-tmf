@@ -11,15 +11,8 @@ namespace RandomizerTMF.Views
         {
             InitializeComponent();
 
-            Closing += (_, _) =>
-            {
-                RandomizerEngine.Config.Modules.History.X = Convert.ToInt32(Position.X);
-                RandomizerEngine.Config.Modules.History.Y = Convert.ToInt32(Position.Y);
-                RandomizerEngine.Config.Modules.History.Width = Convert.ToInt32(Width);
-                RandomizerEngine.Config.Modules.History.Height = Convert.ToInt32(Height);
-
-                RandomizerEngine.SaveConfig();
-            };
+            Closing += (_, _) => (DataContext as ModuleWindowViewModelBase)?
+                .OnClosing(x => x.History, Position.X, Position.Y, Width, Height);
 
             Deactivated += (_, _) => { Topmost = false; Topmost = true; };
         }

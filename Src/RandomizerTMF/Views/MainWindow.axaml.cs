@@ -5,7 +5,7 @@ using RandomizerTMF.ViewModels;
 
 namespace RandomizerTMF.Views;
 
-public partial class MainWindow : ReactiveWindow<MainWindowViewModel>, IStyleable
+internal partial class MainWindow : ReactiveWindow<MainWindowViewModel>, IStyleable
 {
     public MainWindow()
     {
