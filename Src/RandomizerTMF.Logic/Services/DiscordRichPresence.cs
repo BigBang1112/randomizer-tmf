@@ -145,8 +145,8 @@ internal class DiscordRichPresence : IDiscordRichPresence
 
     public void Dispose()
     {
-        client.Deinitialize();
         client.ClearPresence();
+        client.Deinitialize();
         client.Dispose();
     }
 }
