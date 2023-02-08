@@ -132,6 +132,7 @@ public class RandomizerEngine : IRandomizerEngine
     public void Exit()
     {
         logger.LogInformation("Exiting...");
+        discord.Dispose();
         Environment.Exit(0);
     }
 }

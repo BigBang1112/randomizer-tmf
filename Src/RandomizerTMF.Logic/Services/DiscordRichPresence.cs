@@ -3,7 +3,7 @@ using System.Text;
 
 namespace RandomizerTMF.Logic.Services;
 
-public interface IDiscordRichPresence
+public interface IDiscordRichPresence : IDisposable
 {
     void Configuring();
     void Idle();
@@ -17,7 +17,7 @@ public interface IDiscordRichPresence
     void SessionDefaultAsset();
 }
 
-internal class DiscordRichPresence : IDiscordRichPresence, IDisposable
+internal class DiscordRichPresence : IDiscordRichPresence
 {    
     private readonly DiscordRpcClient client;
     private readonly IRandomizerConfig config;
