@@ -294,15 +294,15 @@ public class Session : ISession
 
     internal void SkipManually(SessionMap map)
     {
-        // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
-        if (GoldMaps.ContainsKey(map.MapUid) == false)
+        // If the player didn't receive a gold/author medal, the skip is counted
+        if (GoldMaps.ContainsKey(map.MapUid) == false && AuthorMaps.ContainsKey(map.MapUid) == false)
         {
             SkippedMaps.TryAdd(map.MapUid, map);
             map.LastTimestamp = Watch.Elapsed;
             Data?.SetMapResult(map, Constants.Skipped);
         }
 
-        // In other words, if the player received at least a gold medal, the skip is forgiven
+        // In other words, if the player received a gold/author medal, the skip is forgiven
 
         // MapSkip event is thrown to update the UI
         events.OnMapSkip();
@@ -372,7 +372,10 @@ public class Session : ISession
                 TextFormatter.Deformat(Map.Map.MapName).Trim(),
                 replay.MapInfo.Id);
 
-            SkipTokenSource?.Cancel();
+            if (!config.DisableAutoSkip)
+            {
+                SkipTokenSource?.Cancel();
+            }
 
             return;
         }
@@ -383,7 +386,10 @@ public class Session : ISession
         {
             AuthorMedalReceived(Map);
 
-            SkipTokenSource?.Cancel();
+            if (!config.DisableAutoSkip)
+            {
+                SkipTokenSource?.Cancel();
+            }
 
             return;
         }
