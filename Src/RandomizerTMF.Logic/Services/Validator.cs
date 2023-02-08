@@ -161,6 +161,11 @@ public class Validator : IValidator
             return false;
         }
 
+        if (map.ChallengeParameters is null) // I hope TMX validates this though xd
+        {
+            return false;
+        }
+
         if (config.Rules.NoUnlimiter)
         {
             if (map.Chunks.TryGet(0x3F001000, out _))

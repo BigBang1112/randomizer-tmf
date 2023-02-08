@@ -21,7 +21,7 @@ public interface ISession
     CancellationTokenSource TokenSource { get; }
     Stopwatch Watch { get; }
 
-    void ReloadMap();
+    bool ReloadMap();
     Task SkipMapAsync();
     void Start();
     void Stop();
@@ -188,6 +188,8 @@ public class Session : ISession
             }
 
             await PlayMapAsync(cancellationToken);
+            
+            // Map is no longer tracked at this point
         }
     }
 
@@ -195,7 +197,7 @@ public class Session : ISession
     /// Handles the play loop of a map. Throws cancellation exception on session end (not the map end).
     /// </summary>
     /// <exception cref="TaskCanceledException"></exception>
-    private async Task PlayMapAsync(CancellationToken cancellationToken)
+    internal async Task PlayMapAsync(CancellationToken cancellationToken)
     {
         // Hacky last moment validations
 
@@ -229,7 +231,7 @@ public class Session : ISession
         // This loop either softly stops when the map is skipped by the player
         // or hardly stops when author medal is received / time limit is reached, End Session was clicked or an exception was thrown in general
 
-        // SkipTokenSource is used within the session to skip a map, while CurrentSessionTokenSource handles the whole session cancellation
+        // SkipTokenSource is used within the session to skip a map, while TokenSource handles the whole session cancellation
 
         while (!SkipTokenSource.IsCancellationRequested)
         {
@@ -266,8 +268,6 @@ public class Session : ISession
         Status("Ending the map...");
 
         StopTrackingMap();
-
-        // Map is no longer tracked at this point
     }
 
     private CancellationTokenSource StartTrackingMap()
@@ -284,7 +284,7 @@ public class Session : ISession
         return new CancellationTokenSource();
     }
 
-    private void StopTrackingMap()
+    internal void StopTrackingMap()
     {
         events.AutosaveCreatedOrChanged -= AutosaveCreatedOrChangedSafe;
         SkipTokenSource = null;
@@ -292,7 +292,7 @@ public class Session : ISession
         events.OnMapEnded();
     }
 
-    private void SkipManually(SessionMap map)
+    internal void SkipManually(SessionMap map)
     {
         // If the player didn't receive at least a gold medal, the skip is counted (author medal automatically skips the map)
         if (GoldMaps.ContainsKey(map.MapUid) == false)
@@ -321,7 +321,7 @@ public class Session : ISession
         }
     }
 
-    private bool AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
+    internal bool AutosaveCreatedOrChanged(string fullPath, CGameCtnReplayRecord replay)
     {
         // Current session map autosave update section
 
@@ -353,9 +353,19 @@ public class Session : ISession
 
         // The following part has a scriptable potential
         // There are different medal rules for each gamemode (and where to look for validating)
-        // So that's why the code looks like this for the time being
 
-        if (Map.ChallengeParameters?.AuthorTime is null)
+        EvaluateAutosave(fullPath, replay);
+
+        Status("Playing the map...");
+
+        return true;
+    }
+
+    internal void EvaluateAutosave(string fullPath, CGameCtnReplayRecord replay)
+    {
+        _ = Map is null || replay.MapInfo is null ? throw new UnreachableException("Map or Map.MapInfo is null") : "";
+
+        if (Map.ChallengeParameters.AuthorTime is null)
         {
             logger.LogWarning("Found autosave {autosavePath} for map {mapName} ({mapUid}) that has no author time.",
                 fullPath,
@@ -363,30 +373,25 @@ public class Session : ISession
                 replay.MapInfo.Id);
 
             SkipTokenSource?.Cancel();
+
+            return;
         }
-        else
+
+        var ghost = replay.GetGhosts(alsoInClips: false).First();
+
+        if (Map.IsAuthorMedal(ghost))
         {
-            var ghost = replay.GetGhosts().First();
+            AuthorMedalReceived(Map);
 
-            if ((Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= Map.ChallengeParameters.AuthorTime)
-                || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ((Map.ChallengeParameters.AuthorScore > 0 && ghost.Respawns <= Map.ChallengeParameters.AuthorScore) || (ghost.Respawns == 0 && replay.Time <= Map.ChallengeParameters.AuthorTime)))
-                || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= Map.ChallengeParameters.AuthorScore))
-            {
-                AuthorMedalReceived(Map);
+            SkipTokenSource?.Cancel();
 
-                SkipTokenSource?.Cancel();
-            }
-            else if ((Map.Mode is CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle && replay.Time <= Map.ChallengeParameters.GoldTime)
-                    || (Map.Mode is CGameCtnChallenge.PlayMode.Platform && ghost.Respawns <= Map.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds)
-                    || (Map.Mode is CGameCtnChallenge.PlayMode.Stunts && ghost.StuntScore >= Map.ChallengeParameters.GoldTime.GetValueOrDefault().TotalMilliseconds))
-            {
-                GoldMedalReceived(Map);
-            }
+            return;
         }
-
-        Status("Playing the map...");
-
-        return true;
+        
+        if (Map.IsGoldMedal(ghost))
+        {
+            GoldMedalReceived(Map);
+        }
     }
 
     private void GoldMedalReceived(SessionMap map)
@@ -424,13 +429,17 @@ public class Session : ISession
         return Task.CompletedTask;
     }
 
-    public void ReloadMap()
+    public bool ReloadMap()
     {
         logger.LogInformation("Reloading the map...");
 
-        if (Map?.FilePath is not null)
+        if (Map?.FilePath is null)
         {
-            game.OpenFile(Map.FilePath);
+            return false;
         }
+        
+        game.OpenFile(Map.FilePath);
+        
+        return true;
     }
 }

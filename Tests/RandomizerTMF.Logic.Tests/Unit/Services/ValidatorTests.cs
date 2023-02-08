@@ -422,6 +422,7 @@ public class ValidatorTests
 
         var map = NodeInstance.Create<CGameCtnChallenge>();
         map.MapUid = "mapuid";
+        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -581,6 +582,7 @@ public class ValidatorTests
         var validator = new Validator(autosaveScanner, additionalData, config);
 
         var map = NodeInstance.Create<CGameCtnChallenge>();
+        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (45, 32, 45);
@@ -615,6 +617,7 @@ public class ValidatorTests
         var validator = new Validator(autosaveScanner, additionalData, config);
 
         var map = NodeInstance.Create<CGameCtnChallenge>();
+        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
         map.MapUid = "mapuid";
         map.Collection = "Rally";
         map.Size = (45, 32, 45);
