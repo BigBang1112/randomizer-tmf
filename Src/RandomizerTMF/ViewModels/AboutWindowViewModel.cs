@@ -1,21 +1,24 @@
 ﻿using ReactiveUI;
-using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class AboutWindowViewModel : WindowWithTopBarViewModelBase
+internal class AboutWindowViewModel : WindowWithTopBarViewModelBase
 {
+    private readonly IUpdateDetector updateDetector;
+
     public string VersionText => $"version {Program.Version}";
 
-    public string UpdateText => UpdateDetector.UpdateCheckResult ?? "Checking...";
-    public bool IsNewUpdate => UpdateDetector.IsNewUpdate;
+    public string UpdateText => updateDetector.UpdateCheckResult ?? "Checking...";
+    public bool IsNewUpdate => updateDetector.IsNewUpdate;
 
-    public AboutWindowViewModel()
+    public AboutWindowViewModel(TopBarViewModel topBarViewModel, IUpdateDetector updateDetector) : base(topBarViewModel)
     {
+        this.updateDetector = updateDetector;
+        
         TopBarViewModel.Title = "About Randomizer TMF";
         TopBarViewModel.MinimizeButtonEnabled = false;
 
-        UpdateDetector.UpdateChecked += () =>
+        updateDetector.UpdateChecked += () =>
         {
             this.RaisePropertyChanged(nameof(UpdateText));
             this.RaisePropertyChanged(nameof(IsNewUpdate));

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using RandomizerTMF.Logic;
+using RandomizerTMF.ViewModels;
 
 namespace RandomizerTMF.Views
 {
@@ -9,15 +10,8 @@ namespace RandomizerTMF.Views
         {
             InitializeComponent();
 
-            Closing += (_, _) =>
-            {
-                RandomizerEngine.Config.Modules.Progress.X = Convert.ToInt32(Position.X);
-                RandomizerEngine.Config.Modules.Progress.Y = Convert.ToInt32(Position.Y);
-                RandomizerEngine.Config.Modules.Progress.Width = Convert.ToInt32(Width);
-                RandomizerEngine.Config.Modules.Progress.Height = Convert.ToInt32(Height);
-
-                RandomizerEngine.Config.Save();
-            };
+            Closing += (_, _) => (DataContext as ModuleWindowViewModelBase)?
+                .OnClosing(x => x.Progress, Position.X, Position.Y, Width, Height);
 
             Deactivated += (_, _) => { Topmost = false; Topmost = true; };
         }

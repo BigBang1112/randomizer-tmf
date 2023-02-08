@@ -5,31 +5,62 @@ using RandomizerTMF.Logic.Exceptions;
 using System.Diagnostics;
 using System.Net;
 using TmEssentials;
-using System.Threading;
+using System.IO.Abstractions;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
-public class MapDownloader
+public interface IMapDownloader
 {
-    private readonly RandomizerConfig config;
+    Task<bool> PrepareNewMapAsync(Session currentSession, CancellationToken cancellationToken);
+}
+
+public class MapDownloader : IMapDownloader
+{
+    private readonly IRandomizerEvents events;
+    private readonly IRandomizerConfig config;
+    private readonly IFilePathManager filePathManager;
+    private readonly IDiscordRichPresence discord;
+    private readonly IValidator validator;
     private readonly HttpClient http;
+    private readonly IRandomGenerator random;
+    private readonly IDelayService delayService;
+    private readonly IFileSystem fileSystem;
+    private readonly IGbxService gbxService;
     private readonly ILogger logger;
 
-    private static readonly int requestMaxAttempts = 10;
-    private static int requestAttempt;
+    private readonly int requestMaxAttempts = 10;
+    private int requestAttempt;
 
-    public MapDownloader(RandomizerConfig config, HttpClient http, ILogger logger)
+    public MapDownloader(IRandomizerEvents events,
+                         IRandomizerConfig config,
+                         IFilePathManager filePathManager,
+                         IDiscordRichPresence discord,
+                         IValidator validator,
+                         HttpClient http,
+                         IRandomGenerator random,
+                         IDelayService delayService,
+                         IFileSystem fileSystem,
+                         IGbxService gbxService,
+                         ILogger logger)
     {
+        this.events = events;
         this.config = config;
+        this.filePathManager = filePathManager;
+        this.discord = discord; // After PrepareNewMapAsync refactor no longer needed
+        this.validator = validator;
         this.http = http;
+        this.random = random;
+        this.delayService = delayService;
+        this.fileSystem = fileSystem;
+        this.gbxService = gbxService;
         this.logger = logger;
     }
 
     private void Status(string status)
     {
-        RandomizerEngine.OnStatus(status);
+        events.OnStatus(status);
     }
-    
+
     /// <summary>
     /// Requests, downloads, and allocates the map.
     /// </summary>
@@ -47,13 +78,15 @@ public class MapDownloader
 
         if (requestUri is null)
         {
+            logger.LogWarning("RequestUri of /trackrandom is null");
             return false;
         }
 
         var trackId = GetTrackIdFromUri(requestUri);
 
-        if (trackId is null)
+        if (trackId is null) // Cannot really happen
         {
+            logger.LogWarning("TrackId of Uri redirect is null");
             return false;
         }
 
@@ -65,6 +98,7 @@ public class MapDownloader
 
         if (map is null)
         {
+            logger.LogWarning("Map object from /trackgbx is null");
             return false;
         }
 
@@ -82,28 +116,32 @@ public class MapDownloader
         {
             FilePath = mapSavePath
         };
-        
+
+        var mapName = TextFormatter.Deformat(map.MapName);
+
         currentSession.Data?.Maps.Add(new()
         {
-            Name = TextFormatter.Deformat(map.MapName),
+            Name = mapName,
             Uid = map.MapUid,
             TmxLink = tmxLink,
         });
 
+        discord.SessionMap(mapName, $"https://{requestUri.Host}/trackshow/{trackId}/image/1", map.Collection);
+
         return true;
     }
 
-    private async Task<string> SaveMapAsync(HttpResponseMessage trackGbxResponse, string mapUidFallback, CancellationToken cancellationToken)
+    internal async Task<string> SaveMapAsync(HttpResponseMessage trackGbxResponse, string mapUidFallback, CancellationToken cancellationToken)
     {
         Status("Saving the map...");
 
-        if (FilePathManager.DownloadedDirectoryPath is null)
+        if (filePathManager.DownloadedDirectoryPath is null)
         {
             throw new UnreachableException("Cannot update autosaves without a valid user data directory path.");
         }
 
-        logger.LogDebug("Ensuring {dir} exists...", FilePathManager.DownloadedDirectoryPath);
-        Directory.CreateDirectory(FilePathManager.DownloadedDirectoryPath); // Ensures the directory really exists
+        logger.LogDebug("Ensuring {dir} exists...", filePathManager.DownloadedDirectoryPath);
+        fileSystem.Directory.CreateDirectory(filePathManager.DownloadedDirectoryPath); // Ensures the directory really exists
 
         logger.LogDebug("Preparing the file name...");
 
@@ -113,26 +151,26 @@ public class MapDownloader
         // Validates the file name and fixes it if needed
         fileName = FilePathManager.ClearFileName(fileName);
 
-        var mapSavePath = Path.Combine(FilePathManager.DownloadedDirectoryPath, fileName);
+        var mapSavePath = Path.Combine(filePathManager.DownloadedDirectoryPath, fileName);
 
         logger.LogInformation("Saving the map as {fileName}...", mapSavePath);
 
         // WriteAllBytesAsync is used instead of GameBox.Save to ensure 1:1 data of the original map
         var trackData = await trackGbxResponse.Content.ReadAsByteArrayAsync(cancellationToken);
 
-        await File.WriteAllBytesAsync(mapSavePath, trackData, cancellationToken);
+        await fileSystem.File.WriteAllBytesAsync(mapSavePath, trackData, cancellationToken);
 
         logger.LogInformation("Map saved successfully!");
 
         return mapSavePath;
     }
 
-    private async Task<HttpResponseMessage> FetchRandomTrackAsync(CancellationToken cancellationToken)
+    internal async Task<HttpResponseMessage> FetchRandomTrackAsync(CancellationToken cancellationToken)
     {
         Status("Fetching random track...");
 
         // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = config.Rules.RequestRules.ToUrl();
+        var requestUrl = config.Rules.RequestRules.ToUrl(random);
 
         logger.LogDebug("Requesting generated URL: {url}", requestUrl);
         var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
@@ -148,11 +186,11 @@ public class MapDownloader
         }
 
         randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
-        
+
         return randomResponse;
     }
 
-    private Uri? GetRequestUriFromResponse(HttpResponseMessage response)
+    internal Uri? GetRequestUriFromResponse(HttpResponseMessage response)
     {
         if (response.RequestMessage is null)
         {
@@ -169,7 +207,7 @@ public class MapDownloader
         return response.RequestMessage.RequestUri;
     }
 
-    private string? GetTrackIdFromUri(Uri uri)
+    internal string? GetTrackIdFromUri(Uri uri)
     {
         var trackId = uri.Segments.LastOrDefault();
 
@@ -182,16 +220,16 @@ public class MapDownloader
         return trackId;
     }
 
-    private async Task<HttpResponseMessage> DownloadMapByTrackIdAsync(string host, string trackId, CancellationToken cancellationToken)
+    internal async Task<HttpResponseMessage> DownloadMapByTrackIdAsync(string host, string trackId, CancellationToken cancellationToken)
     {
         Status($"Downloading track {trackId}...");
 
         var trackGbxUrl = $"https://{host}/trackgbx/{trackId}";
 
         logger.LogDebug("Downloading track on {trackGbxUrl}...", trackGbxUrl);
-        
+
         var trackGbxResponse = await http.GetAsync(trackGbxUrl, cancellationToken);
-        
+
         trackGbxResponse.EnsureSuccessStatusCode();
 
         return trackGbxResponse;
@@ -205,7 +243,7 @@ public class MapDownloader
 
         Status("Parsing the map...");
 
-        if (GameBox.ParseNode(stream) is CGameCtnChallenge map)
+        if (gbxService.Parse(stream) is CGameCtnChallenge map)
         {
             return map;
         }
@@ -215,17 +253,16 @@ public class MapDownloader
         return null;
     }
 
-    private async Task ValidateMapAsync(CGameCtnChallenge map, CancellationToken cancellationToken)
+    internal async Task ValidateMapAsync(CGameCtnChallenge map, CancellationToken cancellationToken)
     {
         Status("Validating the map...");
 
-        requestAttempt = 0;
-
-        if (Validator.ValidateMap(config, map, out string? invalidBlock))
+        if (validator.ValidateMap(map, out string? invalidBlock))
         {
+            requestAttempt = 0;
             return;
         }
-        
+
         // Attempts another track if invalid
         requestAttempt++;
 
@@ -233,7 +270,7 @@ public class MapDownloader
         {
             Status($"{invalidBlock} in {map.Collection}");
             logger.LogInformation("Map is invalid because {invalidBlock} is not valid for the {env} environment.", invalidBlock, map.Collection);
-            await Task.Delay(500, cancellationToken);
+            await delayService.Delay(500, cancellationToken);
         }
 
         Status($"Map is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");

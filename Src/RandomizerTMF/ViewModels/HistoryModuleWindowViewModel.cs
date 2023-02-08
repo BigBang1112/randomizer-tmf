@@ -1,13 +1,18 @@
-﻿using RandomizerTMF.Logic;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RandomizerTMF.Logic.Services;
 using RandomizerTMF.Models;
 using RandomizerTMF.Views;
 using ReactiveUI;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace RandomizerTMF.ViewModels;
 
-public class HistoryModuleWindowViewModel : WindowViewModelBase
+internal class HistoryModuleWindowViewModel : ModuleWindowViewModelBase
 {
+    private readonly IRandomizerEngine engine;
+    private readonly IRandomizerEvents events;
+    
     private ObservableCollection<PlayedMapModel> playedMaps = new();
 
     public ObservableCollection<PlayedMapModel> PlayedMaps
@@ -18,10 +23,13 @@ public class HistoryModuleWindowViewModel : WindowViewModelBase
 
     public bool HasFinishedMaps => PlayedMaps.Count > 0;
 
-    public HistoryModuleWindowViewModel()
+    public HistoryModuleWindowViewModel(IRandomizerEngine engine, IRandomizerEvents events, IRandomizerConfig config) : base(config)
     {
-        RandomizerEngine.MedalUpdate += RandomizerPlayedMapUpdate;
-        RandomizerEngine.MapSkip += RandomizerPlayedMapUpdate;
+        this.engine = engine;
+        this.events = events;
+
+        events.MedalUpdate += RandomizerPlayedMapUpdate;
+        events.MapSkip += RandomizerPlayedMapUpdate;
     }
 
     private void RandomizerPlayedMapUpdate()
@@ -30,24 +38,24 @@ public class HistoryModuleWindowViewModel : WindowViewModelBase
         this.RaisePropertyChanged(nameof(HasFinishedMaps));
     }
 
-    private static IEnumerable<PlayedMapModel> EnumerateCurrentSessionMaps()
+    private IEnumerable<PlayedMapModel> EnumerateCurrentSessionMaps()
     {
-        if (RandomizerEngine.CurrentSession is null)
+        if (engine.CurrentSession is null)
         {
             yield break;
         }
 
-        foreach (var map in RandomizerEngine.CurrentSession.AuthorMaps)
+        foreach (var map in engine.CurrentSession.AuthorMaps)
         {
             yield return new PlayedMapModel(map.Value, EResult.AuthorMedal);
         }
 
-        foreach (var map in RandomizerEngine.CurrentSession.GoldMaps)
+        foreach (var map in engine.CurrentSession.GoldMaps)
         {
             yield return new PlayedMapModel(map.Value, EResult.GoldMedal);
         }
 
-        foreach (var map in RandomizerEngine.CurrentSession.SkippedMaps)
+        foreach (var map in engine.CurrentSession.SkippedMaps)
         {
             yield return new PlayedMapModel(map.Value, EResult.Skipped);
         }
@@ -60,7 +68,14 @@ public class HistoryModuleWindowViewModel : WindowViewModelBase
             return;
         }
 
-        OpenDialog<SessionMapWindow>(window => new SessionMapViewModel(selectedItem)
+        if (Program.ServiceProvider is null)
+        {
+            throw new UnreachableException("Program.ServiceProvider is null");
+        }
+
+        var topBarViewModel = Program.ServiceProvider.GetRequiredService<TopBarViewModel>();
+
+        OpenDialog<SessionMapWindow>(window => new SessionMapViewModel(topBarViewModel, selectedItem)
         {
             Window = window
         });

@@ -1,16 +1,36 @@
 ﻿using GBX.NET.Engines.Game;
 using RandomizerTMF.Logic.Exceptions;
 
-namespace RandomizerTMF.Logic;
+namespace RandomizerTMF.Logic.Services;
 
-public static class Validator
+public interface IValidator
 {
+    bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock);
+    void ValidateRequestRules();
+    void ValidateRules();
+}
+
+public class Validator : IValidator
+{
+    private readonly IAutosaveScanner autosaveScanner;
+    private readonly IAdditionalData additionalData;
+    private readonly IRandomizerConfig config;
+
+    public Validator(IAutosaveScanner autosaveScanner, IAdditionalData additionalData, IRandomizerConfig config)
+    {
+        this.autosaveScanner = autosaveScanner;
+        this.additionalData = additionalData;
+        this.config = config;
+    }
+
     /// <summary>
     /// Validates the session rules. This should be called right before the session start and after loading the modules.
     /// </summary>
     /// <exception cref="RuleValidationException"></exception>
-    public static void ValidateRules(RandomizerRules rules)
+    public void ValidateRules()
     {
+        var rules = config.Rules;
+
         if (rules.TimeLimit == TimeSpan.Zero)
         {
             throw new RuleValidationException("Time limit cannot be 0:00:00.");
@@ -21,11 +41,13 @@ public static class Validator
             throw new RuleValidationException("Time limit cannot be above 9:59:59.");
         }
 
-        ValidateRequestRules(rules.RequestRules);
+        ValidateRequestRules();
     }
 
-    public static void ValidateRequestRules(RequestRules requestRules)
+    public void ValidateRequestRules()
     {
+        var requestRules = config.Rules.RequestRules;
+        
         foreach (var primaryType in Enum.GetValues<EPrimaryType>())
         {
             if (primaryType is EPrimaryType.Race)
@@ -123,17 +145,23 @@ public static class Validator
             throw new RuleValidationException("Equal vehicle distribution is not valid with TMNF or Nations Exchange.");
         }
     }
-    
+
     /// <summary>
     /// Checks if the map hasn't been already played or if it follows current session rules.
     /// </summary>
+    /// <param name="autosaveScanner">Autosave information.</param>
     /// <param name="map"></param>
     /// <returns>True if valid, false if not valid.</returns>
-    public static bool ValidateMap(RandomizerConfig config, CGameCtnChallenge map, out string? invalidBlock)
+    public bool ValidateMap(CGameCtnChallenge map, out string? invalidBlock)
     {
         invalidBlock = null;
 
-        if (AutosaveScanner.AutosaveHeaders.ContainsKey(map.MapUid))
+        if (autosaveScanner.AutosaveHeaders.ContainsKey(map.MapUid))
+        {
+            return false;
+        }
+
+        if (map.ChallengeParameters is null) // I hope TMX validates this though xd
         {
             return false;
         }
@@ -145,17 +173,34 @@ public static class Validator
                 return false;
             }
 
-            if (RandomizerEngine.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            if (map.Size is null)
             {
-                foreach (var block in map.GetBlocks())
-                {
-                    var blockName = block.Name.Trim();
+                return false;
+            }
 
-                    if (!officialBlocks.Contains(blockName))
-                    {
-                        invalidBlock = blockName;
-                        return false;
-                    }
+            if (!additionalData.MapSizes.TryGetValue(map.Collection, out var sizes))
+            {
+                return false;
+            }
+
+            if (!sizes.Contains(map.Size.Value))
+            {
+                return false;
+            }
+
+            if (!additionalData.OfficialBlocks.TryGetValue(map.Collection, out var officialBlocks))
+            {
+                return false;
+            }
+            
+            foreach (var block in map.GetBlocks())
+            {
+                var blockName = block.Name.Trim();
+
+                if (!officialBlocks.Contains(blockName))
+                {
+                    invalidBlock = blockName;
+                    return false;
                 }
             }
         }
