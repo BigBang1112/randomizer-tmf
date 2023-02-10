@@ -19,15 +19,20 @@ public interface IDiscordRichPresence : IDisposable
 
 internal class DiscordRichPresence : IDiscordRichPresence
 {    
-    private readonly DiscordRpcClient client;
+    private readonly DiscordRpcClient? client;
     private readonly IRandomizerConfig config;
 
     public DiscordRichPresence(DiscordRpcLogger discordLogger, IRandomizerConfig config)
     {
+        this.config = config;
+        
+        if (config.DiscordRichPresence.Disable)
+        {
+            return;
+        }
+
         client = new DiscordRpcClient("1048435107494637618", logger: discordLogger);
         client.Initialize();
-        
-        this.config = config;
     }
 
     public void InDashboard()
@@ -46,23 +51,23 @@ internal class DiscordRichPresence : IDiscordRichPresence
     }
 
     public void SessionDetails(string details)
-    {
-        client.UpdateDetails(details);
+    {        
+        client?.UpdateDetails(details);
     }
 
     public void SessionStart(DateTime start)
     {
-        client.UpdateStartTime(start);
+        client?.UpdateStartTime(start);
     }
 
     public void SessionPredictEnd(DateTime end)
     {
-        client.UpdateEndTime(end);
+        client?.UpdateEndTime(end);
     }
 
     public void AddToSessionPredictEnd(TimeSpan addition)
     {
-        if (client.CurrentPresence.Timestamps.End.HasValue)
+        if (client?.CurrentPresence.Timestamps.End.HasValue == true)
         {
             SessionPredictEnd(client.CurrentPresence.Timestamps.End.Value + addition);
         }
@@ -70,6 +75,11 @@ internal class DiscordRichPresence : IDiscordRichPresence
 
     public void SessionMap(string mapName, string imageUrl, string env)
     {
+        if (config.DiscordRichPresence.Disable)
+        {
+            return;
+        }
+
         var envRemap = env.ToLower();
 
         switch (envRemap)
@@ -80,15 +90,15 @@ internal class DiscordRichPresence : IDiscordRichPresence
 
         if (!config.DiscordRichPresence.DisableMapThumbnail)
         {
-            client.UpdateLargeAsset(imageUrl, mapName);
+            client?.UpdateLargeAsset(imageUrl, mapName);
         }
         
-        client.UpdateSmallAsset(envRemap, env);
+        client?.UpdateSmallAsset(envRemap, env);
     }
 
     public void SessionState(int atCount = 0, int goldCount = 0, int skipCount = 0)
     {
-        client.UpdateState(BuildState(atCount, goldCount, skipCount));
+        client?.UpdateState(BuildState(atCount, goldCount, skipCount));
     }
 
     internal static string BuildState(int atCount, int goldCount, int skipCount)
@@ -126,13 +136,13 @@ internal class DiscordRichPresence : IDiscordRichPresence
 
     public void SessionDefaultAsset()
     {
-        client.UpdateLargeAsset("primary", "");
-        client.UpdateSmallAsset();
+        client?.UpdateLargeAsset("primary", "");
+        client?.UpdateSmallAsset();
     }
 
     private void Default(string details)
     {
-        client.SetPresence(new RichPresence()
+        client?.SetPresence(new RichPresence()
         {
             Details = details,
             Timestamps = new Timestamps(DateTime.UtcNow),
@@ -145,8 +155,8 @@ internal class DiscordRichPresence : IDiscordRichPresence
 
     public void Dispose()
     {
-        client.ClearPresence();
-        client.Deinitialize();
-        client.Dispose();
+        client?.ClearPresence();
+        client?.Deinitialize();
+        client?.Dispose();
     }
 }
