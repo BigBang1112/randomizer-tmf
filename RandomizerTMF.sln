@@ -15,6 +15,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Položky řešení", "Polo�
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EF5000F9-46AE-451F-A50A-7E69DB05360E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RandomizerTMF.Logic.Tests", "Tests\RandomizerTMF.Logic.Tests\RandomizerTMF.Logic.Tests.csproj", "{5F783679-AC15-4941-BBE6-0038A15DF187}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +33,10 @@ Global
 		{A1DFC07E-66E3-418B-AB19-2435FA2E3A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1DFC07E-66E3-418B-AB19-2435FA2E3A42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1DFC07E-66E3-418B-AB19-2435FA2E3A42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F783679-AC15-4941-BBE6-0038A15DF187}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F783679-AC15-4941-BBE6-0038A15DF187}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F783679-AC15-4941-BBE6-0038A15DF187}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F783679-AC15-4941-BBE6-0038A15DF187}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,6 +44,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{CB7687F3-9485-44C6-A751-F63FCE8C8D23} = {C7477BCC-8CD0-47CF-9DCE-397A4D65FAC3}
 		{A1DFC07E-66E3-418B-AB19-2435FA2E3A42} = {C7477BCC-8CD0-47CF-9DCE-397A4D65FAC3}
+		{5F783679-AC15-4941-BBE6-0038A15DF187} = {EF5000F9-46AE-451F-A50A-7E69DB05360E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F3B68FA-C841-400A-AAFE-0701C43ED400}

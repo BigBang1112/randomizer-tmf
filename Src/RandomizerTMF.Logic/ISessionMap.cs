@@ -1,7 +1,6 @@
-﻿namespace RandomizerTMF.Logic
+﻿namespace RandomizerTMF.Logic;
+
+public interface ISessionMap
 {
-    public interface ISessionMap
-    {
-        TimeSpan? LastTimestamp { get; set; }
-    }
+    TimeSpan? LastTimestamp { get; set; }
 }

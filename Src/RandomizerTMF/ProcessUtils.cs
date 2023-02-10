@@ -2,7 +2,7 @@
 
 namespace RandomizerTMF;
 
-public static class ProcessUtils
+internal static class ProcessUtils
 {
     public static void OpenUrl(string url)
     {
