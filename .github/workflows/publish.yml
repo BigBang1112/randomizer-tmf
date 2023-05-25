@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ { os: windows-latest, runtime: win-x64 }, { os: ubuntu-latest, runtime: linux-x64 } ]
+        os: [ { os: windows-latest, runtime: win-x64 }, { os: windows-latest, runtime: win-x86 }, { os: ubuntu-latest, runtime: linux-x64 } ]
 
     runs-on: ${{ matrix.os.os }}
     
