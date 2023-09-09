@@ -9,10 +9,41 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
 {
     private readonly IRandomizerConfig config;
 
+    // These properties have to be checked when saving presets
+    // Any prop that enables something and is "connected" to another one (or multiple ones) by value
+    // has to be put into these hashsets, coz of their nature when saving and loading presets
+    
+    public HashSet<string> PropsForEnable = new HashSet<string> { "MinATEnabled",
+                                                                  "MaxATEnabled",
+                                                                  "SurvivalEnabled",
+                                                                  "FreeSkipLimitEnabled",
+                                                                  "GoldSkipLimitEnabled"};
+
+    public HashSet<string> PropsToReset = new HashSet<string> { "MinATMinute", "MinATSecond", "MinATMillisecond",
+                                                                "MaxATMinute", "MaxATSecond", "MaxATMillisecond",
+                                                                "SurvivalTimeGainMinute", "SurvivalTimeGainSecond",
+                                                                "SurvivalTimeGainMillisecond", "FreeSkipLimit",
+                                                                "GoldSkipLimit"};
+
     public RequestRulesControlViewModel(IRandomizerConfig config)
     {
         this.config = config;
     }
+
+    // Because of the way the preset loading works, it is important to always have the props in the correct order
+    // It means, that a prop related to enabling something always goes first, compared to the prop holding the value
+    // For example
+    // 1. FreeSkipLimitEnabled (determines wether you can or cannot set a value for FreeSkipLimit)
+    // 2. FreeSkipLimit (actually holds the value for the amount of free skips)
+    // If they were the other way around, the loader function would try to set the value first, (which it might fail to do,
+    // because it might be disabled) and only then enable it
+    //
+    // Also the props are saved in the same order as they are declared
+    // So the existing props' ORDER SHOULD NEVER BE CHANGED, otherwise presets saves from previous versions will not work properly
+    // If the order is changed regardless, then DashboardWindowViewModel.PresetsDoubleClick should be modified accordingly,
+    // so that the order does not effect the process
+    // At the same time new props can be put anywhere, it won't break existing preset saves,
+    // but existing preset saves will have no effect on that property (of course)
 
     public bool IsSiteTMNFChecked
     {
@@ -21,13 +52,13 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         {
             if (value) config.Rules.RequestRules.Site |= ESite.TMNF;
             else config.Rules.RequestRules.Site &= ~ESite.TMNF;
-            
+
             this.RaisePropertyChanged(nameof(IsSiteTMNFChecked));
 
             config.Save();
         }
     }
-    
+
     public bool IsSiteTMUFChecked
     {
         get => config.Rules.RequestRules.Site.HasFlag(ESite.TMUF);
@@ -744,6 +775,8 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
                 config.Rules.TimeLimit.Minutes,
                 config.Rules.TimeLimit.Seconds);
 
+            config.Rules.OriginalTimeLimit = config.Rules.TimeLimit;
+
             this.RaisePropertyChanged(nameof(TimeLimitHour));
 
             config.Save();
@@ -758,6 +791,8 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
             config.Rules.TimeLimit = new TimeSpan(config.Rules.TimeLimit.Hours,
                 value,
                 config.Rules.TimeLimit.Seconds);
+
+            config.Rules.OriginalTimeLimit = config.Rules.TimeLimit;
 
             this.RaisePropertyChanged(nameof(TimeLimitMinute));
 
@@ -774,7 +809,25 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
                 config.Rules.TimeLimit.Minutes,
                 value);
 
+            config.Rules.OriginalTimeLimit = config.Rules.TimeLimit;
+
             this.RaisePropertyChanged(nameof(TimeLimitSecond));
+
+            config.Save();
+        }
+    }
+
+    public bool MinATEnabled
+    {
+        get => config.Rules.RequestRules.AuthorTimeMin is not null;
+        set
+        {
+            config.Rules.RequestRules.AuthorTimeMin = value ? TimeInt32.Zero : null;
+
+            this.RaisePropertyChanged(nameof(MinATEnabled));
+            this.RaisePropertyChanged(nameof(MinATMinute));
+            this.RaisePropertyChanged(nameof(MinATSecond));
+            this.RaisePropertyChanged(nameof(MinATMillisecond));
 
             config.Save();
         }
@@ -827,17 +880,17 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
-    public bool MinATEnabled
+    public bool MaxATEnabled
     {
-        get => config.Rules.RequestRules.AuthorTimeMin is not null;
+        get => config.Rules.RequestRules.AuthorTimeMax is not null;
         set
         {
-            config.Rules.RequestRules.AuthorTimeMin = value ? TimeInt32.Zero : null;
+            config.Rules.RequestRules.AuthorTimeMax = value ? TimeInt32.Zero : null;
 
-            this.RaisePropertyChanged(nameof(MinATEnabled));
-            this.RaisePropertyChanged(nameof(MinATMinute));
-            this.RaisePropertyChanged(nameof(MinATSecond));
-            this.RaisePropertyChanged(nameof(MinATMillisecond));
+            this.RaisePropertyChanged(nameof(MaxATEnabled));
+            this.RaisePropertyChanged(nameof(MaxATMinute));
+            this.RaisePropertyChanged(nameof(MaxATSecond));
+            this.RaisePropertyChanged(nameof(MaxATMillisecond));
 
             config.Save();
         }
@@ -890,17 +943,119 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
-    public bool MaxATEnabled
+    public bool SurvivalEnabled
     {
-        get => config.Rules.RequestRules.AuthorTimeMax is not null;
+        get => config.Rules.RequestRules.SurvivalBonusTime is not null;
         set
         {
-            config.Rules.RequestRules.AuthorTimeMax = value ? TimeInt32.Zero : null;
+            config.Rules.RequestRules.SurvivalMode = value;
+            config.Rules.RequestRules.SurvivalBonusTime = value ? TimeSpan.Zero : null;
 
-            this.RaisePropertyChanged(nameof(MaxATEnabled));
-            this.RaisePropertyChanged(nameof(MaxATMinute));
-            this.RaisePropertyChanged(nameof(MaxATSecond));
-            this.RaisePropertyChanged(nameof(MaxATMillisecond));
+            this.RaisePropertyChanged(nameof(SurvivalEnabled));
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMinute));
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainSecond));
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMillisecond));
+
+            config.Save();
+        }
+    }
+
+    public int SurvivalTimeGainMinute
+    {
+        get => config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Minutes;
+        set
+        {
+            config.Rules.RequestRules.SurvivalBonusTime = new TimeSpan(0, 0, value,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Seconds,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Milliseconds);
+
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMinute));
+
+            config.Save();
+        }
+    }
+
+    public int SurvivalTimeGainSecond
+    {
+        get => config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Seconds;
+        set
+        {
+            config.Rules.RequestRules.SurvivalBonusTime = new TimeSpan(0, 0,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Minutes,
+                value,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Milliseconds);
+
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainSecond));
+
+            config.Save();
+        }
+    }
+
+    public int SurvivalTimeGainMillisecond
+    {
+        get => config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Milliseconds;
+        set
+        {
+            config.Rules.RequestRules.SurvivalBonusTime = new TimeSpan(0, 0,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Minutes,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Seconds,
+                value * 10);
+
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMillisecond));
+
+            config.Save();
+        }
+    }
+
+    public bool FreeSkipLimitEnabled
+    {
+        get => config.Rules.RequestRules.FreeSkipLimit is not null;
+        set
+        {
+            config.Rules.RequestRules.FreeSkipLimit = value ? 0 : null;
+
+            this.RaisePropertyChanged(nameof(FreeSkipLimitEnabled));
+            this.RaisePropertyChanged(nameof(FreeSkipLimit));
+
+            config.Save();
+        }
+    }
+
+    public int FreeSkipLimit
+    {
+        get => config.Rules.RequestRules.FreeSkipLimit.GetValueOrDefault();
+        set
+        {
+            config.Rules.RequestRules.FreeSkipLimit = value;
+
+            this.RaisePropertyChanged(nameof(FreeSkipLimit));
+
+            config.Save();
+        }
+    }
+
+    public bool GoldSkipLimitEnabled
+    {
+        get => config.Rules.RequestRules.GoldSkipLimit is not null;
+        set
+        {
+            config.Rules.RequestRules.GoldSkipLimit = value ? 0 : null;
+
+            this.RaisePropertyChanged(nameof(GoldSkipLimitEnabled));
+            this.RaisePropertyChanged(nameof(GoldSkipLimit));
+
+            config.Save();
+        }
+    }
+
+    public int GoldSkipLimit
+    {
+        get => config.Rules.RequestRules.GoldSkipLimit.GetValueOrDefault();
+        set
+        {
+            config.Rules.RequestRules.GoldSkipLimit = value;
+
+            this.RaisePropertyChanged(nameof(GoldSkipLimit));
 
             config.Save();
         }
@@ -946,7 +1101,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
             config.Save();
         }
     }
-    
+
     public bool EqualVehicleDistribution
     {
         get => config.Rules.RequestRules.EqualVehicleDistribution;

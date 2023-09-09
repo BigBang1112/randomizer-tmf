@@ -43,6 +43,7 @@ public class FilePathManager : IFilePathManager
 
     public string? AutosavesDirectoryPath { get; private set; }
     public string? DownloadedDirectoryPath { get; private set; }
+    public static string PresetsDirectoryPath { get; } = Constants.Presets;
     public static string SessionsDirectoryPath { get; } = Constants.Sessions;
 
     public string? TmForeverExeFilePath { get; private set; }

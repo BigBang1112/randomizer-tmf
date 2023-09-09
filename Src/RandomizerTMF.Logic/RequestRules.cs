@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using TmEssentials;
+using YamlDotNet.Serialization;
 
 namespace RandomizerTMF.Logic;
 
@@ -44,8 +45,12 @@ public class RequestRules
     public bool? InScreenshot { get; set; }
     public DateOnly? UploadedBefore { get; set; }
     public DateOnly? UploadedAfter { get; set; }
+    public bool SurvivalMode { get; set; }
+    public TimeSpan? SurvivalBonusTime { get; set; }
     public TimeInt32? AuthorTimeMin { get; set; }
     public TimeInt32? AuthorTimeMax { get; set; }
+    public int? FreeSkipLimit { get; set; }
+    public int? GoldSkipLimit { get; set; }
 
     public string ToUrl(IRandomGenerator random) // Not very efficient but does the job done fast enough
     {

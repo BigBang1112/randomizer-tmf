@@ -188,7 +188,7 @@ public class Session : ISession
             }
 
             await PlayMapAsync(cancellationToken);
-            
+
             // Map is no longer tracked at this point
         }
     }
@@ -393,7 +393,7 @@ public class Session : ISession
 
             return;
         }
-        
+
         if (Map.IsGoldMedal(ghost))
         {
             GoldMedalReceived(Map);
@@ -416,6 +416,11 @@ public class Session : ISession
         map.LastTimestamp = Watch.Elapsed;
         Data?.SetMapResult(map, Constants.AuthorMedal);
 
+        if (config.Rules.RequestRules.SurvivalMode)
+        {
+            config.Rules.TimeLimit += config.Rules.RequestRules.SurvivalBonusTime!.Value;
+        }
+
         events.OnMedalUpdate();
     }
 
@@ -425,13 +430,44 @@ public class Session : ISession
         Watch.Stop();
         Data?.SetReadOnlySessionYml();
         LogWriter?.Dispose();
+
+        // making sure the UI does not change after RMS
+        config.Rules.TimeLimit = config.Rules.OriginalTimeLimit;
     }
 
     public Task SkipMapAsync()
     {
         Status("Requested to skip the map...");
+
+        // this is where skip limits make their effects
+
+        // checking if the player meets the requirements for free skipping or gold skipping
+        if (AuthorMaps.ContainsKey(Map!.MapUid) == false)
+        {
+            if (GoldMaps.ContainsKey(Map!.MapUid) == false)
+            {
+                if (config.Rules.RequestRules.FreeSkipLimit <= SkippedMaps.Count && config.Rules.RequestRules.FreeSkipLimit is not null)
+                {
+                    Status("Skip denied: free skip limit reached.");
+
+                    return Task.CompletedTask;
+                }
+            }
+            else
+            {
+                if (config.Rules.RequestRules.GoldSkipLimit <= (GoldMaps.Count - 1) && config.Rules.RequestRules.GoldSkipLimit is not null)
+                {
+                    Status("Skip denied: gold skip limit reached.");
+
+                    return Task.CompletedTask;
+                }
+            }
+            
+        }
+
         isActualSkipCancellation = true;
         SkipTokenSource?.Cancel();
+
         return Task.CompletedTask;
     }
 
@@ -443,9 +479,9 @@ public class Session : ISession
         {
             return false;
         }
-        
+
         game.OpenFile(Map.FilePath);
-        
+
         return true;
     }
 }

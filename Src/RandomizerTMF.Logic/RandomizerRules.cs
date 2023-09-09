@@ -4,6 +4,7 @@ namespace RandomizerTMF.Logic;
 
 public class RandomizerRules
 {
+    public TimeSpan OriginalTimeLimit { get; set; } = TimeSpan.FromHours(1);
     public TimeSpan TimeLimit { get; set; } = TimeSpan.FromHours(1);
     public bool NoUnlimiter { get; set; } = true;
     

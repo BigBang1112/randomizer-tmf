@@ -61,6 +61,7 @@ internal class StatusModuleWindowViewModel : ModuleWindowViewModelBase
                     this.RaisePropertyChanged(nameof(TimeText));
                 }
 
+                // !!!
                 await Task.Delay(50, updateTimeCancellationTokenSource.Token);
             }
         }, updateTimeCancellationTokenSource.Token);

@@ -9,208 +9,303 @@
 		Icon="/Assets/icon.ico"
 		Width="1250"
 		MinWidth="1180"
-		Height="700"
-		MinHeight="680"
+		Height="770"
+		MinHeight="720"
 		WindowStartupLocation="CenterScreen"
 		Title="Randomizer TMF - Random Map Challenge for TMNF/TMUF">
-	
-	<Design.DataContext>
-		<vm:DashboardWindowViewModel/>
-	</Design.DataContext>
-	
-	<Window.Styles>
-		<StyleInclude Source="/Styles/WindowStyle.axaml"/>
-	</Window.Styles>
-	
-	<DockPanel>
-		<views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
-		<Grid Margin="10 5">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="Auto" />
-			</Grid.ColumnDefinitions>
 
-			<Grid ShowGridLines="False">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="35"/>
-					<RowDefinition Height="*"/>
-					<RowDefinition Height="35" />
-					<RowDefinition Height="*"/>
-					<RowDefinition Height="5"/>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="5"/>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="5"/>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="5"/>
-				</Grid.RowDefinitions>
+  <Design.DataContext>
+    <vm:DashboardWindowViewModel/>
+  </Design.DataContext>
 
-				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
-					Your presets:
-				</TextBlock>
-				<Border Grid.Row="1" Width="250" Margin="0 0 0 5" BorderThickness="2">
-					<Border.BorderBrush>
-						<SolidColorBrush Color="Gray" Opacity="0.5"/>
-					</Border.BorderBrush>
-					<ListBox>
-						<ListBox.Background>
-							<SolidColorBrush Color="#222222" Opacity="0.5"/>
-						</ListBox.Background>
-					</ListBox>
-				</Border>
-				<TextBlock Grid.Row="1" Margin="0 0 0 5" Text="Presets coming soon" Opacity="0.7" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+  <Window.Styles>
+    <StyleInclude Source="/Styles/WindowStyle.axaml"/>
+  </Window.Styles>
 
-				<TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-					Your sessions:
-				</TextBlock>
-				<Border Grid.Row="3" Width="250" BorderThickness="2">
-					<Border.BorderBrush>
-						<SolidColorBrush Color="Gray" Opacity="0.5"/>
-					</Border.BorderBrush>
-					<ListBox DoubleTapped="SessionsDoubleTapped" Items="{Binding Sessions, Mode=OneWay}">
-						<ListBox.Background>
-							<SolidColorBrush Color="#222222" Opacity="0.5"/>
-						</ListBox.Background>
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<Grid Margin="-5" VerticalAlignment="Center">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="Auto"/>
-									</Grid.ColumnDefinitions>
-									<TextBlock Text="{Binding Path=Data.StartedAt, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss }'}" Margin="2 2 0 0" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
-									<Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 -5 0">
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="5"/>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="5"/>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="5"/>
-										</Grid.ColumnDefinitions>
+  <DockPanel>
+    <views:TopBar DataContext="{Binding TopBarViewModel}" DockPanel.Dock="Top" />
+    <Grid Margin="10 5">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
 
-										<TextBlock Foreground="LightGreen" Margin="0 1 5 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding AuthorMedalCount}"/>
+      <Grid ShowGridLines="False">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="35"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="35" />
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="5"/>
+        </Grid.RowDefinitions>
 
-										<TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding GoldMedalCount}"/>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+          Personal leaderboard:
+        </TextBlock>
+        
+        <Border Grid.Row="1" Width="250" Margin="0 0 0 5" BorderThickness="2">
+          
+          <Border.BorderBrush>
+            <SolidColorBrush Color="Gray" Opacity="0.5"/>
+          </Border.BorderBrush>
+          
+          <ListBox DoubleTapped="BestSessionsDoubleTapped" Items="{Binding BestSessions, Mode=OneWay}">
+            
+            <ListBox.Background>
+              <SolidColorBrush Color="#222222" Opacity="0.5"/>
+            </ListBox.Background>
 
-										<TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding SkippedCount}"/>
-									</Grid>
-								</Grid>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-				</Border>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="-5" VerticalAlignment="Center">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="{Binding GameMode}" Margin="2 2 5 0" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" TextWrapping="NoWrap"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Path=Data.StartedAt, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss }'}" Margin="2 2 0 0" VerticalAlignment="Center" FontSize="11" TextWrapping="NoWrap"/>
+                  <Grid Grid.Column="2" HorizontalAlignment="Right" Margin="0 2 -5 0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="2"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="2"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="2"/>
+                    </Grid.ColumnDefinitions>
 
-				<Button Grid.Row="5"
+                    <TextBlock Foreground="LightGreen" Margin="0 1 2 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding AuthorMedalCount}"/>
+
+                    <TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 2 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding GoldMedalCount}"/>
+
+                    <TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding SkippedCount}"/>
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+            
+          </ListBox>
+          
+        </Border>
+        
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+          Your sessions:
+        </TextBlock>
+        <Border Grid.Row="3" Width="250" BorderThickness="2">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="Gray" Opacity="0.5"/>
+          </Border.BorderBrush>
+          <ListBox DoubleTapped="SessionsDoubleTapped" Items="{Binding Sessions, Mode=OneWay}">
+            <ListBox.Background>
+              <SolidColorBrush Color="#222222" Opacity="0.5"/>
+            </ListBox.Background>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="-5" VerticalAlignment="Center">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="{Binding GameMode}" Margin="2 2 5 0" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" TextWrapping="NoWrap"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Path=Data.StartedAt, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss }'}" Margin="2 2 0 0" VerticalAlignment="Center" FontSize="11" TextWrapping="NoWrap"/>
+                  <Grid Grid.Column="2" HorizontalAlignment="Right" Margin="0 2 -5 0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="2"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="2"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="2"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Foreground="LightGreen" Margin="0 1 2 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding AuthorMedalCount}"/>
+
+                    <TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 2 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding GoldMedalCount}"/>
+
+                    <TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding SkippedCount}"/>
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Border>
+
+        <Button Grid.Row="5"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding OpenSessionsFolderClick}">Open sessions folder</Button>
-				<Button Grid.Row="7"
+        <Button Grid.Row="7"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						Command="{Binding OpenDownloadedMapsFolderClick}">Open downloaded maps folder</Button>
-				<Button Grid.Row="9"
+        <Button Grid.Row="9"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
 						IsEnabled="{Binding HasAutosavesScanned}"
 						Command="{Binding ChangeClick}">Configure Randomizer TMF</Button>
-			</Grid>
-			
-			<Grid ShowGridLines="False" Grid.Column="1">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="35"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="5"/>
-					<RowDefinition Height="*"/>
-					<RowDefinition Height="66"/>
-					<RowDefinition Height="5"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="10"/>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="10"/>
-				</Grid.ColumnDefinitions>
+      </Grid>
 
-				<TextBlock Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center">
-					Session settings:
-				</TextBlock>
+      <Grid ShowGridLines="False" Grid.Column="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="35"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="66"/>
+          <RowDefinition Height="5"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="10"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="10"/>
+        </Grid.ColumnDefinitions>
 
-				<views:RequestRulesControl Grid.Row="1" Grid.Column="1" DataContext="{Binding RequestRulesControlViewModel}">
-					
-				</views:RequestRulesControl>
+        <TextBlock Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+          Session settings:
+        </TextBlock>
 
-				<Button Grid.Row="4" Grid.Column="1"
+        <views:RequestRulesControl Grid.Row="1" Grid.Column="1" DataContext="{Binding RequestRulesControlViewModel}">
+
+        </views:RequestRulesControl>
+
+        <Border Grid.Row="4"
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderThickness="1"
+                BorderBrush="#00FF68"
+                CornerRadius="3">
+          <Button	HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  FontSize="24" FontWeight="Bold"
+                  Command="{Binding OpenModuleClick}"
+                  IsEnabled="{Binding HasAutosavesScanned}">R E A D Y</Button>
+        </Border>
+
+      </Grid>
+      <Grid Grid.Column="2">
+        
+        <Grid.RowDefinitions>
+          <RowDefinition Height="35"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="35"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="25"/>
+          <RowDefinition Height="5"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+          Your presets:
+        </TextBlock>
+        <Border Grid.Row="1" Width="250" BorderThickness="2">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="Gray" Opacity="0.5"/>
+          </Border.BorderBrush>
+          <ListBox DoubleTapped="PresetsDoubleTapped" Items="{Binding Presets, Mode=OneWay}">
+            <ListBox.Background>
+              <SolidColorBrush Color="#222222" Opacity="0.5"/>
+            </ListBox.Background>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="-6" VerticalAlignment="Center">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  <Image Width="16" Height="17" Margin="0 1 0 0" Source="/Assets/Images/presetIcon.png" />
+                  <TextBlock Grid.Column="2" Text="{Binding FolderName}" VerticalAlignment="Center" Margin="0 2 0 0" FontSize="12" TextWrapping="NoWrap"/>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Border>
+
+        <TextBox Text="{Binding PresetName}" Grid.Row="3" ToolTip.Tip="The name of your new preset"/>
+        <Button Grid.Row="5"
 						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
 						HorizontalContentAlignment="Center"
-						VerticalContentAlignment="Center"
-						FontSize="24" FontWeight="Bold"
-						Command="{Binding StartModulesClick}"
-						IsEnabled="{Binding HasAutosavesScanned}">OPEN MODULES</Button>
-			</Grid>
-			<Grid Grid.Column="2">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="35"/>
-					<RowDefinition Height="*"/>
-					<RowDefinition Height="25"/>
-					<RowDefinition Height="5"/>
-				</Grid.RowDefinitions>
-				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Already played maps:"/>
-				<Border Grid.Row="1" Width="250" BorderThickness="2">
-					<Border.BorderBrush>
-						<SolidColorBrush Color="Gray" Opacity="0.5"/>
-					</Border.BorderBrush>
-					<ListBox DoubleTapped="AutosavesDoubleTapped" Items="{Binding Autosaves, Mode=OneWay}">
-						<ListBox.Background>
-							<SolidColorBrush Color="#222222" Opacity="0.5"/>
-						</ListBox.Background>
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<Grid Margin="-6" VerticalAlignment="Center">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="20"/>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<Image Width="20" Height="20" Source="{Binding EnvIconBitmap}"/>
-									<TextBlock Grid.Column="1" Text="{Binding Text}" Margin="5 1 0 0" Width="200" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
-									<Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 5 0">
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="5"/>
-											<ColumnDefinition Width="5"/>
-											<ColumnDefinition Width="5"/>
-											<ColumnDefinition Width="5"/>
-										</Grid.ColumnDefinitions>
-										<Image Grid.Column="3" Width="20" Source="/Assets/Images/Medals/BronzeMedal.png" IsVisible="{Binding Autosave.HasBronzeMedal}"/>
-										<Image Grid.Column="2" Width="20" Source="/Assets/Images/Medals/SilverMedal.png" IsVisible="{Binding Autosave.HasSilverMedal}"/>
-										<Image Grid.Column="1" Width="20" Source="/Assets/Images/Medals/GoldMedal.png" IsVisible="{Binding Autosave.HasGoldMedal}"/>
-										<Image Width="20" Source="/Assets/Images/Medals/NadeoMedal.png" IsVisible="{Binding Autosave.HasAuthorMedal}"/>
-									</Grid>
-								</Grid>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-				</Border>
+						Command="{Binding SavePresetClick}">Save current rules</Button>
+        <Button Grid.Row="7"
+						HorizontalAlignment="Stretch"
+						HorizontalContentAlignment="Center"
+						Command="{Binding OpenPresetsFolderClick}">Open presets folder</Button>
+        
+        <TextBlock Grid.Row="8" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Already played maps:"/>
+        <Border Grid.Row="9" Width="250" BorderThickness="2">
+          <Border.BorderBrush>
+            <SolidColorBrush Color="Gray" Opacity="0.5"/>
+          </Border.BorderBrush>
+          <ListBox DoubleTapped="AutosavesDoubleTapped" Items="{Binding Autosaves, Mode=OneWay}">
+            <ListBox.Background>
+              <SolidColorBrush Color="#222222" Opacity="0.5"/>
+            </ListBox.Background>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="-6" VerticalAlignment="Center">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  <Image Width="20" Height="20" Source="{Binding EnvIconBitmap}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Text}" Margin="5 1 0 0" Width="200" VerticalAlignment="Center" FontSize="12" TextWrapping="NoWrap"/>
+                  <Grid Grid.Column="1" HorizontalAlignment="Right" Margin="0 2 5 0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="5"/>
+                      <ColumnDefinition Width="5"/>
+                      <ColumnDefinition Width="5"/>
+                      <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="3" Width="20" Source="/Assets/Images/Medals/BronzeMedal.png" IsVisible="{Binding Autosave.HasBronzeMedal}"/>
+                    <Image Grid.Column="2" Width="20" Source="/Assets/Images/Medals/SilverMedal.png" IsVisible="{Binding Autosave.HasSilverMedal}"/>
+                    <Image Grid.Column="1" Width="20" Source="/Assets/Images/Medals/GoldMedal.png" IsVisible="{Binding Autosave.HasGoldMedal}"/>
+                    <Image Width="20" Source="/Assets/Images/Medals/NadeoMedal.png" IsVisible="{Binding Autosave.HasAuthorMedal}"/>
+                  </Grid>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Border>
 
-				<StackPanel Grid.Row="1"
+        <StackPanel Grid.Row="10"
 							Orientation="Horizontal"
 							HorizontalAlignment="Center"
 							VerticalAlignment="Center"
 							Opacity="0.7">
-					<TextBlock IsVisible="{Binding !HasAutosavesScanned}" Text="{Binding AutosaveScanCount}"/>
-					<TextBlock IsVisible="{Binding !HasAutosavesScanned}" Text=" autosaves found"/>
-				</StackPanel>
+          <TextBlock IsVisible="{Binding !HasAutosavesScanned}" Text="{Binding AutosaveScanCount}"/>
+          <TextBlock IsVisible="{Binding !HasAutosavesScanned}" Text=" autosaves found"/>
+        </StackPanel>
 
 
-				<StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 3" Orientation="Horizontal">
-					<TextBlock FontSize="10" VerticalAlignment="Center" Text="{Binding Autosaves.Count}"/>
-					<TextBlock FontSize="10" VerticalAlignment="Center" Text=" autosave details loaded. Try a double click!"/>
-				</StackPanel>
-			</Grid>
-		</Grid>
-		
-	</DockPanel>
+        <StackPanel Grid.Row="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 3" Orientation="Horizontal">
+          <TextBlock FontSize="10" VerticalAlignment="Center" Text="{Binding Autosaves.Count}"/>
+          <TextBlock FontSize="10" VerticalAlignment="Center" Text=" autosave details loaded. Try a double click!"/>
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+  </DockPanel>
 </Window>
