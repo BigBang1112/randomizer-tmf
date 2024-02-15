@@ -15,6 +15,8 @@ public class SessionData
 
     public string? Version { get; set; }
     public DateTimeOffset StartedAt { get; set; }
+    public TimeSpan OriginalTimeLimit { get; set; }
+    public double AuthorRate { get; set; }
     public RandomizerRules Rules { get; set; }
 
     [YamlIgnore]
@@ -42,6 +44,7 @@ public class SessionData
     {
         Version = version;
         StartedAt = startedAt;
+        OriginalTimeLimit = config.Rules.TimeLimit;
         
         this.config = config;
         this.logger = logger;

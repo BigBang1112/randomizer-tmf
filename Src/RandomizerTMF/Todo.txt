@@ -1,0 +1,5 @@
+﻿- Make path
+- Read from path
+- Populate listbox with files
+- Write to path on save
+- Load file data selected from file

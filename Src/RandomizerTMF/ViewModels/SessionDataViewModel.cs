@@ -108,8 +108,10 @@ internal class SessionDataViewModel : WindowWithTopBarViewModelBase
     {
         var rules = new ObservableCollection<string>
         {
-            "Version: " + (Model.Data.Version is null ? "< 1.0.3" : Model.Data.Version)
+            "Version: " + (Model.Data.Version is null ? "< 1.0.3" : Model.Data.Version),
         };
+
+        if (Model.Data.Rules.RequestRules.SurvivalMode) rules.Add("Start timer: " + Model.Data.OriginalTimeLimit);
 
         if (Model.Data.Rules is null) // To handle sessions made in early Randomizer TMF version
         {
@@ -168,6 +170,11 @@ internal class SessionDataViewModel : WindowWithTopBarViewModelBase
         if (val is TimeInt32 timeInt32)
         {
             val = timeInt32.ToString(useHundredths: true);
+        }
+
+        if (val is TimeSpan)
+        {
+            val = String.Format(@"{0:hh\:mm\:ss\.ff}", val);
         }
 
         rules.Add($"{ToSentenceCase(prop.Name)}: {val}");

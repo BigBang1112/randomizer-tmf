@@ -7,7 +7,7 @@ namespace RandomizerTMF.ViewModels;
 
 internal class RequestRulesControlViewModel : WindowViewModelBase
 {
-    private readonly IRandomizerConfig config;
+    public IRandomizerConfig config;
 
     public RequestRulesControlViewModel(IRandomizerConfig config)
     {
@@ -21,13 +21,13 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         {
             if (value) config.Rules.RequestRules.Site |= ESite.TMNF;
             else config.Rules.RequestRules.Site &= ~ESite.TMNF;
-            
+
             this.RaisePropertyChanged(nameof(IsSiteTMNFChecked));
 
             config.Save();
         }
     }
-    
+
     public bool IsSiteTMUFChecked
     {
         get => config.Rules.RequestRules.Site.HasFlag(ESite.TMUF);
@@ -780,6 +780,22 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
+    public bool MinATEnabled
+    {
+        get => config.Rules.RequestRules.AuthorTimeMin is not null;
+        set
+        {
+            config.Rules.RequestRules.AuthorTimeMin = value ? TimeInt32.Zero : null;
+
+            this.RaisePropertyChanged(nameof(MinATEnabled));
+            this.RaisePropertyChanged(nameof(MinATMinute));
+            this.RaisePropertyChanged(nameof(MinATSecond));
+            this.RaisePropertyChanged(nameof(MinATMillisecond));
+
+            config.Save();
+        }
+    }
+
     public int MinATMinute
     {
         get => config.Rules.RequestRules.AuthorTimeMin.GetValueOrDefault().Minutes;
@@ -827,17 +843,17 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
-    public bool MinATEnabled
+    public bool MaxATEnabled
     {
-        get => config.Rules.RequestRules.AuthorTimeMin is not null;
+        get => config.Rules.RequestRules.AuthorTimeMax is not null;
         set
         {
-            config.Rules.RequestRules.AuthorTimeMin = value ? TimeInt32.Zero : null;
+            config.Rules.RequestRules.AuthorTimeMax = value ? TimeInt32.Zero : null;
 
-            this.RaisePropertyChanged(nameof(MinATEnabled));
-            this.RaisePropertyChanged(nameof(MinATMinute));
-            this.RaisePropertyChanged(nameof(MinATSecond));
-            this.RaisePropertyChanged(nameof(MinATMillisecond));
+            this.RaisePropertyChanged(nameof(MaxATEnabled));
+            this.RaisePropertyChanged(nameof(MaxATMinute));
+            this.RaisePropertyChanged(nameof(MaxATSecond));
+            this.RaisePropertyChanged(nameof(MaxATMillisecond));
 
             config.Save();
         }
@@ -890,17 +906,119 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
-    public bool MaxATEnabled
+    public bool SurvivalEnabled
     {
-        get => config.Rules.RequestRules.AuthorTimeMax is not null;
+        get => config.Rules.RequestRules.SurvivalBonusTime is not null;
         set
         {
-            config.Rules.RequestRules.AuthorTimeMax = value ? TimeInt32.Zero : null;
+            config.Rules.RequestRules.SurvivalMode = value;
+            config.Rules.RequestRules.SurvivalBonusTime = value ? TimeSpan.Zero : null;
 
-            this.RaisePropertyChanged(nameof(MaxATEnabled));
-            this.RaisePropertyChanged(nameof(MaxATMinute));
-            this.RaisePropertyChanged(nameof(MaxATSecond));
-            this.RaisePropertyChanged(nameof(MaxATMillisecond));
+            this.RaisePropertyChanged(nameof(SurvivalEnabled));
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMinute));
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainSecond));
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMillisecond));
+
+            config.Save();
+        }
+    }
+
+    public int SurvivalTimeGainMinute
+    {
+        get => config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Minutes;
+        set
+        {
+            config.Rules.RequestRules.SurvivalBonusTime = new TimeSpan(0, 0, value,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Seconds,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Milliseconds);
+
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMinute));
+
+            config.Save();
+        }
+    }
+
+    public int SurvivalTimeGainSecond
+    {
+        get => config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Seconds;
+        set
+        {
+            config.Rules.RequestRules.SurvivalBonusTime = new TimeSpan(0, 0,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Minutes,
+                value,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Milliseconds);
+
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainSecond));
+
+            config.Save();
+        }
+    }
+
+    public int SurvivalTimeGainMillisecond
+    {
+        get => config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Milliseconds;
+        set
+        {
+            config.Rules.RequestRules.SurvivalBonusTime = new TimeSpan(0, 0,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Minutes,
+                config.Rules.RequestRules.SurvivalBonusTime.GetValueOrDefault().Seconds,
+                value * 10);
+
+            this.RaisePropertyChanged(nameof(SurvivalTimeGainMillisecond));
+
+            config.Save();
+        }
+    }
+
+    public bool FreeSkipLimitEnabled
+    {
+        get => config.Rules.RequestRules.FreeSkipLimit is not null;
+        set
+        {
+            config.Rules.RequestRules.FreeSkipLimit = value ? 0 : null;
+
+            this.RaisePropertyChanged(nameof(FreeSkipLimitEnabled));
+            this.RaisePropertyChanged(nameof(FreeSkipLimit));
+
+            config.Save();
+        }
+    }
+
+    public int FreeSkipLimit
+    {
+        get => config.Rules.RequestRules.FreeSkipLimit.GetValueOrDefault();
+        set
+        {
+            config.Rules.RequestRules.FreeSkipLimit = value;
+
+            this.RaisePropertyChanged(nameof(FreeSkipLimit));
+
+            config.Save();
+        }
+    }
+
+    public bool GoldSkipLimitEnabled
+    {
+        get => config.Rules.RequestRules.GoldSkipLimit is not null;
+        set
+        {
+            config.Rules.RequestRules.GoldSkipLimit = value ? 0 : null;
+
+            this.RaisePropertyChanged(nameof(GoldSkipLimitEnabled));
+            this.RaisePropertyChanged(nameof(GoldSkipLimit));
+
+            config.Save();
+        }
+    }
+
+    public int GoldSkipLimit
+    {
+        get => config.Rules.RequestRules.GoldSkipLimit.GetValueOrDefault();
+        set
+        {
+            config.Rules.RequestRules.GoldSkipLimit = value;
+
+            this.RaisePropertyChanged(nameof(GoldSkipLimit));
 
             config.Save();
         }
@@ -946,7 +1064,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
             config.Save();
         }
     }
-    
+
     public bool EqualVehicleDistribution
     {
         get => config.Rules.RequestRules.EqualVehicleDistribution;

@@ -21,12 +21,19 @@
 
 	<PropertyGroup>
 		<Version>1.1.1</Version>
-		<PublishSingleFile>true</PublishSingleFile>
+		<PublishSingleFile>false</PublishSingleFile>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	</PropertyGroup>
 	
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <AvaloniaXaml Remove="bin\Release\net7.0\Presets\**" />
+	  <Compile Remove="bin\Release\net7.0\Presets\**" />
+	  <EmbeddedResource Remove="bin\Release\net7.0\Presets\**" />
+	  <None Remove="bin\Release\net7.0\Presets\**" />
 	</ItemGroup>
 	
 	<ItemGroup>

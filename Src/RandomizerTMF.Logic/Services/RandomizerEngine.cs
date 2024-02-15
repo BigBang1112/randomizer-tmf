@@ -43,6 +43,8 @@ public class RandomizerEngine : IRandomizerEngine
 
         logger.LogInformation("Starting Randomizer Engine...");
 
+        fileSystem.Directory.CreateDirectory(FilePathManager.PresetsDirectoryPath);
+
         fileSystem.Directory.CreateDirectory(FilePathManager.SessionsDirectoryPath);
 
         logger.LogInformation("Predefining LZO algorithm...");
