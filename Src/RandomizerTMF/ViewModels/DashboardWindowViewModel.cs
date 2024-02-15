@@ -35,9 +35,6 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
     public RequestRulesControlViewModel RequestRulesControlViewModel { get; set; }
 
-    private HashSet<string> PresetPropsForEnable { get; }
-    private HashSet<string> PresetPropsToReset { get; }
-
     public string? GameDirectory => config.GameDirectory;
 
     public ObservableCollection<AutosaveModel> Autosaves
@@ -103,9 +100,6 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         this.logger = logger;
 
         RequestRulesControlViewModel = new(config);
-
-        this.PresetPropsForEnable = RequestRulesControlViewModel.PropsForEnable;
-        this.PresetPropsToReset = RequestRulesControlViewModel.PropsToReset;
 
         discord.InDashboard();
     }
@@ -183,15 +177,25 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         }
 
         // ordering leaderboard by average time for geting an author.
+        foreach (var bs in bestSessions.ToObservable())
+        {
+            if (bs.AuthorMedalCount == 0)
+            {
+                bestSessions.Remove(bs);
+                continue;
+            }
+
+            bs.Data.AuthorRate = Math.Round(bs.Data.Rules.TimeLimit.TotalMilliseconds / bs.AuthorMedalCount);
+        }
+
         for (int i = 0; i < bestSessions.Count; i++)
         {
-            for (int j = i + 1; j < bestSessions.Count; j++)
+            for (int j = 0; j < bestSessions.Count; j++)
             {
-                double authAvg1 = bestSessions[i].Data.Rules.TimeLimit.TotalMinutes / bestSessions[i].AuthorMedalCount;
-                double authAvg2 = bestSessions[j].Data.Rules.TimeLimit.TotalMinutes / bestSessions[j].AuthorMedalCount;
+                double authAvg1 = bestSessions[i].Data.AuthorRate;
+                double authAvg2 = bestSessions[j].Data.AuthorRate;
 
-
-                if (authAvg1 > authAvg2)
+                if (authAvg1 < authAvg2)
                 {
                     SessionDataModel temp = bestSessions[j];
                     bestSessions[j] = bestSessions[i];
@@ -199,7 +203,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 }
                 else if (authAvg1 == authAvg2)
                 {
-                    if (bestSessions[j].GoldMedalCount > bestSessions[i].GoldMedalCount)
+                    if (bestSessions[j].GoldMedalCount < bestSessions[i].GoldMedalCount)
                     {
                         SessionDataModel temp = bestSessions[j];
                         bestSessions[j] = bestSessions[i];
@@ -207,7 +211,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                     }
                     else if (bestSessions[j].GoldMedalCount == bestSessions[i].GoldMedalCount)
                     {
-                        if (bestSessions[j].SkippedCount < bestSessions[i].SkippedCount)
+                        if (bestSessions[j].SkippedCount > bestSessions[i].SkippedCount)
                         {
                             SessionDataModel temp = bestSessions[j];
                             bestSessions[j] = bestSessions[i];
@@ -223,26 +227,28 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         foreach (var dir in Directory.EnumerateDirectories(FilePathManager.PresetsDirectoryPath))
         {
-            var presetTxt = Path.Combine(dir, Constants.PresetTxt);
+            var presetYml = Path.Combine(dir, Constants.PresetYml);
 
-            if (!File.Exists(presetTxt))
+            if (!File.Exists(presetYml))
             {
                 continue;
             }
 
-            string presetTxtFolderName;
+            PresetDataModel preset;
+            RandomizerRules presetData;
 
             try
             {
-                presetTxtFolderName = dir.Split(Path.DirectorySeparatorChar)[dir.Split(Path.DirectorySeparatorChar).Length - 1];
-                var presetTxtContentFile = await File.ReadAllLinesAsync(presetTxt);
-                var presetTxtContent = new List<string>(presetTxtContentFile);
+                var presetName = dir.Split(Path.DirectorySeparatorChar)[dir.Split(Path.DirectorySeparatorChar).Length - 1];
+                var presetYmlContent = await File.ReadAllTextAsync(presetYml);
+                presetData = Yaml.Deserializer.Deserialize<RandomizerRules>(presetYmlContent);
+                preset = new PresetDataModel(presetName, presetData);
 
-                Presets.Add(new PresetDataModel(presetTxtFolderName, presetTxtContent));
+                Presets.Add(new PresetDataModel(presetName, presetData));
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Corrupted Preset.txt in '{presets}'", Path.GetFileName(dir));
+                logger.LogError(ex, "Corrupted Preset.yml in '{presets}'", Path.GetFileName(dir));
                 continue;
             }
         }
@@ -438,49 +444,8 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             throw new UnreachableException("ServiceProvider is null");
         }
 
-        var presetRules = presetData.FileContent;
-        var propsInfos = RequestRulesControlViewModel.GetType().GetProperties();
-
-        int skips = 0;
-
-        for (int i = 0; i < presetRules.Count; i++)
-        {
-            var propInfo = propsInfos[i + skips];
-
-            string ruleName = presetRules[i].Split('=')[0];
-            string ruleValue = presetRules[i].Split('=')[1];
-
-            if (ruleName != propInfo.Name)
-            {
-                skips++;
-                i--;
-                continue;
-            }
-
-            if (ruleValue == "")
-            {
-                propInfo.SetValue(RequestRulesControlViewModel, null);
-            }
-            else
-            {
-                if (propInfo.PropertyType.Name == "Boolean")
-                {
-                    propInfo.SetValue(RequestRulesControlViewModel, Convert.ToBoolean(ruleValue));
-                }
-                else if (propInfo.PropertyType.Name == "String")
-                {
-                    propInfo.SetValue(RequestRulesControlViewModel, ruleValue);
-                }
-                else if (propInfo.PropertyType.Name == "Int32")
-                {
-                    propInfo.SetValue(RequestRulesControlViewModel, int.Parse(ruleValue));
-                }
-                else if (DateTimeOffset.TryParse(ruleValue, out DateTimeOffset parsingResult))
-                {
-                    propInfo.SetValue(RequestRulesControlViewModel, parsingResult);
-                }
-            }
-        }
+        RequestRulesControlViewModel.config.Rules = presetData.Data;
+        RequestRulesControlViewModel.RaisePropertyChanged(string.Empty);
     }
 
     public void AutosaveDoubleClick(int selectedIndex)
@@ -517,13 +482,15 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         return true;
     }
 
-    public void SavePresetClick()
+    public async void SavePresetClick()
     {
-        string PresetsDirectory = "";
+        string DirectoryPath;
 
         try
         {
-            PresetsDirectory = Path.Combine(FilePathManager.PresetsDirectoryPath, PresetName!);
+            DirectoryPath = Path.Combine(FilePathManager.PresetsDirectoryPath, PresetName!);
+            fileSystem?.Directory.CreateDirectory(DirectoryPath);
+
         }
         catch (Exception ex)
         {
@@ -531,48 +498,15 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             return;
         }
 
-        fileSystem?.Directory.CreateDirectory(PresetsDirectory);
+        fileSystem?.File.WriteAllText(Path.Combine(DirectoryPath, Constants.PresetYml), Yaml.Serializer.Serialize(RequestRulesControlViewModel.config.Rules));
 
-        List<string> rulesData = new();
-
-        bool x = false;
-
-        foreach (var propInfo in RequestRulesControlViewModel.GetType().GetProperties())
-        {
-            var propertyName = propInfo.Name;
-            var propertyValue = propInfo.GetValue(RequestRulesControlViewModel);
-
-            // these props are not important for us
-            if (propertyName == "Window" || propertyName == "Changing" || propertyName == "Changed" || propertyName == "ThrownExceptions") continue;
-
-            // only one of these "IsPrimaryType" props can be true
-            if (propertyName.StartsWith("IsPrimaryType") && !(bool)propertyValue!) continue;
-
-            // ----------
-            // Check if the "enabling" prop is true or false
-            // If false, it won't save any "connected" prop, because their value
-            // would be saved as "0", even tho they have no value (null)
-            // (I guess it's because they are ints, but i am not sure, i don't know xdd)
-            // It means that after loading they would behave as 0 valued props
-            // and not null valued props which is an important detail
-            if (PresetPropsForEnable.Contains(propertyName)) x = (bool)propertyValue!;
-
-            if (PresetPropsToReset.Contains(propertyName)) if (!x) continue;
-            // ----------
-
-            if (propertyValue != null) rulesData.Add(propertyName.ToString() + "=" + propertyValue.ToString());
-            else rulesData.Add(propertyName.ToString() + "=" + "");
-
-        }
-
-        File.WriteAllLines(Path.Combine(PresetsDirectory, Constants.PresetTxt), rulesData);
-
-        if (Presets.Where(item => item.FolderName == PresetName).ToList().Count == 0)
-        {
-            Presets.Add(new PresetDataModel(PresetName!, rulesData));
-        }
+        logger?.LogInformation("Preset saved.");
 
         PresetName = null;
+
+        Presets.Clear();
+
+        await ScanPresetsAsync();
     }
 
     public void OpenPresetsFolderClick()

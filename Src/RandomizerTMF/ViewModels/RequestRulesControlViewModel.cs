@@ -7,43 +7,12 @@ namespace RandomizerTMF.ViewModels;
 
 internal class RequestRulesControlViewModel : WindowViewModelBase
 {
-    private readonly IRandomizerConfig config;
-
-    // These properties have to be checked when saving presets
-    // Any prop that enables something and is "connected" to another one (or multiple ones) by value
-    // has to be put into these hashsets, coz of their nature when saving and loading presets
-    
-    public HashSet<string> PropsForEnable = new HashSet<string> { "MinATEnabled",
-                                                                  "MaxATEnabled",
-                                                                  "SurvivalEnabled",
-                                                                  "FreeSkipLimitEnabled",
-                                                                  "GoldSkipLimitEnabled"};
-
-    public HashSet<string> PropsToReset = new HashSet<string> { "MinATMinute", "MinATSecond", "MinATMillisecond",
-                                                                "MaxATMinute", "MaxATSecond", "MaxATMillisecond",
-                                                                "SurvivalTimeGainMinute", "SurvivalTimeGainSecond",
-                                                                "SurvivalTimeGainMillisecond", "FreeSkipLimit",
-                                                                "GoldSkipLimit"};
+    public IRandomizerConfig config;
 
     public RequestRulesControlViewModel(IRandomizerConfig config)
     {
         this.config = config;
     }
-
-    // Because of the way the preset loading works, it is important to always have the props in the correct order
-    // It means, that a prop related to enabling something always goes first, compared to the prop holding the value
-    // For example
-    // 1. FreeSkipLimitEnabled (determines wether you can or cannot set a value for FreeSkipLimit)
-    // 2. FreeSkipLimit (actually holds the value for the amount of free skips)
-    // If they were the other way around, the loader function would try to set the value first, (which it might fail to do,
-    // because it might be disabled) and only then enable it
-    //
-    // Also the props are saved in the same order as they are declared
-    // So the existing props' ORDER SHOULD NEVER BE CHANGED, otherwise presets saves from previous versions will not work properly
-    // If the order is changed regardless, then DashboardWindowViewModel.PresetsDoubleClick should be modified accordingly,
-    // so that the order does not effect the process
-    // At the same time new props can be put anywhere, it won't break existing preset saves,
-    // but existing preset saves will have no effect on that property (of course)
 
     public bool IsSiteTMNFChecked
     {
@@ -775,8 +744,6 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
                 config.Rules.TimeLimit.Minutes,
                 config.Rules.TimeLimit.Seconds);
 
-            config.Rules.OriginalTimeLimit = config.Rules.TimeLimit;
-
             this.RaisePropertyChanged(nameof(TimeLimitHour));
 
             config.Save();
@@ -792,8 +759,6 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
                 value,
                 config.Rules.TimeLimit.Seconds);
 
-            config.Rules.OriginalTimeLimit = config.Rules.TimeLimit;
-
             this.RaisePropertyChanged(nameof(TimeLimitMinute));
 
             config.Save();
@@ -808,8 +773,6 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
             config.Rules.TimeLimit = new TimeSpan(config.Rules.TimeLimit.Hours,
                 config.Rules.TimeLimit.Minutes,
                 value);
-
-            config.Rules.OriginalTimeLimit = config.Rules.TimeLimit;
 
             this.RaisePropertyChanged(nameof(TimeLimitSecond));
 

@@ -419,6 +419,11 @@ public class Session : ISession
         if (config.Rules.RequestRules.SurvivalMode)
         {
             config.Rules.TimeLimit += config.Rules.RequestRules.SurvivalBonusTime!.Value;
+
+            if (config.Rules.TimeLimit > Watch.Elapsed + Data!.OriginalTimeLimit)
+            {
+                config.Rules.TimeLimit = Watch.Elapsed + Data!.OriginalTimeLimit;
+            }
         }
 
         events.OnMedalUpdate();
@@ -432,7 +437,7 @@ public class Session : ISession
         LogWriter?.Dispose();
 
         // making sure the UI does not change after RMS
-        config.Rules.TimeLimit = config.Rules.OriginalTimeLimit;
+        config.Rules.TimeLimit = Data!.OriginalTimeLimit;
     }
 
     public Task SkipMapAsync()

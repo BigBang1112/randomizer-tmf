@@ -73,23 +73,9 @@
                   <TextBlock Text="{Binding GameMode}" Margin="2 2 5 0" VerticalAlignment="Center" FontSize="11" FontWeight="Bold" TextWrapping="NoWrap"/>
                   <TextBlock Grid.Column="1" Text="{Binding Path=Data.StartedAt, StringFormat='{}{0:yyyy/MM/dd HH:mm:ss }'}" Margin="2 2 0 0" VerticalAlignment="Center" FontSize="11" TextWrapping="NoWrap"/>
                   <Grid Grid.Column="2" HorizontalAlignment="Right" Margin="0 2 -5 0">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="2"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="2"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="2"/>
-                    </Grid.ColumnDefinitions>
 
-                    <TextBlock Foreground="LightGreen" Margin="0 1 2 0" Width="20" FontWeight="Bold" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding AuthorMedalCount}"/>
+                    <TextBlock Text="{Binding Path=Data.AuthorRate, StringFormat={}{0}}" Margin="0 1 5 0" VerticalAlignment="Center" TextWrapping="NoWrap" ToolTip.Tip="Average time spent on getting an Author medal in milliseconds."/>
 
-                    <TextBlock Foreground="Gold" Grid.Column="3" Width="20" FontWeight="Bold" Margin="0 1 2 0" TextAlignment="Right" HorizontalAlignment="Right" Text="{Binding GoldMedalCount}"/>
-
-                    <TextBlock Grid.Column="6" Width="20" FontWeight="Bold" Margin="0 1 5 0" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{Binding SkippedBrush}" Text="{Binding SkippedCount}"/>
                   </Grid>
                 </Grid>
               </DataTemplate>

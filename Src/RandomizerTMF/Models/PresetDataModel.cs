@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RandomizerTMF.Logic;
+using RandomizerTMF.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace RandomizerTMF.Models
 {
-    public class PresetDataModel
+    internal class PresetDataModel
     {
         public string FolderName { get; set; }
-        public List<string> FileContent { get; set; }
+        public RandomizerRules Data { get; }
 
-        public PresetDataModel(string FolderName, List<string> FileContent) 
+        public PresetDataModel(string FolderName, RandomizerRules Data)
         {
             this.FolderName = FolderName;
-            this.FileContent = FileContent;
+            this.Data = Data;
         }
     }
 }

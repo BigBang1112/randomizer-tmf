@@ -9,7 +9,7 @@ public static class Constants
     public const string DownloadedMapsDirectory = "_RandomizerTMF";
     public const string Title = "Randomizer TMF - Random Map Challenge for TMNF/TMUF (by BigBang1112)";
     public const string Presets = "Presets";
-    public const string PresetTxt = "Presets.txt";
+    public const string PresetYml = "Preset.yml";
     public const string Sessions = "Sessions";
     public const string SessionYml = "Session.yml";
     public const string SessionLog = "Session.log";
