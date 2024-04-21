@@ -57,10 +57,12 @@ public class SessionDataTests
         var replaysDir = Path.Combine(sessionData.DirectoryPath, "Replays");
         var expectedReplayFilePath = Path.Combine(replaysDir, expectedReplayFileName);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapName = "map name*";
-        map.MapUid = "uid";
-        map.Mode = mode;
+        var map = new CGameCtnChallenge
+        {
+            MapName = "map name*",
+            MapUid = "uid",
+            Mode = mode
+        };
 
         var sessionMap = new SessionMap(map, DateTimeOffset.UtcNow, "https://tmuf.exchange/trackshow/69");
         
@@ -71,11 +73,13 @@ public class SessionDataTests
             TmxLink = sessionMap.TmxLink,
         });
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.StuntScore = 67;
-        ghost.Respawns = 3;
+        var ghost = new CGameCtnGhost
+        {
+            StuntScore = 67,
+            Respawns = 3
+        };
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
+        var replay = new CGameCtnReplayRecord();
         typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(123450));
         typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new CGameCtnGhost[] { ghost });
         typeof(CGameCtnReplayRecord).GetField("playerLogin", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, "playerLogin");
@@ -157,9 +161,11 @@ public class SessionDataTests
         var sessionData = SessionData.Initialize(config, mockLogger.Object, fileSystem);
         var fileTimestamp = fileSystem.GetFile(Path.Combine(sessionData.DirectoryPath, "Session.yml")).LastWriteTime;
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapName = "map name*";
-        map.MapUid = "uid";
+        var map = new CGameCtnChallenge
+        {
+            MapName = "map name*",
+            MapUid = "uid"
+        };
 
         var lastTimestamp = TimeSpan.FromMinutes(1);
 
