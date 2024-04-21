@@ -53,7 +53,7 @@ public class RandomizerEventsTests
         var mockLogger = new Mock<ILogger>();
         var mockDiscord = new Mock<IDiscordRichPresence>();
         var events = new RandomizerEvents(config, mockLogger.Object, mockDiscord.Object);
-        var sessionMap = new SessionMap(NodeInstance.Create<CGameCtnChallenge>(), DateTimeOffset.Now, "https://tmuf.exchange/trackshow/69");
+        var sessionMap = new SessionMap(new CGameCtnChallenge(), DateTimeOffset.Now, "https://tmuf.exchange/trackshow/69");
 
         var eventRaised = false;
         events.MapStarted += (map) => eventRaised = true;
@@ -130,7 +130,7 @@ public class RandomizerEventsTests
         var mockLogger = new Mock<ILogger>();
         var mockDiscord = new Mock<IDiscordRichPresence>();
         var events = new RandomizerEvents(config, mockLogger.Object, mockDiscord.Object);
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
+        var replay = new CGameCtnReplayRecord();
         
         var eventFileName = default(string);
         var eventReplay = default(CGameCtnReplayRecord);

@@ -168,12 +168,17 @@ public class Validator : IValidator
 
         if (config.Rules.NoUnlimiter)
         {
-            if (map.Chunks.TryGet(0x3F001000, out _))
+            if (map.Chunks.Any(x => x.Id == 0x3F001000))
             {
                 return false;
             }
 
-            if (map.Size is null)
+            if (map.Size == default)
+            {
+                return false;
+            }
+
+            if (map.Collection is null)
             {
                 return false;
             }
@@ -183,7 +188,7 @@ public class Validator : IValidator
                 return false;
             }
 
-            if (!sizes.Contains(map.Size.Value))
+            if (!sizes.Contains(map.Size))
             {
                 return false;
             }
