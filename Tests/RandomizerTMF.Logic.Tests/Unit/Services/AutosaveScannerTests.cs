@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.Services;
+using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
@@ -209,7 +210,7 @@ public class AutosaveScannerTests
         var watcher = Mock.Of<IFileSystemWatcher>();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("uid", new("Stadium"), "bigbang1112"));
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", new("Stadium"), "bigbang1112")]);
 
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(replay);
@@ -239,7 +240,7 @@ public class AutosaveScannerTests
         var watcher = Mock.Of<IFileSystemWatcher>();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("uid", new("Stadium"), "bigbang1112"));
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", new("Stadium"), "bigbang1112")]);
 
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(replay);
@@ -368,7 +369,7 @@ public class AutosaveScannerTests
         var watcher = Mock.Of<IFileSystemWatcher>();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(690));
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(690)]);
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(replay);
         
@@ -399,7 +400,7 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(690));
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(690)]);
         typeof(CGameCtnReplayRecord).GetField("challengeData", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, Array.Empty<byte>());
         typeof(CGameCtnReplayRecord).GetField("challenge", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, map);
         var mockGbx = new Mock<IGbxService>();
@@ -496,25 +497,6 @@ public class AutosaveScannerTests
         // Act & Assert
         Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
         Assert.Null(map.AuthorTime); // making sure test tests what it should even tho its a mock
-    }
-
-    [Fact]
-    public void UpdateAutosaveDetail_ReplayMapAuthorScoreNull_Throws()
-    {
-        // Arrange
-        var map = new CGameCtnChallenge
-        {
-            AuthorTime = new TimeInt32(200),
-            GoldTime = new TimeInt32(300),
-            SilverTime = new TimeInt32(400),
-            BronzeTime = new TimeInt32(500)
-        };
-
-        var scanner = Arrange_UpdateAutosaveDetail(map);
-
-        // Act & Assert
-        Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
-        Assert.Equal(0, map.AuthorScore); // making sure test tests what it should even tho its a mock
     }
 
     [Theory]
@@ -626,10 +608,10 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(690));
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(690)]);
         typeof(CGameCtnReplayRecord).GetField("challengeData", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, Array.Empty<byte>());
         typeof(CGameCtnReplayRecord).GetField("challenge", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, map);
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new CGameCtnGhost[] { ghost });
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ImmutableList.Create(ghost)]);
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(replay);
 

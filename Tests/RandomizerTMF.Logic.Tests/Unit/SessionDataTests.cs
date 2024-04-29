@@ -6,6 +6,7 @@ using System.IO.Abstractions.TestingHelpers;
 using TmEssentials;
 using System.Reflection;
 using GBX.NET;
+using System.Collections.Immutable;
 
 namespace RandomizerTMF.Logic.Tests.Unit;
 
@@ -38,7 +39,7 @@ public class SessionDataTests
     [InlineData(CGameCtnChallenge.PlayMode.Race, " {1}-{0}-{2}", " 2'03''45-map_name_-playerLogin")]
     [InlineData(CGameCtnChallenge.PlayMode.Stunts, "{1}-{2}-{0}.Replay.Gbx", "67_2'03''45-playerLogin-map_name_.Replay.Gbx")]
     [InlineData(CGameCtnChallenge.PlayMode.Platform, "{0}-{2}-{1} ", "map_name_-playerLogin-3_2'03''45 ")]
-    public void UpdateFromAutosave_SavesReplayToCurrentMap(CGameCtnChallenge.PlayMode mode, string replayFileFormat, string expectedReplayFileName)
+    public void UpdateFromAutosave_SavesReplayToCurrentMap(CGameCtnChallenge.PlayMode mode, string? replayFileFormat, string expectedReplayFileName)
     {
         // Arrange
         var fullPath = @"C:\Test\Autosave.Replay.Gbx";
@@ -80,9 +81,9 @@ public class SessionDataTests
         };
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(123450));
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new CGameCtnGhost[] { ghost });
-        typeof(CGameCtnReplayRecord).GetField("playerLogin", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, "playerLogin");
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(123450)]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ImmutableList.Create(ghost)]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.PlayerLogin))!.GetSetMethod(nonPublic: true)!.Invoke(replay, ["playerLogin"]);
 
         var expectedElapsed = TimeSpan.FromMinutes(1);
 
