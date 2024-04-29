@@ -6,7 +6,7 @@ internal class AboutWindowViewModel : WindowWithTopBarViewModelBase
 {
     private readonly IUpdateDetector updateDetector;
 
-    public string VersionText => $"version {Program.Version}";
+    public static string VersionText => $"version {Program.Version}";
 
     public string UpdateText => updateDetector.UpdateCheckResult ?? "Checking...";
     public bool IsNewUpdate => updateDetector.IsNewUpdate;
@@ -30,22 +30,22 @@ internal class AboutWindowViewModel : WindowWithTopBarViewModelBase
         Window.Close();
     }
 
-    public void ProjectClick()
+    public static void ProjectClick()
     {
         OpenWeb("https://bigbang1112.cz/");
     }
 
-    public void GitHubClick()
+    public static void GitHubClick()
     {
         OpenWeb("https://github.com/BigBang1112/randomizer-tmf");
     }
 
-    public void UpdateClick()
+    public static void UpdateClick()
     {
         OpenWeb("https://github.com/BigBang1112/randomizer-tmf/releases");
     }
 
-    private void OpenWeb(string site)
+    private static void OpenWeb(string site)
     {
         ProcessUtils.OpenUrl(site);
     }
