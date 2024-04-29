@@ -6,6 +6,7 @@ using System.IO.Abstractions.TestingHelpers;
 using TmEssentials;
 using System.Reflection;
 using GBX.NET;
+using System.Collections.Immutable;
 
 namespace RandomizerTMF.Logic.Tests.Unit;
 
@@ -38,7 +39,7 @@ public class SessionDataTests
     [InlineData(CGameCtnChallenge.PlayMode.Race, " {1}-{0}-{2}", " 2'03''45-map_name_-playerLogin")]
     [InlineData(CGameCtnChallenge.PlayMode.Stunts, "{1}-{2}-{0}.Replay.Gbx", "67_2'03''45-playerLogin-map_name_.Replay.Gbx")]
     [InlineData(CGameCtnChallenge.PlayMode.Platform, "{0}-{2}-{1} ", "map_name_-playerLogin-3_2'03''45 ")]
-    public void UpdateFromAutosave_SavesReplayToCurrentMap(CGameCtnChallenge.PlayMode mode, string replayFileFormat, string expectedReplayFileName)
+    public void UpdateFromAutosave_SavesReplayToCurrentMap(CGameCtnChallenge.PlayMode mode, string? replayFileFormat, string expectedReplayFileName)
     {
         // Arrange
         var fullPath = @"C:\Test\Autosave.Replay.Gbx";
@@ -57,10 +58,12 @@ public class SessionDataTests
         var replaysDir = Path.Combine(sessionData.DirectoryPath, "Replays");
         var expectedReplayFilePath = Path.Combine(replaysDir, expectedReplayFileName);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapName = "map name*";
-        map.MapUid = "uid";
-        map.Mode = mode;
+        var map = new CGameCtnChallenge
+        {
+            MapName = "map name*",
+            MapUid = "uid",
+            Mode = mode
+        };
 
         var sessionMap = new SessionMap(map, DateTimeOffset.UtcNow, "https://tmuf.exchange/trackshow/69");
         
@@ -71,14 +74,16 @@ public class SessionDataTests
             TmxLink = sessionMap.TmxLink,
         });
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.StuntScore = 67;
-        ghost.Respawns = 3;
+        var ghost = new CGameCtnGhost
+        {
+            StuntScore = 67,
+            Respawns = 3
+        };
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(123450));
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new CGameCtnGhost[] { ghost });
-        typeof(CGameCtnReplayRecord).GetField("playerLogin", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, "playerLogin");
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(123450)]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ImmutableList.Create(ghost)]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.PlayerLogin))!.GetSetMethod(nonPublic: true)!.Invoke(replay, ["playerLogin"]);
 
         var expectedElapsed = TimeSpan.FromMinutes(1);
 
@@ -157,9 +162,11 @@ public class SessionDataTests
         var sessionData = SessionData.Initialize(config, mockLogger.Object, fileSystem);
         var fileTimestamp = fileSystem.GetFile(Path.Combine(sessionData.DirectoryPath, "Session.yml")).LastWriteTime;
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapName = "map name*";
-        map.MapUid = "uid";
+        var map = new CGameCtnChallenge
+        {
+            MapName = "map name*",
+            MapUid = "uid"
+        };
 
         var lastTimestamp = TimeSpan.FromMinutes(1);
 

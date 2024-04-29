@@ -33,7 +33,7 @@ public class MapDownloaderTests
         var http = Mock.Of<HttpClient>();
         var gbxService = Mock.Of<IGbxService>();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
         var cts = new CancellationTokenSource();
 
         var mapDownloader = new MapDownloader(events, config, filePathManager, discord, mockValidator.Object, http, random, delay, fileSystem, gbxService, logger);
@@ -65,7 +65,7 @@ public class MapDownloaderTests
         var http = Mock.Of<HttpClient>();
         var gbxService = Mock.Of<IGbxService>();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
         var cts = new CancellationTokenSource();
 
         var mapDownloader = new MapDownloader(events, config, filePathManager, discord, mockValidator.Object, http, random, delay, fileSystem, gbxService, logger);
@@ -96,7 +96,7 @@ public class MapDownloaderTests
         var http = Mock.Of<HttpClient>();
         var gbxService = Mock.Of<IGbxService>();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
         var cts = new CancellationTokenSource();
 
         var mapDownloader = new MapDownloader(events, config, filePathManager, discord, mockValidator.Object, http, random, delay, fileSystem, gbxService, logger);
@@ -128,7 +128,7 @@ public class MapDownloaderTests
         var http = Mock.Of<HttpClient>();
         var gbxService = Mock.Of<IGbxService>();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
         var cts = new CancellationTokenSource();
 
         var mapDownloader = new MapDownloader(events, config, filePathManager, discord, mockValidator.Object, http, random, delay, fileSystem, gbxService, logger);
@@ -680,7 +680,7 @@ public class MapDownloaderTests
         var logger = Mock.Of<ILogger>();
         var game = Mock.Of<ITMForever>();
         
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
         var mockGbxService = new Mock<IGbxService>();
         mockGbxService.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(map);
 
@@ -731,7 +731,7 @@ public class MapDownloaderTests
         var logger = Mock.Of<ILogger>();
         var game = Mock.Of<ITMForever>();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
         var mockGbxService = new Mock<IGbxService>();
         mockGbxService.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(map);
 

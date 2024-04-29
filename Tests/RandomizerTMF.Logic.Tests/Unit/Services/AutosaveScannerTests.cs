@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.Services;
+using System.Collections.Immutable;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
@@ -118,8 +119,8 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, gbx, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("C:/Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
-        scanner.AutosaveHeaders.TryAdd("uid2", new AutosaveHeader("C:/Replay2.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("C:/Replay.Gbx", new CGameCtnReplayRecord()));
+        scanner.AutosaveHeaders.TryAdd("uid2", new AutosaveHeader("C:/Replay2.Gbx", new CGameCtnReplayRecord()));
         scanner.AutosaveDetails.TryAdd("uid", new AutosaveDetails(TimeInt32.Zero, null, null, null, null, null, TimeInt32.Zero, TimeInt32.Zero, TimeInt32.Zero, TimeInt32.Zero, 0, null));
         scanner.AutosaveDetails.TryAdd("uid2", new AutosaveDetails(TimeInt32.Zero, null, null, null, null, null, TimeInt32.Zero, TimeInt32.Zero, TimeInt32.Zero, TimeInt32.Zero, 0, null));
         scanner.HasAutosavesScanned = true;
@@ -158,7 +159,7 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
         var mockGbx = new Mock<IGbxService>();
-        mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(NodeInstance.Create<CGameCtnChallenge>());
+        mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(new CGameCtnChallenge());
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
@@ -183,7 +184,7 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
         var mockGbx = new Mock<IGbxService>();
-        mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(NodeInstance.Create<CGameCtnReplayRecord>());
+        mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(new CGameCtnReplayRecord());
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
@@ -208,8 +209,8 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("uid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", new("Stadium"), "bigbang1112")]);
 
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(replay);
@@ -222,7 +223,7 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, mockGbx.Object, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", new CGameCtnReplayRecord()));
 
         // Act
         var result = scanner.ProcessAutosaveHeader("Replay.Gbx");
@@ -238,8 +239,8 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("uid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", new("Stadium"), "bigbang1112")]);
 
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(replay);
@@ -307,7 +308,7 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
         var mockGbx = new Mock<IGbxService>();
-        mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(NodeInstance.Create<CGameCtnChallenge>());
+        mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(new CGameCtnChallenge());
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
@@ -320,7 +321,7 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, mockGbx.Object, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", new CGameCtnReplayRecord()));
 
         // Act
         scanner.UpdateAutosaveDetail("uid");
@@ -336,7 +337,7 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
         var mockGbx = new Mock<IGbxService>();
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
+        var replay = new CGameCtnReplayRecord();
         mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(replay);
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -350,7 +351,7 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, mockGbx.Object, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", new CGameCtnReplayRecord()));
 
         // Act
         scanner.UpdateAutosaveDetail("uid");
@@ -367,8 +368,8 @@ public class AutosaveScannerTests
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(690));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(690)]);
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(replay);
         
@@ -384,7 +385,7 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, mockGbx.Object, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", new CGameCtnReplayRecord()));
 
         // Act
         scanner.UpdateAutosaveDetail("uid");
@@ -398,8 +399,8 @@ public class AutosaveScannerTests
     {
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(690));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(690)]);
         typeof(CGameCtnReplayRecord).GetField("challengeData", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, Array.Empty<byte>());
         typeof(CGameCtnReplayRecord).GetField("challenge", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, map);
         var mockGbx = new Mock<IGbxService>();
@@ -417,7 +418,7 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, mockGbx.Object, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", new CGameCtnReplayRecord()));
 
         return scanner;
     }
@@ -426,85 +427,76 @@ public class AutosaveScannerTests
     public void UpdateAutosaveDetail_ReplayMapBronzeTimeNull_Throws()
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(300);
-        map.TMObjective_GoldTime = new TimeInt32(400);
-        map.TMObjective_SilverTime = new TimeInt32(500);
-        map.AuthorScore = 69;
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(300),
+            GoldTime = new TimeInt32(400),
+            SilverTime = new TimeInt32(500),
+            AuthorScore = 69
+        };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
         
         // Act & Assert
         Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
-        Assert.Null(map.TMObjective_BronzeTime); // making sure test tests what it should even tho its a mock
+        Assert.Null(map.BronzeTime); // making sure test tests what it should even tho its a mock
     }
 
     [Fact]
     public void UpdateAutosaveDetail_ReplayMapSilverTimeNull_Throws()
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(300);
-        map.TMObjective_GoldTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(300),
+            GoldTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69
+        };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
         // Act & Assert
         Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
-        Assert.Null(map.TMObjective_SilverTime); // making sure test tests what it should even tho its a mock
+        Assert.Null(map.SilverTime); // making sure test tests what it should even tho its a mock
     }
 
     [Fact]
     public void UpdateAutosaveDetail_ReplayMapGoldTimeNull_Throws()
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(300),
+            SilverTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69
+        };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
         // Act & Assert
         Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
-        Assert.Null(map.TMObjective_GoldTime); // making sure test tests what it should even tho its a mock
+        Assert.Null(map.GoldTime); // making sure test tests what it should even tho its a mock
     }
 
     [Fact]
     public void UpdateAutosaveDetail_ReplayMapAuthorTimeNull_Throws()
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_GoldTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
+        var map = new CGameCtnChallenge
+        {
+            GoldTime = new TimeInt32(300),
+            SilverTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69
+        };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
         // Act & Assert
         Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
-        Assert.Null(map.TMObjective_AuthorTime); // making sure test tests what it should even tho its a mock
-    }
-
-    [Fact]
-    public void UpdateAutosaveDetail_ReplayMapAuthorScoreNull_Throws()
-    {
-        // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(200);
-        map.TMObjective_GoldTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-
-        var scanner = Arrange_UpdateAutosaveDetail(map);
-
-        // Act & Assert
-        Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
-        Assert.Null(map.AuthorScore); // making sure test tests what it should even tho its a mock
+        Assert.Null(map.AuthorTime); // making sure test tests what it should even tho its a mock
     }
 
     [Theory]
@@ -523,13 +515,15 @@ public class AutosaveScannerTests
     public void UpdateAutosaveDetail_ExpectedMapCarName_AddsAutosaveDetailWithExpectedMapCarName(string givenCar, string expectedCar)
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(200);
-        map.TMObjective_GoldTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
-        map.PlayerModel = new Ident(givenCar, "Vehicles", "Nadeo");
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(200),
+            GoldTime = new TimeInt32(300),
+            SilverTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69,
+            PlayerModel = new Ident(givenCar, new("Vehicles"), "Nadeo")
+        };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
@@ -545,13 +539,15 @@ public class AutosaveScannerTests
     public void UpdateAutosaveDetail_NoPlayerModel_AddsAutosaveDetailWithExpectedMapCarName()
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(200);
-        map.TMObjective_GoldTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
-        map.Collection = "Stadium";
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(200),
+            GoldTime = new TimeInt32(300),
+            SilverTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
@@ -569,14 +565,16 @@ public class AutosaveScannerTests
     public void UpdateAutosaveDetail_NoPlayerModelId_AddsAutosaveDetailWithExpectedMapCarName(string givenCar, string expectedCar)
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(200);
-        map.TMObjective_GoldTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
-        map.Collection = "Stadium";
-        map.PlayerModel = new Ident(givenCar, "Vehicles", "Nadeo");
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(200),
+            GoldTime = new TimeInt32(300),
+            SilverTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69,
+            PlayerModel = new Ident(givenCar, new("Vehicles"), "Nadeo")
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
@@ -592,26 +590,28 @@ public class AutosaveScannerTests
     public void UpdateAutosaveDetail_HasGhost_AddsAutosaveDetailWithStuntsScoreAndRespawns()
     {
         // Arrange
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.TMObjective_AuthorTime = new TimeInt32(200);
-        map.TMObjective_GoldTime = new TimeInt32(300);
-        map.TMObjective_SilverTime = new TimeInt32(400);
-        map.TMObjective_BronzeTime = new TimeInt32(500);
-        map.AuthorScore = 69;
-        map.Collection = "Stadium";
-        map.PlayerModel = new Ident("StadiumCar", "Vehicles", "Nadeo");
+        var map = new CGameCtnChallenge
+        {
+            AuthorTime = new TimeInt32(200),
+            GoldTime = new TimeInt32(300),
+            SilverTime = new TimeInt32(400),
+            BronzeTime = new TimeInt32(500),
+            AuthorScore = 69,
+            PlayerModel = new Ident("StadiumCar", new("Vehicles"), "Nadeo")
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
+        var ghost = new CGameCtnGhost();
         ghost.StuntScore = 69;
         ghost.Respawns = 69;
 
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("time", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new TimeInt32(690));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Time))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new TimeInt32(690)]);
         typeof(CGameCtnReplayRecord).GetField("challengeData", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, Array.Empty<byte>());
         typeof(CGameCtnReplayRecord).GetField("challenge", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, map);
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new CGameCtnGhost[] { ghost });
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ImmutableList.Create(ghost)]);
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.Parse(It.IsAny<Stream>())).Returns(replay);
 
@@ -627,7 +627,7 @@ public class AutosaveScannerTests
         var logger = Mock.Of<ILogger>();
 
         var scanner = new AutosaveScanner(events, watcher, filePathManager, config, fileSystem, mockGbx.Object, logger);
-        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>()));
+        scanner.AutosaveHeaders.TryAdd("uid", new AutosaveHeader("Replay.Gbx", new CGameCtnReplayRecord()));
 
         // Act
         scanner.UpdateAutosaveDetail("uid");

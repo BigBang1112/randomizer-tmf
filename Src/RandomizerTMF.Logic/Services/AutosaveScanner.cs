@@ -237,12 +237,12 @@ public class AutosaveScanner : IAutosaveScanner
         }
 
         var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
-        var mapEnv = (string)replay.Challenge.Collection;
-        var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new ImportantPropertyNullException("Bronze time is null.");
-        var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new ImportantPropertyNullException("Silver time is null.");
-        var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new ImportantPropertyNullException("Gold time is null.");
-        var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new ImportantPropertyNullException("Author time is null.");
-        var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new ImportantPropertyNullException("AuthorScore is null.");
+        var mapEnv = (string?)replay.Challenge.Collection;
+        var mapBronzeTime = replay.Challenge.BronzeTime ?? throw new ImportantPropertyNullException("Bronze time is null.");
+        var mapSilverTime = replay.Challenge.SilverTime ?? throw new ImportantPropertyNullException("Silver time is null.");
+        var mapGoldTime = replay.Challenge.GoldTime ?? throw new ImportantPropertyNullException("Gold time is null.");
+        var mapAuthorTime = replay.Challenge.AuthorTime ?? throw new ImportantPropertyNullException("Author time is null.");
+        var mapAuthorScore = replay.Challenge.AuthorScore;
         var mapMode = replay.Challenge.Mode;
         var mapCarPure = replay.Challenge.PlayerModel?.Id;
         var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
