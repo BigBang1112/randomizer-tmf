@@ -231,7 +231,7 @@ public class SessionTests
         var cts = new CancellationTokenSource();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -273,7 +273,7 @@ public class SessionTests
         var cts = new CancellationTokenSource();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -318,7 +318,7 @@ public class SessionTests
         };
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var ghosts = ImmutableList.Create(ghost);
         typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ghosts]);
@@ -372,7 +372,7 @@ public class SessionTests
         };
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var ghosts = ImmutableList.Create(ghost);
         typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ghosts]);
@@ -431,7 +431,7 @@ public class SessionTests
         var fileSystem = new MockFileSystem();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem);
 
@@ -466,7 +466,7 @@ public class SessionTests
         };
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -509,7 +509,7 @@ public class SessionTests
         };
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var ghosts = ImmutableList.Create(ghost);
         typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ghosts]);

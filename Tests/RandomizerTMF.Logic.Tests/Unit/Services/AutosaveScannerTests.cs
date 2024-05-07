@@ -210,7 +210,7 @@ public class AutosaveScannerTests
         var watcher = Mock.Of<IFileSystemWatcher>();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", "Stadium", "bigbang1112")]);
 
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(replay);
@@ -240,7 +240,7 @@ public class AutosaveScannerTests
         var watcher = Mock.Of<IFileSystemWatcher>();
 
         var replay = new CGameCtnReplayRecord();
-        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", new("Stadium"), "bigbang1112")]);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("uid", "Stadium", "bigbang1112")]);
 
         var mockGbx = new Mock<IGbxService>();
         mockGbx.Setup(x => x.ParseHeader(It.IsAny<Stream>())).Returns(replay);
@@ -522,7 +522,7 @@ public class AutosaveScannerTests
             SilverTime = new TimeInt32(400),
             BronzeTime = new TimeInt32(500),
             AuthorScore = 69,
-            PlayerModel = new Ident(givenCar, new("Vehicles"), "Nadeo")
+            PlayerModel = new Ident(givenCar, "Vehicles", "Nadeo")
         };
 
         var scanner = Arrange_UpdateAutosaveDetail(map);
@@ -572,7 +572,7 @@ public class AutosaveScannerTests
             SilverTime = new TimeInt32(400),
             BronzeTime = new TimeInt32(500),
             AuthorScore = 69,
-            PlayerModel = new Ident(givenCar, new("Vehicles"), "Nadeo")
+            PlayerModel = new Ident(givenCar, "Vehicles", "Nadeo")
         };
         map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 
@@ -597,7 +597,7 @@ public class AutosaveScannerTests
             SilverTime = new TimeInt32(400),
             BronzeTime = new TimeInt32(500),
             AuthorScore = 69,
-            PlayerModel = new Ident("StadiumCar", new("Vehicles"), "Nadeo")
+            PlayerModel = new Ident("StadiumCar", "Vehicles", "Nadeo")
         };
         map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 
