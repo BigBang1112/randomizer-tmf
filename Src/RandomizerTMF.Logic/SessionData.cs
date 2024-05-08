@@ -141,4 +141,44 @@ public class SessionData
 
         Save();
     }
+
+    public double GetScore()
+    {
+        var hasFinishedMaps = Maps.Count > 0 && Maps.Any(x => x.LastTimestamp.HasValue);
+
+        if (!hasFinishedMaps)
+        {
+            return 0;
+        }
+
+        var score = 0;
+        
+        foreach (var map in Maps)
+        {
+            if (map.Result == Constants.AuthorMedal)
+            {
+                score += 5;
+                continue;
+            }
+
+            if (map.Result == Constants.GoldMedal)
+            {
+                score += 1;
+                continue;
+            }
+
+            if (map.Result == Constants.Skipped)
+            {
+                score -= 3;
+                continue;
+            }
+        }
+
+        var lengthInMinutes = Maps.Last(x => x.LastTimestamp.HasValue)
+            .LastTimestamp
+            .GetValueOrDefault()
+            .TotalMinutes;
+
+        return score / lengthInMinutes * ((int)lengthInMinutes);
+    }
 }

@@ -45,6 +45,23 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     public bool HasAutosavesScanned => autosaveScanner.HasAutosavesScanned;
     public int AutosaveScanCount => autosaveScanner.AutosaveHeaders.Count;
 
+    public bool TopSessions
+    {
+        get => config.TopSessions;
+        set
+        {
+            config.TopSessions = value;
+
+            this.RaisePropertyChanged(nameof(TopSessions));
+
+            config.Save();
+            
+            Sessions = config.TopSessions
+                ? new(sessions.OrderByDescending(x => x.Data.GetScore()))
+                : new(sessions.OrderByDescending(x => x.Data.StartedAt));
+        }
+    }
+
     public DashboardWindowViewModel(TopBarViewModel topBarViewModel,
                                     IRandomizerEngine engine,
                                     IRandomizerConfig config,
@@ -82,7 +99,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         sessions.Clear();
 
-        var sessionsTask = ScanSessionsAsync();
+        var sessionsTask = ScanSessionsAsync(config.TopSessions);
 
         var anythingChanged = await ScanAutosavesAsync();
 
@@ -94,7 +111,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         await sessionsTask;
     }
     
-    private async Task ScanSessionsAsync()
+    private async Task ScanSessionsAsync(bool top)
     {
         foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
         {
@@ -126,6 +143,27 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 continue;
             }
             
+            if (top)
+            {
+                var sessionDataScore = sessionData.GetScore();
+
+                for (int i = 0; i < sessions.Count; i++)
+                {
+                    if (sessions[i].Data.GetScore() < sessionDataScore)
+                    {
+                        sessions.Insert(i, sessionDataModel);
+                        break;
+                    }
+
+                    if (i == sessions.Count - 1)
+                    {
+                        sessions.Add(sessionDataModel);
+                        break;
+                    }
+                }
+                continue;
+            }
+
             // insert by date
             for (int i = 0; i < sessions.Count; i++)
             {

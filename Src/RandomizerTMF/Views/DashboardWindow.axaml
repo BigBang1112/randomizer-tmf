@@ -64,6 +64,7 @@
 				<TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
 					Your sessions:
 				</TextBlock>
+				<ToggleButton IsChecked="{Binding TopSessions}" Grid.Row="2" FontSize="10">TOP</ToggleButton>
 				<Border Grid.Row="3" Width="250" BorderThickness="2">
 					<Border.BorderBrush>
 						<SolidColorBrush Color="Gray" Opacity="0.5"/>
