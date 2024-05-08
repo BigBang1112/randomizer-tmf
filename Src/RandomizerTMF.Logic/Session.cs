@@ -53,9 +53,9 @@ public class Session : ISession
 
     // This "trilogy" handles the storage of played maps. If the player didn't receive at least gold and didn't skip it, it is not counted in the progress.
     // It may (?) be better to wrap the CGameCtnChallenge into "CompletedMap" and have status of it being "gold", "author", or "skipped", and better handle that to make it script-friendly.
-    public Dictionary<string, SessionMap> GoldMaps { get; } = new();
-    public Dictionary<string, SessionMap> AuthorMaps { get; } = new();
-    public Dictionary<string, SessionMap> SkippedMaps { get; } = new();
+    public Dictionary<string, SessionMap> GoldMaps { get; } = [];
+    public Dictionary<string, SessionMap> AuthorMaps { get; } = [];
+    public Dictionary<string, SessionMap> SkippedMaps { get; } = [];
 
     public StreamWriter? LogWriter { get; set; }
 

@@ -5,13 +5,13 @@ namespace RandomizerTMF.Logic;
 
 public static class Yaml
 {
-    public static IReadOnlyCollection<IYamlTypeConverter> TypeConverters { get; } = new List<IYamlTypeConverter>
-    {
+    public static IReadOnlyCollection<IYamlTypeConverter> TypeConverters { get; } =
+    [
         new DateOnlyConverter(),
         new DateTimeOffsetConverter(),
         new TimeInt32Converter(),
         new Int3Converter()
-    };
+    ];
 
     public static ISerializer Serializer { get; } = CreateSerializerBuilder().Build();
     public static IDeserializer Deserializer { get; } = CreateDeserializerBuilder().Build();

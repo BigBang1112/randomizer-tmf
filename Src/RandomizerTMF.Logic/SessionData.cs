@@ -24,7 +24,7 @@ public class SessionData
     [YamlIgnore]
     public string DirectoryPath { get; }
 
-    public List<SessionDataMap> Maps { get; set; } = new();
+    public List<SessionDataMap> Maps { get; set; } = [];
 
     public SessionData() : this(version: null, // will be overwriten by deserialization
                                 DateTimeOffset.Now, // will be overwriten by deserialization

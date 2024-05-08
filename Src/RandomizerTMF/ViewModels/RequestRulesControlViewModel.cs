@@ -157,7 +157,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Snow) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Snow);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Snow);
@@ -178,7 +178,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Desert) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Desert);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Desert);
@@ -199,7 +199,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Rally) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Rally);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Rally);
@@ -220,7 +220,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Island) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Island);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Island);
@@ -241,7 +241,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Coast) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Coast);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Coast);
@@ -262,7 +262,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Bay) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Bay);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Bay);
@@ -283,7 +283,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Environment?.Contains(EEnvironment.Stadium) == true;
         set
         {
-            config.Rules.RequestRules.Environment ??= new();
+            config.Rules.RequestRules.Environment ??= [];
 
             if (value) config.Rules.RequestRules.Environment.Add(EEnvironment.Stadium);
             else config.Rules.RequestRules.Environment.Remove(EEnvironment.Stadium);
@@ -304,7 +304,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Snow) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Snow);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Snow);
@@ -325,7 +325,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Desert) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Desert);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Desert);
@@ -346,7 +346,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Rally) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Rally);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Rally);
@@ -367,7 +367,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Island) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Island);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Island);
@@ -388,7 +388,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Coast) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Coast);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Coast);
@@ -409,7 +409,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Bay) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Bay);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Bay);
@@ -430,7 +430,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Vehicle?.Contains(EEnvironment.Stadium) == true;
         set
         {
-            config.Rules.RequestRules.Vehicle ??= new();
+            config.Rules.RequestRules.Vehicle ??= [];
 
             if (value) config.Rules.RequestRules.Vehicle.Add(EEnvironment.Stadium);
             else config.Rules.RequestRules.Vehicle.Remove(EEnvironment.Stadium);
@@ -451,7 +451,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Difficulty?.Contains(EDifficulty.Beginner) == true;
         set
         {
-            config.Rules.RequestRules.Difficulty ??= new();
+            config.Rules.RequestRules.Difficulty ??= [];
 
             if (value) config.Rules.RequestRules.Difficulty.Add(EDifficulty.Beginner);
             else config.Rules.RequestRules.Difficulty.Remove(EDifficulty.Beginner);
@@ -472,7 +472,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Difficulty?.Contains(EDifficulty.Intermediate) == true;
         set
         {
-            config.Rules.RequestRules.Difficulty ??= new();
+            config.Rules.RequestRules.Difficulty ??= [];
 
             if (value) config.Rules.RequestRules.Difficulty.Add(EDifficulty.Intermediate);
             else config.Rules.RequestRules.Difficulty.Remove(EDifficulty.Intermediate);
@@ -493,7 +493,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Difficulty?.Contains(EDifficulty.Expert) == true;
         set
         {
-            config.Rules.RequestRules.Difficulty ??= new();
+            config.Rules.RequestRules.Difficulty ??= [];
 
             if (value) config.Rules.RequestRules.Difficulty.Add(EDifficulty.Expert);
             else config.Rules.RequestRules.Difficulty.Remove(EDifficulty.Expert);
@@ -514,7 +514,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Difficulty?.Contains(EDifficulty.Lunatic) == true;
         set
         {
-            config.Rules.RequestRules.Difficulty ??= new();
+            config.Rules.RequestRules.Difficulty ??= [];
 
             if (value) config.Rules.RequestRules.Difficulty.Add(EDifficulty.Lunatic);
             else config.Rules.RequestRules.Difficulty.Remove(EDifficulty.Lunatic);
@@ -535,7 +535,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Routes?.Contains(ERoutes.Single) == true;
         set
         {
-            config.Rules.RequestRules.Routes ??= new();
+            config.Rules.RequestRules.Routes ??= [];
 
             if (value) config.Rules.RequestRules.Routes.Add(ERoutes.Single);
             else config.Rules.RequestRules.Routes.Remove(ERoutes.Single);
@@ -556,7 +556,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Routes?.Contains(ERoutes.Multi) == true;
         set
         {
-            config.Rules.RequestRules.Routes ??= new();
+            config.Rules.RequestRules.Routes ??= [];
 
             if (value) config.Rules.RequestRules.Routes.Add(ERoutes.Multi);
             else config.Rules.RequestRules.Routes.Remove(ERoutes.Multi);
@@ -577,7 +577,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Routes?.Contains(ERoutes.Symmetric) == true;
         set
         {
-            config.Rules.RequestRules.Routes ??= new();
+            config.Rules.RequestRules.Routes ??= [];
 
             if (value) config.Rules.RequestRules.Routes.Add(ERoutes.Symmetric);
             else config.Rules.RequestRules.Routes.Remove(ERoutes.Symmetric);
@@ -598,7 +598,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Mood?.Contains(EMood.Sunrise) == true;
         set
         {
-            config.Rules.RequestRules.Mood ??= new();
+            config.Rules.RequestRules.Mood ??= [];
 
             if (value) config.Rules.RequestRules.Mood.Add(EMood.Sunrise);
             else config.Rules.RequestRules.Mood.Remove(EMood.Sunrise);
@@ -619,7 +619,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Mood?.Contains(EMood.Day) == true;
         set
         {
-            config.Rules.RequestRules.Mood ??= new();
+            config.Rules.RequestRules.Mood ??= [];
 
             if (value) config.Rules.RequestRules.Mood.Add(EMood.Day);
             else config.Rules.RequestRules.Mood.Remove(EMood.Day);
@@ -640,7 +640,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Mood?.Contains(EMood.Sunset) == true;
         set
         {
-            config.Rules.RequestRules.Mood ??= new();
+            config.Rules.RequestRules.Mood ??= [];
 
             if (value) config.Rules.RequestRules.Mood.Add(EMood.Sunset);
             else config.Rules.RequestRules.Mood.Remove(EMood.Sunset);
@@ -661,7 +661,7 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         get => config.Rules.RequestRules.Mood?.Contains(EMood.Night) == true;
         set
         {
-            config.Rules.RequestRules.Mood ??= new();
+            config.Rules.RequestRules.Mood ??= [];
 
             if (value) config.Rules.RequestRules.Mood.Add(EMood.Night);
             else config.Rules.RequestRules.Mood.Remove(EMood.Night);

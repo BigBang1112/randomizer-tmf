@@ -12,7 +12,7 @@ namespace RandomizerTMF.ViewModels;
 
 internal class SessionDataViewModel : WindowWithTopBarViewModelBase
 {
-    private ObservableCollection<SessionDataReplayModel> replays = new();
+    private ObservableCollection<SessionDataReplayModel> replays = [];
     private SessionDataMapModel? selectedMap;
 
     public SessionDataModel Model { get; }
@@ -58,7 +58,7 @@ internal class SessionDataViewModel : WindowWithTopBarViewModelBase
         }
     }
 
-    public bool IsOpenReplaysFolderEnabled => Maps.Any(x => x.Map.Replays.Any());
+    public bool IsOpenReplaysFolderEnabled => Maps.Any(x => x.Map.Replays.Count != 0);
 
     /// <summary>
     /// Should be only used for window preview
@@ -66,8 +66,8 @@ internal class SessionDataViewModel : WindowWithTopBarViewModelBase
     public SessionDataViewModel() : this(new(), new(new()
     {
         StartedAt = DateTimeOffset.Now,
-        Maps = new List<SessionDataMap>()
-            {
+        Maps =
+            [
                 new()
                 {
                     Name = "ShortBang United #025",
@@ -86,7 +86,7 @@ internal class SessionDataViewModel : WindowWithTopBarViewModelBase
                     TmxLink = "https://tmuf.exchange/trackshow/4796141",
                     Uid = "tNSGl9lBHsZFCQUAOa7UyUYGLmb"
                 }
-            }
+            ]
     }))
     {
         TopBarViewModel.Title = "Session";

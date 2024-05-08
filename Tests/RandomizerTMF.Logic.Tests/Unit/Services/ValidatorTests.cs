@@ -134,7 +134,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Environment = new() { env }
+                    Environment = [env]
                 }
             }
         };
@@ -169,8 +169,8 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Environment = new() { env },
-                    Vehicle = new() { vehicle }
+                    Environment = [env],
+                    Vehicle = [vehicle]
                 }
             }
         };
@@ -211,7 +211,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Vehicle = new() { env }
+                    Vehicle = [env]
                 }
             }
         };
@@ -327,7 +327,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Environment = new() { env }
+                    Environment = [env]
                 }
             }
         };
@@ -367,7 +367,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Vehicle = new() { env }
+                    Vehicle = [env]
                 }
             }
         };
@@ -491,7 +491,7 @@ public class ValidatorTests
         var autosaveScanner = mockAutosaveScanner.Object;
 
         var mockAdditionalData = new Mock<IAdditionalData>();
-        mockAdditionalData.SetupGet(x => x.MapSizes).Returns(new Dictionary<string, HashSet<Int3>>());
+        mockAdditionalData.SetupGet(x => x.MapSizes).Returns([]);
         var additionalData = mockAdditionalData.Object;
         
         var config = new RandomizerConfig();
@@ -554,7 +554,7 @@ public class ValidatorTests
         {
             { "Rally", new HashSet<Int3> { (45, 32, 45) } }
         });
-        mockAdditionalData.SetupGet(x => x.OfficialBlocks).Returns(new Dictionary<string, HashSet<string>>());
+        mockAdditionalData.SetupGet(x => x.OfficialBlocks).Returns([]);
         var additionalData = mockAdditionalData.Object;
 
         var config = new RandomizerConfig();
@@ -601,7 +601,7 @@ public class ValidatorTests
             ChallengeParameters = new CGameCtnChallengeParameters(),
             MapUid = "mapuid",
             Size = (45, 32, 45),
-            Blocks = new List<CGameCtnBlock> { new() { Name = "Unassigned1" } }
+            Blocks = [new() { Name = "Unassigned1" }]
         };
         map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 
@@ -638,7 +638,7 @@ public class ValidatorTests
             ChallengeParameters = new CGameCtnChallengeParameters(),
             MapUid = "mapuid",
             Size = (45, 32, 45),
-            Blocks = new List<CGameCtnBlock> { new() { Name = "Unassigned1" } }
+            Blocks = [new() { Name = "Unassigned1" }]
         };
         map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 

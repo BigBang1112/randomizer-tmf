@@ -11,8 +11,8 @@ public class RequestRules
 {
     private static readonly ESite[] siteValues = Enum.GetValues<ESite>();
     private static readonly EEnvironment[] envValues = Enum.GetValues<EEnvironment>();
-    private static readonly EEnvironment[] sunriseEnvValues = new [] { EEnvironment.Island, EEnvironment.Bay, EEnvironment.Coast };
-    private static readonly EEnvironment[] originalEnvValues = new [] { EEnvironment.Desert, EEnvironment.Snow, EEnvironment.Rally };
+    private static readonly EEnvironment[] sunriseEnvValues = [EEnvironment.Island, EEnvironment.Bay, EEnvironment.Coast];
+    private static readonly EEnvironment[] originalEnvValues = [EEnvironment.Desert, EEnvironment.Snow, EEnvironment.Rally];
 
     // Custom rules that are not part of the official API
 
@@ -207,7 +207,7 @@ public class RequestRules
 
     private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(IRandomGenerator random, HashSet<EEnvironment>? container, ESite site)
     {
-        return new HashSet<EEnvironment>() { GetRandomEnvironment(random, container, site) };
+        return [GetRandomEnvironment(random, container, site)];
     }
 
     private static ESite GetRandomSite(IRandomGenerator random, ESite[] matchingSites)
@@ -345,7 +345,7 @@ public class RequestRules
         var envCount = r.ReadInt32();
         if (envCount > 0)
         {
-            Environment = new HashSet<EEnvironment>();
+            Environment = [];
             for (var i = 0; i < envCount; i++)
             {
                 Environment.Add((EEnvironment)r.ReadInt32());
@@ -355,7 +355,7 @@ public class RequestRules
         var vehCount = r.ReadInt32();
         if (vehCount > 0)
         {
-            Vehicle = new HashSet<EEnvironment>();
+            Vehicle = [];
             for (var i = 0; i < vehCount; i++)
             {
                 Vehicle.Add((EEnvironment)r.ReadInt32());
@@ -368,7 +368,7 @@ public class RequestRules
         var moodCount = r.ReadInt32();
         if (moodCount > 0)
         {
-            Mood = new HashSet<EMood>();
+            Mood = [];
             for (var i = 0; i < moodCount; i++)
             {
                 Mood.Add((EMood)r.ReadInt32());
@@ -377,7 +377,7 @@ public class RequestRules
         var diffCount = r.ReadInt32();
         if (diffCount > 0)
         {
-            Difficulty = new HashSet<EDifficulty>();
+            Difficulty = [];
             for (var i = 0; i < diffCount; i++)
             {
                 Difficulty.Add((EDifficulty)r.ReadInt32());
@@ -386,7 +386,7 @@ public class RequestRules
         var routeCount = r.ReadInt32();
         if (routeCount > 0)
         {
-            Routes = new HashSet<ERoutes>();
+            Routes = [];
             for (var i = 0; i < routeCount; i++)
             {
                 Routes.Add((ERoutes)r.ReadInt32());

@@ -8,7 +8,7 @@ public class SessionDataMap : ISessionMap
     public required string Name { get; init; }
     public required string Uid { get; init; }
     public required string TmxLink { get; init; }
-    public List<SessionDataReplay> Replays { get; set; } = new();
+    public List<SessionDataReplay> Replays { get; set; } = [];
     public string? Result { get; set; }
     public TimeSpan? LastTimestamp { get; set; }
 

@@ -14,8 +14,8 @@ namespace RandomizerTMF.ViewModels;
 
 internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 {
-    private ObservableCollection<AutosaveModel> autosaves = new();
-    private ObservableCollection<SessionDataModel> sessions = new();
+    private ObservableCollection<AutosaveModel> autosaves = [];
+    private ObservableCollection<SessionDataModel> sessions = [];
     private readonly IRandomizerEngine engine;
     private readonly IRandomizerConfig config;
     private readonly IValidator validator;
@@ -254,13 +254,13 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         discord.Idle();
         discord.SessionState();
 
-        App.Modules = new Window[]
-        {
+        App.Modules =
+        [
             OpenModule<ControlModuleWindow, ControlModuleWindowViewModel>(config.Modules.Control),
             OpenModule<StatusModuleWindow, StatusModuleWindowViewModel>(config.Modules.Status),
             OpenModule<ProgressModuleWindow, ProgressModuleWindowViewModel>(config.Modules.Progress),
             OpenModule<HistoryModuleWindow, HistoryModuleWindowViewModel>(config.Modules.History)
-        };
+        ];
 
         Window.Close();
     }

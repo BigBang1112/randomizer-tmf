@@ -601,9 +601,11 @@ public class AutosaveScannerTests
         };
         map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 
-        var ghost = new CGameCtnGhost();
-        ghost.StuntScore = 69;
-        ghost.Respawns = 69;
+        var ghost = new CGameCtnGhost
+        {
+            StuntScore = 69,
+            Respawns = 69
+        };
 
         var events = Mock.Of<IRandomizerEvents>();
         var watcher = Mock.Of<IFileSystemWatcher>();
