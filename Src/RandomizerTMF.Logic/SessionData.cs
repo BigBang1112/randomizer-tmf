@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Services;
 using System.IO.Abstractions;
+using System.Security.Cryptography;
 using TmEssentials;
 using YamlDotNet.Serialization;
 
@@ -82,7 +83,14 @@ public class SessionData
     {
         logger?.LogInformation("Saving the session data into file...");
 
-        fileSystem?.File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
+        if (fileSystem is not null)
+        {
+            fileSystem.File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
+
+            using var fs = fileSystem.File.Create(Path.Combine(DirectoryPath, Constants.SessionBin));
+            using var writer = new BinaryWriter(fs);
+            Serialize(writer);
+        }
 
         logger?.LogInformation("Session data saved.");
     }
@@ -180,5 +188,34 @@ public class SessionData
             .TotalMinutes;
 
         return score / lengthInMinutes * ((int)lengthInMinutes);
+    }
+
+    public void Serialize(BinaryWriter writer)
+    {
+        writer.Write("RandTMF");
+        writer.Write((byte)0); // version
+        
+        using var aes = Aes.Create();
+        aes.GenerateKey();
+        aes.GenerateIV();
+
+        writer.Write(aes.Key);
+        writer.Write(aes.IV);
+
+        using var enc = aes.CreateEncryptor();
+
+        using var crypto = new CryptoStream(writer.BaseStream, enc, CryptoStreamMode.Write);
+        using var w = new BinaryWriter(crypto);
+
+        w.Write(Version ?? "");
+        w.Write(StartedAt.ToUnixTimeSeconds());
+
+        Rules.Serialize(w);
+
+        w.Write(Maps.Count);
+        foreach (var map in Maps)
+        {
+            map.Serialize(w);
+        }
     }
 }

@@ -267,4 +267,72 @@ public class RequestRules
             b.Append(val);
         }
     }
+
+    public void Serialize(BinaryWriter writer)
+    {
+        writer.Write((int)Site);
+        writer.Write(EqualEnvironmentDistribution);
+        writer.Write(EqualVehicleDistribution);
+        writer.Write(Author ?? string.Empty);
+        writer.Write(Environment?.Count ?? 0);
+        if (Environment is not null)
+        {
+            foreach (var env in Environment)
+            {
+                writer.Write((int)env);
+            }
+        }
+        writer.Write(Name ?? string.Empty);
+        writer.Write(Vehicle?.Count ?? 0);
+        if (Vehicle is not null)
+        {
+            foreach (var veh in Vehicle)
+            {
+                writer.Write((int)veh);
+            }
+        }
+        writer.Write(PrimaryType.HasValue ? (int)PrimaryType.Value : 255);
+        writer.Write(Tag.HasValue ? (int)Tag.Value : 255);
+        writer.Write(Mood?.Count ?? 0);
+        if (Mood is not null)
+        {
+            foreach (var mood in Mood)
+            {
+                writer.Write((int)mood);
+            }
+        }
+        writer.Write(Difficulty?.Count ?? 0);
+        if (Difficulty is not null)
+        {
+            foreach (var diff in Difficulty)
+            {
+                writer.Write((int)diff);
+            }
+        }
+        writer.Write(Routes?.Count ?? 0);
+        if (Routes is not null)
+        {
+            foreach (var route in Routes)
+            {
+                writer.Write((int)route);
+            }
+        }
+        writer.Write(LbType.HasValue ? (int)LbType.Value : 255);
+        writer.Write(InBeta.HasValue ? Convert.ToByte(InBeta.Value) : 255);
+        writer.Write(InPlayLater.HasValue ? Convert.ToByte(InPlayLater.Value) : 255);
+        writer.Write(InFeatured.HasValue ? Convert.ToByte(InFeatured.Value) : 255);
+        writer.Write(InSupporter.HasValue ? Convert.ToByte(InSupporter.Value) : 255);
+        writer.Write(InFavorite.HasValue ? Convert.ToByte(InFavorite.Value) : 255);
+        writer.Write(InDownloads.HasValue ? Convert.ToByte(InDownloads.Value) : 255);
+        writer.Write(InReplays.HasValue ? Convert.ToByte(InReplays.Value) : 255);
+        writer.Write(InEnvmix.HasValue ? Convert.ToByte(InEnvmix.Value) : 255);
+        writer.Write(InHasRecord.HasValue ? Convert.ToByte(InHasRecord.Value) : 255);
+        writer.Write(InLatestAuthor.HasValue ? Convert.ToByte(InLatestAuthor.Value) : 255);
+        writer.Write(InLatestAwardedAuthor.HasValue ? Convert.ToByte(InLatestAwardedAuthor.Value) : 255);
+        writer.Write(InScreenshot.HasValue ? Convert.ToByte(InScreenshot.Value) : 255);
+        writer.Write(UploadedBefore?.ToString("yyyy-MM-dd") ?? string.Empty);
+        writer.Write(UploadedAfter?.ToString("yyyy-MM-dd") ?? string.Empty);
+        writer.Write(AuthorTimeMin?.TotalMilliseconds ?? 0);
+        writer.Write(AuthorTimeMax?.TotalMilliseconds ?? 0);
+    }
 }

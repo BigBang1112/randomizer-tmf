@@ -11,4 +11,18 @@ public class SessionDataMap : ISessionMap
     public List<SessionDataReplay> Replays { get; set; } = new();
     public string? Result { get; set; }
     public TimeSpan? LastTimestamp { get; set; }
+
+    public void Serialize(BinaryWriter writer)
+    {
+        writer.Write(Name);
+        writer.Write(Uid);
+        writer.Write(TmxLink);
+        writer.Write(Replays.Count);
+        foreach (var replay in Replays)
+        {
+            replay.Serialize(writer);
+        }
+        writer.Write(Result ?? "");
+        writer.Write(LastTimestamp?.Ticks ?? -1);
+    }
 }
