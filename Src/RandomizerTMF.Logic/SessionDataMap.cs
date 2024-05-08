@@ -25,4 +25,26 @@ public class SessionDataMap : ISessionMap
         writer.Write(Result ?? "");
         writer.Write(LastTimestamp?.Ticks ?? -1);
     }
+
+    public static SessionDataMap Deserialize(BinaryReader reader)
+    {
+        var map = new SessionDataMap
+        {
+            Name = reader.ReadString(),
+            Uid = reader.ReadString(),
+            TmxLink = reader.ReadString()
+        };
+
+        var replayCount = reader.ReadInt32();
+        for (var i = 0; i < replayCount; i++)
+        {
+            map.Replays.Add(SessionDataReplay.Deserialize(reader));
+        }
+
+        map.Result = reader.ReadString();
+        var lastTimestampTicks = reader.ReadInt64();
+        map.LastTimestamp = lastTimestampTicks == -1 ? null : TimeSpan.FromTicks(lastTimestampTicks);
+
+        return map;
+    }
 }

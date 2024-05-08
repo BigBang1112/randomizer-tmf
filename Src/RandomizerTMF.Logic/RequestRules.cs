@@ -335,4 +335,96 @@ public class RequestRules
         writer.Write(AuthorTimeMin?.TotalMilliseconds ?? 0);
         writer.Write(AuthorTimeMax?.TotalMilliseconds ?? 0);
     }
+
+    public void Deserialize(BinaryReader r)
+    {
+        Site = (ESite)r.ReadInt32();
+        EqualEnvironmentDistribution = r.ReadBoolean();
+        EqualVehicleDistribution = r.ReadBoolean();
+        Author = r.ReadString();
+        var envCount = r.ReadInt32();
+        if (envCount > 0)
+        {
+            Environment = new HashSet<EEnvironment>();
+            for (var i = 0; i < envCount; i++)
+            {
+                Environment.Add((EEnvironment)r.ReadInt32());
+            }
+        }
+        Name = r.ReadString();
+        var vehCount = r.ReadInt32();
+        if (vehCount > 0)
+        {
+            Vehicle = new HashSet<EEnvironment>();
+            for (var i = 0; i < vehCount; i++)
+            {
+                Vehicle.Add((EEnvironment)r.ReadInt32());
+            }
+        }
+        var primaryType = r.ReadInt32();
+        PrimaryType = primaryType == 255 ? null : (EPrimaryType)primaryType;
+        var tag = r.ReadInt32();
+        Tag = tag == 255 ? null : (ETag)tag;
+        var moodCount = r.ReadInt32();
+        if (moodCount > 0)
+        {
+            Mood = new HashSet<EMood>();
+            for (var i = 0; i < moodCount; i++)
+            {
+                Mood.Add((EMood)r.ReadInt32());
+            }
+        }
+        var diffCount = r.ReadInt32();
+        if (diffCount > 0)
+        {
+            Difficulty = new HashSet<EDifficulty>();
+            for (var i = 0; i < diffCount; i++)
+            {
+                Difficulty.Add((EDifficulty)r.ReadInt32());
+            }
+        }
+        var routeCount = r.ReadInt32();
+        if (routeCount > 0)
+        {
+            Routes = new HashSet<ERoutes>();
+            for (var i = 0; i < routeCount; i++)
+            {
+                Routes.Add((ERoutes)r.ReadInt32());
+            }
+        }
+        var lbType = r.ReadInt32();
+        LbType = lbType == 255 ? null : (ELbType)lbType;
+        var inBeta = r.ReadByte();
+        InBeta = inBeta == 255 ? null : Convert.ToBoolean(inBeta);
+        var inPlayLater = r.ReadByte();
+        InPlayLater = inPlayLater == 255 ? null : Convert.ToBoolean(inPlayLater);
+        var inFeatured = r.ReadByte();
+        InFeatured = inFeatured == 255 ? null : Convert.ToBoolean(inFeatured);
+        var inSupporter = r.ReadByte();
+        InSupporter = inSupporter == 255 ? null : Convert.ToBoolean(inSupporter);
+        var inFavorite = r.ReadByte();
+        InFavorite = inFavorite == 255 ? null : Convert.ToBoolean(inFavorite);
+        var inDownloads = r.ReadByte();
+        InDownloads = inDownloads == 255 ? null : Convert.ToBoolean(inDownloads);
+        var inReplays = r.ReadByte();
+        InReplays = inReplays == 255 ? null : Convert.ToBoolean(inReplays);
+        var inEnvmix = r.ReadByte();
+        InEnvmix = inEnvmix == 255 ? null : Convert.ToBoolean(inEnvmix);
+        var inHasRecord = r.ReadByte();
+        InHasRecord = inHasRecord == 255 ? null : Convert.ToBoolean(inHasRecord);
+        var inLatestAuthor = r.ReadByte();
+        InLatestAuthor = inLatestAuthor == 255 ? null : Convert.ToBoolean(inLatestAuthor);
+        var inLatestAwardedAuthor = r.ReadByte();
+        InLatestAwardedAuthor = inLatestAwardedAuthor == 255 ? null : Convert.ToBoolean(inLatestAwardedAuthor);
+        var inScreenshot = r.ReadByte();
+        InScreenshot = inScreenshot == 255 ? null : Convert.ToBoolean(inScreenshot);
+        var uploadedBefore = r.ReadString();
+        UploadedBefore = string.IsNullOrEmpty(uploadedBefore) ? null : DateOnly.Parse(uploadedBefore);
+        var uploadedAfter = r.ReadString();
+        UploadedAfter = string.IsNullOrEmpty(uploadedAfter) ? null : DateOnly.Parse(uploadedAfter);
+        var authorTimeMin = r.ReadDouble();
+        AuthorTimeMin = authorTimeMin == 0 ? null : new TimeInt32((int)authorTimeMin);
+        var authorTimeMax = r.ReadDouble();
+        AuthorTimeMax = authorTimeMax == 0 ? null : new TimeInt32((int)authorTimeMax);
+    }
 }

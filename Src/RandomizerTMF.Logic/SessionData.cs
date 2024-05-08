@@ -218,4 +218,41 @@ public class SessionData
             map.Serialize(w);
         }
     }
+
+    public void Deserialize(BinaryReader reader)
+    {
+        var magic = reader.ReadBytes(8);
+        if (!magic.SequenceEqual(new byte[] { 7, (byte)'R', (byte)'a', (byte)'n', (byte)'d', (byte)'T', (byte)'M', (byte)'F' }))
+        {
+            throw new InvalidDataException("Invalid magic number.");
+        }
+
+        var version = reader.ReadByte();
+        if (version != 0)
+        {
+            throw new InvalidDataException("Invalid version.");
+        }
+
+        using var aes = Aes.Create();
+        aes.Key = reader.ReadBytes(aes.Key.Length);
+        aes.IV = reader.ReadBytes(aes.IV.Length);
+
+        using var dec = aes.CreateDecryptor();
+
+        using var crypto = new CryptoStream(reader.BaseStream, dec, CryptoStreamMode.Read);
+        using var r = new BinaryReader(crypto);
+
+        Version = r.ReadString();
+        StartedAt = DateTimeOffset.FromUnixTimeSeconds(r.ReadInt64());
+
+        Rules = new();
+        Rules.Deserialize(r);
+
+        Maps.Clear();
+        var mapsCount = r.ReadInt32();
+        for (var i = 0; i < mapsCount; i++)
+        {
+            Maps.Add(SessionDataMap.Deserialize(r));
+        }
+    }
 }

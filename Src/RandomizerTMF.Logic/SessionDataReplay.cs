@@ -10,4 +10,13 @@ public class SessionDataReplay
         writer.Write(FileName);
         writer.Write(Timestamp.Ticks);
     }
+
+    public static SessionDataReplay Deserialize(BinaryReader reader)
+    {
+        return new SessionDataReplay
+        {
+            FileName = reader.ReadString(),
+            Timestamp = TimeSpan.FromTicks(reader.ReadInt64())
+        };
+    }
 }

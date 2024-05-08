@@ -20,4 +20,11 @@ public class RandomizerRules
         writer.Write(NoUnlimiter);
         RequestRules.Serialize(writer);
     }
+
+    public void Deserialize(BinaryReader r)
+    {
+        TimeLimit = TimeSpan.FromTicks(r.ReadInt64());
+        NoUnlimiter = r.ReadBoolean();
+        RequestRules.Deserialize(r);
+    }
 }
