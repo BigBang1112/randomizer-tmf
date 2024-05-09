@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic.Services;
 using System.IO.Abstractions;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using TmEssentials;
 using YamlDotNet.Serialization;
@@ -205,7 +206,8 @@ public class SessionData
         using var enc = aes.CreateEncryptor();
 
         using var crypto = new CryptoStream(writer.BaseStream, enc, CryptoStreamMode.Write);
-        using var w = new BinaryWriter(crypto);
+        using var deflate = new DeflateStream(crypto, CompressionLevel.Fastest);
+        using var w = new BinaryWriter(deflate);
 
         w.Write(Version ?? "");
         w.Write(StartedAt.ToUnixTimeSeconds());
@@ -240,7 +242,8 @@ public class SessionData
         using var dec = aes.CreateDecryptor();
 
         using var crypto = new CryptoStream(reader.BaseStream, dec, CryptoStreamMode.Read);
-        using var r = new BinaryReader(crypto);
+        using var inflate = new DeflateStream(crypto, CompressionMode.Decompress);
+        using var r = new BinaryReader(inflate);
 
         Version = r.ReadString();
         StartedAt = DateTimeOffset.FromUnixTimeSeconds(r.ReadInt64());
