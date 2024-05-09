@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic;
@@ -61,6 +62,8 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 : new(sessions.OrderByDescending(x => x.Data.StartedAt));
         }
     }
+
+    public Thickness HasAutosavesScannedThickness => HasAutosavesScanned ? new Thickness(1) : new Thickness(0);
 
     public DashboardWindowViewModel(TopBarViewModel topBarViewModel,
                                     IRandomizerEngine engine,
@@ -197,6 +200,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         Autosaves = new(GetAutosaveModels());
 
         this.RaisePropertyChanged(nameof(HasAutosavesScanned));
+        this.RaisePropertyChanged(nameof(HasAutosavesScannedThickness));
 
         return anythingChanged.Result;
     }

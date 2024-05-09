@@ -147,7 +147,7 @@
 				<Border Grid.Row="4" Grid.Column="1"
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
-					BorderThickness="1"
+					BorderThickness="{Binding HasAutosavesScannedThickness}"
 					BorderBrush="#00FF68"
 					CornerRadius="3">
 					<Button HorizontalAlignment="Stretch"
