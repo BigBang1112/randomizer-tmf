@@ -291,8 +291,8 @@ public class RequestRules
                 writer.Write((int)veh);
             }
         }
-        writer.Write(PrimaryType.HasValue ? (int)PrimaryType.Value : 255);
-        writer.Write(Tag.HasValue ? (int)Tag.Value : 255);
+        writer.Write(PrimaryType.HasValue ? (int)PrimaryType.Value : -1);
+        writer.Write(Tag.HasValue ? (int)Tag.Value : -1);
         writer.Write(Mood?.Count ?? 0);
         if (Mood is not null)
         {
@@ -317,19 +317,19 @@ public class RequestRules
                 writer.Write((int)route);
             }
         }
-        writer.Write(LbType.HasValue ? (int)LbType.Value : 255);
-        writer.Write(InBeta.HasValue ? Convert.ToByte(InBeta.Value) : 255);
-        writer.Write(InPlayLater.HasValue ? Convert.ToByte(InPlayLater.Value) : 255);
-        writer.Write(InFeatured.HasValue ? Convert.ToByte(InFeatured.Value) : 255);
-        writer.Write(InSupporter.HasValue ? Convert.ToByte(InSupporter.Value) : 255);
-        writer.Write(InFavorite.HasValue ? Convert.ToByte(InFavorite.Value) : 255);
-        writer.Write(InDownloads.HasValue ? Convert.ToByte(InDownloads.Value) : 255);
-        writer.Write(InReplays.HasValue ? Convert.ToByte(InReplays.Value) : 255);
-        writer.Write(InEnvmix.HasValue ? Convert.ToByte(InEnvmix.Value) : 255);
-        writer.Write(InHasRecord.HasValue ? Convert.ToByte(InHasRecord.Value) : 255);
-        writer.Write(InLatestAuthor.HasValue ? Convert.ToByte(InLatestAuthor.Value) : 255);
-        writer.Write(InLatestAwardedAuthor.HasValue ? Convert.ToByte(InLatestAwardedAuthor.Value) : 255);
-        writer.Write(InScreenshot.HasValue ? Convert.ToByte(InScreenshot.Value) : 255);
+        writer.Write(LbType.HasValue ? (int)LbType.Value : -1);
+        writer.Write(InBeta.HasValue ? Convert.ToByte(InBeta.Value) : (byte)255);
+        writer.Write(InPlayLater.HasValue ? Convert.ToByte(InPlayLater.Value) : (byte)255);
+        writer.Write(InFeatured.HasValue ? Convert.ToByte(InFeatured.Value) : (byte)255);
+        writer.Write(InSupporter.HasValue ? Convert.ToByte(InSupporter.Value) : (byte)255);
+        writer.Write(InFavorite.HasValue ? Convert.ToByte(InFavorite.Value) : (byte)255);
+        writer.Write(InDownloads.HasValue ? Convert.ToByte(InDownloads.Value) : (byte)255);
+        writer.Write(InReplays.HasValue ? Convert.ToByte(InReplays.Value) : (byte)255);
+        writer.Write(InEnvmix.HasValue ? Convert.ToByte(InEnvmix.Value) : (byte)255);
+        writer.Write(InHasRecord.HasValue ? Convert.ToByte(InHasRecord.Value) : (byte)255);
+        writer.Write(InLatestAuthor.HasValue ? Convert.ToByte(InLatestAuthor.Value) : (byte)255);
+        writer.Write(InLatestAwardedAuthor.HasValue ? Convert.ToByte(InLatestAwardedAuthor.Value) : (byte)255);
+        writer.Write(InScreenshot.HasValue ? Convert.ToByte(InScreenshot.Value) : (byte)255);
         writer.Write(UploadedBefore?.ToString("yyyy-MM-dd") ?? string.Empty);
         writer.Write(UploadedAfter?.ToString("yyyy-MM-dd") ?? string.Empty);
         writer.Write(AuthorTimeMin?.TotalMilliseconds ?? 0);
@@ -362,9 +362,9 @@ public class RequestRules
             }
         }
         var primaryType = r.ReadInt32();
-        PrimaryType = primaryType == 255 ? null : (EPrimaryType)primaryType;
+        PrimaryType = primaryType == -1 ? null : (EPrimaryType)primaryType;
         var tag = r.ReadInt32();
-        Tag = tag == 255 ? null : (ETag)tag;
+        Tag = tag == -1 ? null : (ETag)tag;
         var moodCount = r.ReadInt32();
         if (moodCount > 0)
         {
@@ -393,7 +393,7 @@ public class RequestRules
             }
         }
         var lbType = r.ReadInt32();
-        LbType = lbType == 255 ? null : (ELbType)lbType;
+        LbType = lbType == -1 ? null : (ELbType)lbType;
         var inBeta = r.ReadByte();
         InBeta = inBeta == 255 ? null : Convert.ToBoolean(inBeta);
         var inPlayLater = r.ReadByte();
@@ -422,9 +422,9 @@ public class RequestRules
         UploadedBefore = string.IsNullOrEmpty(uploadedBefore) ? null : DateOnly.Parse(uploadedBefore);
         var uploadedAfter = r.ReadString();
         UploadedAfter = string.IsNullOrEmpty(uploadedAfter) ? null : DateOnly.Parse(uploadedAfter);
-        var authorTimeMin = r.ReadDouble();
-        AuthorTimeMin = authorTimeMin == 0 ? null : new TimeInt32((int)authorTimeMin);
-        var authorTimeMax = r.ReadDouble();
-        AuthorTimeMax = authorTimeMax == 0 ? null : new TimeInt32((int)authorTimeMax);
+        var authorTimeMin = r.ReadInt32();
+        AuthorTimeMin = authorTimeMin == 0 ? null : TimeInt32.FromMilliseconds(authorTimeMin);
+        var authorTimeMax = r.ReadInt32();
+        AuthorTimeMax = authorTimeMax == 0 ? null : TimeInt32.FromMilliseconds(authorTimeMax);
     }
 }

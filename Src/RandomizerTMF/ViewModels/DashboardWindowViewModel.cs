@@ -118,9 +118,13 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
         {
+            var sessionBin = Path.Combine(dir, "Session.bin");
             var sessionYml = Path.Combine(dir, "Session.yml");
+            var sessionBinExists = File.Exists(sessionBin);
+            var sessionYmlExists = File.Exists(sessionYml);
+            var hasSessionFile = sessionBinExists || sessionYmlExists;
 
-            if (!File.Exists(sessionYml))
+            if (!hasSessionFile)
             {
                 continue;
             }
@@ -128,15 +132,42 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             SessionData sessionData;
             SessionDataModel sessionDataModel;
 
-            try
+            if (!sessionBinExists && sessionYmlExists)
             {
                 var sessionYmlContent = await File.ReadAllTextAsync(sessionYml);
                 sessionData = Yaml.Deserializer.Deserialize<SessionData>(sessionYmlContent);
+                using var fs = File.Create(sessionBin);
+                using var writer = new BinaryWriter(fs);
+                sessionData.Serialize(writer);
+            }
+
+            try
+            {
+                if (sessionBinExists)
+                {
+                    using var fs = File.OpenRead(sessionBin);
+                    using var reader = new BinaryReader(fs);
+                    sessionData = new SessionData();
+                    sessionData.Deserialize(reader);
+                }
+                else
+                {
+                    throw new Exception("Session.bin not found");
+                }
+
                 sessionDataModel = new SessionDataModel(sessionData);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
+                if (sessionBinExists)
+                {
+                    logger.LogError(ex, "Corrupted Session.bin in '{session}'", Path.GetFileName(dir));
+                }
+                else
+                {
+                    logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
+                }
+
                 continue;
             }
 

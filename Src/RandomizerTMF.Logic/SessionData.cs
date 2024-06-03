@@ -86,7 +86,7 @@ public class SessionData
 
         if (fileSystem is not null)
         {
-            fileSystem.File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
+            //fileSystem.File.WriteAllText(Path.Combine(DirectoryPath, Constants.SessionYml), Yaml.Serializer.Serialize(this));
 
             using var fs = fileSystem.File.Create(Path.Combine(DirectoryPath, Constants.SessionBin));
             using var writer = new BinaryWriter(fs);
@@ -96,17 +96,17 @@ public class SessionData
         logger?.LogInformation("Session data saved.");
     }
 
-    internal void InternalSetReadOnlySessionYml()
+    internal void InternalSetReadOnlySessionBin()
     {
-        var sessionYmlFile = Path.Combine(DirectoryPath, Constants.SessionYml);
-        fileSystem?.File.SetAttributes(sessionYmlFile, fileSystem.File.GetAttributes(sessionYmlFile) | FileAttributes.ReadOnly);
+        var sessionBinFile = Path.Combine(DirectoryPath, Constants.SessionBin);
+        fileSystem?.File.SetAttributes(sessionBinFile, fileSystem.File.GetAttributes(sessionBinFile) | FileAttributes.ReadOnly);
     }
 
-    public void SetReadOnlySessionYml()
+    public void SetReadOnlySessionBin()
     {
         try
         {
-            InternalSetReadOnlySessionYml();
+            InternalSetReadOnlySessionBin();
         }
         catch (Exception ex)
         {

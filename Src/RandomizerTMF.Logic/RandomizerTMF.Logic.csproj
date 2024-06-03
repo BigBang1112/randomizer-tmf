@@ -13,11 +13,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
-		<PackageReference Include="GBX.NET" Version="2.0.2" />
+		<PackageReference Include="GBX.NET" Version="2.0.3" />
 		<PackageReference Include="GBX.NET.LZO" Version="2.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
 		<PackageReference Include="System.IO.Abstractions" Version="21.0.2" />
-		<PackageReference Include="YamlDotNet" Version="15.1.2" />
+		<PackageReference Include="YamlDotNet" Version="15.1.6" />
 	</ItemGroup>
 
 	<ItemGroup>

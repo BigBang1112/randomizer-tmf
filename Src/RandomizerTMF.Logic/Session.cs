@@ -423,7 +423,7 @@ public class Session : ISession
     {
         StopTrackingMap();
         Watch.Stop();
-        Data?.SetReadOnlySessionYml();
+        Data?.SetReadOnlySessionBin();
         LogWriter?.Dispose();
     }
 
