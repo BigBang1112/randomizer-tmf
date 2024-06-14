@@ -23,7 +23,7 @@ public class SessionData
     public string StartedAtText => StartedAt.ToString("yyyy-MM-dd HH_mm_ss");
     
     [YamlIgnore]
-    public string DirectoryPath { get; }
+    public string DirectoryPath { get; private set; }
 
     public List<SessionDataMap> Maps { get; set; } = [];
 
@@ -252,6 +252,7 @@ public class SessionData
         var startedAtTicks = r.ReadInt64();
         var startedAtOffset = r.ReadInt16();
         StartedAt = new DateTimeOffset(startedAtTicks, TimeSpan.FromMinutes(startedAtOffset));
+        DirectoryPath = Path.Combine(FilePathManager.SessionsDirectoryPath, StartedAtText);
 
         Rules = new();
         Rules.Deserialize(r);
