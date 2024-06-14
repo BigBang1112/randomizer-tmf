@@ -13,7 +13,7 @@ internal class HistoryModuleWindowViewModel : ModuleWindowViewModelBase
     private readonly IRandomizerEngine engine;
     private readonly IRandomizerEvents events;
     
-    private ObservableCollection<PlayedMapModel> playedMaps = new();
+    private ObservableCollection<PlayedMapModel> playedMaps = [];
 
     public ObservableCollection<PlayedMapModel> PlayedMaps
     {

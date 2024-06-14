@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using GBX.NET;
+using GBX.NET.LZO;
+using Microsoft.Extensions.Logging;
 using System.IO.Abstractions;
 
 namespace RandomizerTMF.Logic.Services;
@@ -47,7 +49,7 @@ public class RandomizerEngine : IRandomizerEngine
 
         logger.LogInformation("Predefining LZO algorithm...");
 
-        GBX.NET.Lzo.SetLzo(typeof(GBX.NET.LZO.MiniLZO));
+        Gbx.LZO = new MiniLZO();
 
         logger.LogInformation("Randomizer TMF initialized.");
 

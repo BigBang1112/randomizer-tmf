@@ -13,4 +13,18 @@ public class RandomizerRules
         PrimaryType = EPrimaryType.Race,
         AuthorTimeMax = TimeInt32.FromMinutes(3)
     };
+
+    public void Serialize(BinaryWriter writer)
+    {
+        writer.Write(TimeLimit.Ticks);
+        writer.Write(NoUnlimiter);
+        RequestRules.Serialize(writer);
+    }
+
+    public void Deserialize(BinaryReader r)
+    {
+        TimeLimit = TimeSpan.FromTicks(r.ReadInt64());
+        NoUnlimiter = r.ReadBoolean();
+        RequestRules.Deserialize(r);
+    }
 }

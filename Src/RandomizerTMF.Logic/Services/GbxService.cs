@@ -1,22 +1,23 @@
 ﻿using GBX.NET;
+using GBX.NET.Engines.MwFoundations;
 
 namespace RandomizerTMF.Logic.Services;
 
 public interface IGbxService
 {
-    Node? Parse(Stream stream);
-    Node? ParseHeader(Stream stream);
+    CMwNod? Parse(Stream stream);
+    CMwNod? ParseHeader(Stream stream);
 }
 
 public class GbxService : IGbxService
 {
-    public Node? Parse(Stream stream)
+    public CMwNod? Parse(Stream stream)
     {
-        return GameBox.ParseNode(stream);
+        return Gbx.ParseNode(stream);
     }
 
-    public Node? ParseHeader(Stream stream)
+    public CMwNod? ParseHeader(Stream stream)
     {
-        return GameBox.ParseNodeHeader(stream);
+        return Gbx.ParseHeaderNode(stream);
     }
 }

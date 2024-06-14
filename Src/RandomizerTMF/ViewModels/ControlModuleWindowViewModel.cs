@@ -82,6 +82,6 @@ internal class ControlModuleWindowViewModel : ModuleWindowViewModelBase
             module.Close();
         }
 
-        App.Modules = Array.Empty<Avalonia.Controls.Window>();
+        App.Modules = [];
     }
 }

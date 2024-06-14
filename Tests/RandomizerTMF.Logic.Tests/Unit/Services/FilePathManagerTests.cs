@@ -173,7 +173,7 @@ public class FilePathManagerTests
         var manager = new FilePathManager(config, fileSystem);
         
         var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var expectedUserDataDirectoryPath = $"{myDocuments}{slash}TmForever";
+        var expectedUserDataDirectoryPath = string.IsNullOrEmpty(myDocuments) ? "TmForever" : $"{myDocuments}{slash}TmForever";
 
         // Act
         var result = manager.UpdateGameDirectory(gameDirectoryPath);
@@ -232,7 +232,7 @@ public class FilePathManagerTests
         var manager = new FilePathManager(config, fileSystem);
 
         var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var expectedUserDataDirectoryPath = $"{myDocuments}{slash}TmForever";
+        var expectedUserDataDirectoryPath = string.IsNullOrEmpty(myDocuments) ? "TmForever" : $"{myDocuments}{slash}TmForever";
 
         // Act
         var result = manager.UpdateGameDirectory(gameDirectoryPath);
@@ -263,7 +263,7 @@ public class FilePathManagerTests
         var manager = new FilePathManager(config, fileSystem);
 
         var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var expectedUserDataDirectoryPath = $"{myDocuments}{slash}TmForever";
+        var expectedUserDataDirectoryPath = string.IsNullOrEmpty(myDocuments) ? "TmForever" : $"{myDocuments}{slash}TmForever";
 
         // Act
         var result = manager.UpdateGameDirectory(gameDirectoryPath);

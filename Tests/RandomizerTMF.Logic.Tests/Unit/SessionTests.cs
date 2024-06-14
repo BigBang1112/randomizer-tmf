@@ -3,12 +3,9 @@ using GBX.NET.Engines.Game;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RandomizerTMF.Logic.Services;
-using System.Diagnostics;
+using System.Collections.Immutable;
 using System.IO.Abstractions.TestingHelpers;
-using System.Reflection;
 using TmEssentials;
-using static GBX.NET.Engines.Hms.CHmsLightMapCache;
-using static GBX.NET.Engines.Plug.CPlugMaterialUserInst;
 
 namespace RandomizerTMF.Logic.Tests.Unit;
 
@@ -46,7 +43,7 @@ public class SessionTests
         var game = Mock.Of<ITMForever>();
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -71,7 +68,7 @@ public class SessionTests
         var game = Mock.Of<ITMForever>();
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -96,7 +93,7 @@ public class SessionTests
         var game = Mock.Of<ITMForever>();
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
 
         var cts = new CancellationTokenSource();
 
@@ -125,7 +122,7 @@ public class SessionTests
         var game = Mock.Of<ITMForever>();
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
-        var map = NodeInstance.Create<CGameCtnChallenge>();
+        var map = new CGameCtnChallenge();
 
         var cts = new CancellationTokenSource();
 
@@ -157,9 +154,11 @@ public class SessionTests
         var game = Mock.Of<ITMForever>();
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
-        
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "420uid";
+
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "420uid"
+        };
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -187,8 +186,10 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "420uid";
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "420uid"
+        };
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -214,15 +215,19 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "420uid";
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.ChallengeParameters.AuthorTime = null;
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "420uid",
+            ChallengeParameters = new CGameCtnChallengeParameters()
+            {
+                AuthorTime = null
+            }
+        };
 
         var cts = new CancellationTokenSource();
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -250,17 +255,21 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.Mode = CGameCtnChallenge.PlayMode.Race;
-        map.MapUid = "420uid";
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.ChallengeParameters.AuthorTime = new TimeInt32(69);
-        map.ChallengeParameters.GoldTime = new TimeInt32(420);
+        var map = new CGameCtnChallenge
+        {
+            Mode = CGameCtnChallenge.PlayMode.Race,
+            MapUid = "420uid",
+            ChallengeParameters = new CGameCtnChallengeParameters
+            {
+                AuthorTime = new TimeInt32(69),
+                GoldTime = new TimeInt32(420)
+            }
+        };
 
         var cts = new CancellationTokenSource();
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -287,22 +296,28 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.Mode = CGameCtnChallenge.PlayMode.Race;
-        map.MapUid = "420uid";
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.ChallengeParameters.AuthorTime = new TimeInt32(69);
+        var map = new CGameCtnChallenge
+        {
+            Mode = CGameCtnChallenge.PlayMode.Race,
+            MapUid = "420uid",
+            ChallengeParameters = new CGameCtnChallengeParameters
+            {
+                AuthorTime = new TimeInt32(69)
+            }
+        };
 
         var cts = new CancellationTokenSource();
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.RaceTime = new(42);
+        var ghost = new CGameCtnGhost
+        {
+            RaceTime = new(42)
+        };
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
-        var ghosts = new[] { ghost };
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, ghosts);
+        var ghosts = ImmutableList.Create(ghost);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ghosts]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -334,23 +349,29 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.Mode = CGameCtnChallenge.PlayMode.Race;
-        map.MapUid = "420uid";
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.ChallengeParameters.AuthorTime = new TimeInt32(69);
-        map.ChallengeParameters.GoldTime = new TimeInt32(420);
+        var map = new CGameCtnChallenge
+        {
+            Mode = CGameCtnChallenge.PlayMode.Race,
+            MapUid = "420uid",
+            ChallengeParameters = new CGameCtnChallengeParameters
+            {
+                AuthorTime = new TimeInt32(69),
+                GoldTime = new TimeInt32(420)
+            }
+        };
 
         var cts = new CancellationTokenSource();
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.RaceTime = new(128);
+        var ghost = new CGameCtnGhost
+        {
+            RaceTime = new(128)
+        };
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
-        var ghosts = new[] { ghost };
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, ghosts);
+        var ghosts = ImmutableList.Create(ghost);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ghosts]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -382,7 +403,7 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
+        var replay = new CGameCtnReplayRecord();
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem);
 
@@ -405,11 +426,8 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.RaceTime = new(128);
-
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem);
 
@@ -432,18 +450,19 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.Mode = CGameCtnChallenge.PlayMode.Race;
-        map.MapInfo = ("420uid", "Stadium", "bigbang1112");
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.ChallengeParameters.AuthorTime = new TimeInt32(69);
-        map.ChallengeParameters.GoldTime = new TimeInt32(420);
+        var map = new CGameCtnChallenge
+        {
+            Mode = CGameCtnChallenge.PlayMode.Race,
+            MapInfo = ("420uid", new("Stadium"), "bigbang1112"),
+            ChallengeParameters = new CGameCtnChallengeParameters
+            {
+                AuthorTime = new TimeInt32(69),
+                GoldTime = new TimeInt32(420)
+            }
+        };
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.RaceTime = new(128);
-
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {
@@ -469,21 +488,27 @@ public class SessionTests
         var logger = Mock.Of<ILogger>();
         var fileSystem = new MockFileSystem();
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.Mode = CGameCtnChallenge.PlayMode.Race;
-        map.MapInfo = ("mapuid", "Stadium", "bigbang1112");
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.ChallengeParameters.AuthorTime = new TimeInt32(69);
-        map.ChallengeParameters.GoldTime = new TimeInt32(420);
+        var map = new CGameCtnChallenge
+        {
+            Mode = CGameCtnChallenge.PlayMode.Race,
+            MapInfo = ("mapuid", new("Stadium"), "bigbang1112"),
+            ChallengeParameters = new CGameCtnChallengeParameters
+            {
+                AuthorTime = new TimeInt32(69),
+                GoldTime = new TimeInt32(420)
+            }
+        };
 
-        var ghost = NodeInstance.Create<CGameCtnGhost>();
-        ghost.RaceTime = new(128);
+        var ghost = new CGameCtnGhost
+        {
+            RaceTime = new(128)
+        };
 
-        var replay = NodeInstance.Create<CGameCtnReplayRecord>();
-        typeof(CGameCtnReplayRecord).GetField("mapInfo", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, new Ident("mapuid", "Stadium", "bigbang1112"));
+        var replay = new CGameCtnReplayRecord();
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.MapInfo))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [new Ident("mapuid", "Stadium", "bigbang1112")]);
 
-        var ghosts = new[] { ghost };
-        typeof(CGameCtnReplayRecord).GetField("ghosts", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(replay, ghosts);
+        var ghosts = ImmutableList.Create(ghost);
+        typeof(CGameCtnReplayRecord).GetProperty(nameof(CGameCtnReplayRecord.Ghosts))!.GetSetMethod(nonPublic: true)!.Invoke(replay, [ghosts]);
 
         var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem)
         {

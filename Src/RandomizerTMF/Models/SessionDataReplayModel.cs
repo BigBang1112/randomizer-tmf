@@ -35,7 +35,7 @@ public class SessionDataReplayModel
         Replay = replay;
 
         var path = Path.Combine(Constants.Sessions, sessionStr, Constants.Replays, replay.FileName);
-        var node = GameBox.ParseNode<CGameCtnReplayRecord>(path);
+        var node = Gbx.ParseNode<CGameCtnReplayRecord>(path);
 
         if (first)
         {

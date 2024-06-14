@@ -11,8 +11,8 @@ public class RequestRules
 {
     private static readonly ESite[] siteValues = Enum.GetValues<ESite>();
     private static readonly EEnvironment[] envValues = Enum.GetValues<EEnvironment>();
-    private static readonly EEnvironment[] sunriseEnvValues = new [] { EEnvironment.Island, EEnvironment.Bay, EEnvironment.Coast };
-    private static readonly EEnvironment[] originalEnvValues = new [] { EEnvironment.Desert, EEnvironment.Snow, EEnvironment.Rally };
+    private static readonly EEnvironment[] sunriseEnvValues = [EEnvironment.Island, EEnvironment.Bay, EEnvironment.Coast];
+    private static readonly EEnvironment[] originalEnvValues = [EEnvironment.Desert, EEnvironment.Snow, EEnvironment.Rally];
 
     // Custom rules that are not part of the official API
 
@@ -207,7 +207,7 @@ public class RequestRules
 
     private static HashSet<EEnvironment> GetRandomEnvironmentThroughSet(IRandomGenerator random, HashSet<EEnvironment>? container, ESite site)
     {
-        return new HashSet<EEnvironment>() { GetRandomEnvironment(random, container, site) };
+        return [GetRandomEnvironment(random, container, site)];
     }
 
     private static ESite GetRandomSite(IRandomGenerator random, ESite[] matchingSites)
@@ -266,5 +266,167 @@ public class RequestRules
         {
             b.Append(val);
         }
+    }
+
+    public void Serialize(BinaryWriter writer)
+    {
+        writer.Write((int)Site);
+        writer.Write(EqualEnvironmentDistribution);
+        writer.Write(EqualVehicleDistribution);
+        writer.Write(Author ?? string.Empty);
+        writer.Write(Environment?.Count ?? 0);
+        if (Environment is not null)
+        {
+            foreach (var env in Environment)
+            {
+                writer.Write((int)env);
+            }
+        }
+        writer.Write(Name ?? string.Empty);
+        writer.Write(Vehicle?.Count ?? 0);
+        if (Vehicle is not null)
+        {
+            foreach (var veh in Vehicle)
+            {
+                writer.Write((int)veh);
+            }
+        }
+        writer.Write(PrimaryType.HasValue ? (int)PrimaryType.Value : -1);
+        writer.Write(Tag.HasValue ? (int)Tag.Value : -1);
+        writer.Write(Mood?.Count ?? 0);
+        if (Mood is not null)
+        {
+            foreach (var mood in Mood)
+            {
+                writer.Write((int)mood);
+            }
+        }
+        writer.Write(Difficulty?.Count ?? 0);
+        if (Difficulty is not null)
+        {
+            foreach (var diff in Difficulty)
+            {
+                writer.Write((int)diff);
+            }
+        }
+        writer.Write(Routes?.Count ?? 0);
+        if (Routes is not null)
+        {
+            foreach (var route in Routes)
+            {
+                writer.Write((int)route);
+            }
+        }
+        writer.Write(LbType.HasValue ? (int)LbType.Value : -1);
+        writer.Write(InBeta.HasValue ? Convert.ToByte(InBeta.Value) : (byte)255);
+        writer.Write(InPlayLater.HasValue ? Convert.ToByte(InPlayLater.Value) : (byte)255);
+        writer.Write(InFeatured.HasValue ? Convert.ToByte(InFeatured.Value) : (byte)255);
+        writer.Write(InSupporter.HasValue ? Convert.ToByte(InSupporter.Value) : (byte)255);
+        writer.Write(InFavorite.HasValue ? Convert.ToByte(InFavorite.Value) : (byte)255);
+        writer.Write(InDownloads.HasValue ? Convert.ToByte(InDownloads.Value) : (byte)255);
+        writer.Write(InReplays.HasValue ? Convert.ToByte(InReplays.Value) : (byte)255);
+        writer.Write(InEnvmix.HasValue ? Convert.ToByte(InEnvmix.Value) : (byte)255);
+        writer.Write(InHasRecord.HasValue ? Convert.ToByte(InHasRecord.Value) : (byte)255);
+        writer.Write(InLatestAuthor.HasValue ? Convert.ToByte(InLatestAuthor.Value) : (byte)255);
+        writer.Write(InLatestAwardedAuthor.HasValue ? Convert.ToByte(InLatestAwardedAuthor.Value) : (byte)255);
+        writer.Write(InScreenshot.HasValue ? Convert.ToByte(InScreenshot.Value) : (byte)255);
+        writer.Write(UploadedBefore?.ToString("yyyy-MM-dd") ?? string.Empty);
+        writer.Write(UploadedAfter?.ToString("yyyy-MM-dd") ?? string.Empty);
+        writer.Write(AuthorTimeMin?.TotalMilliseconds ?? 0);
+        writer.Write(AuthorTimeMax?.TotalMilliseconds ?? 0);
+    }
+
+    public void Deserialize(BinaryReader r)
+    {
+        Site = (ESite)r.ReadInt32();
+        EqualEnvironmentDistribution = r.ReadBoolean();
+        EqualVehicleDistribution = r.ReadBoolean();
+        var author = r.ReadString();
+        Author = string.IsNullOrEmpty(author) ? null : author;
+        var envCount = r.ReadInt32();
+        if (envCount > 0)
+        {
+            Environment = [];
+            for (var i = 0; i < envCount; i++)
+            {
+                Environment.Add((EEnvironment)r.ReadInt32());
+            }
+        }
+        var name = r.ReadString();
+        Name = string.IsNullOrEmpty(name) ? null : name;
+        var vehCount = r.ReadInt32();
+        if (vehCount > 0)
+        {
+            Vehicle = [];
+            for (var i = 0; i < vehCount; i++)
+            {
+                Vehicle.Add((EEnvironment)r.ReadInt32());
+            }
+        }
+        var primaryType = r.ReadInt32();
+        PrimaryType = primaryType == -1 ? null : (EPrimaryType)primaryType;
+        var tag = r.ReadInt32();
+        Tag = tag == -1 ? null : (ETag)tag;
+        var moodCount = r.ReadInt32();
+        if (moodCount > 0)
+        {
+            Mood = [];
+            for (var i = 0; i < moodCount; i++)
+            {
+                Mood.Add((EMood)r.ReadInt32());
+            }
+        }
+        var diffCount = r.ReadInt32();
+        if (diffCount > 0)
+        {
+            Difficulty = [];
+            for (var i = 0; i < diffCount; i++)
+            {
+                Difficulty.Add((EDifficulty)r.ReadInt32());
+            }
+        }
+        var routeCount = r.ReadInt32();
+        if (routeCount > 0)
+        {
+            Routes = [];
+            for (var i = 0; i < routeCount; i++)
+            {
+                Routes.Add((ERoutes)r.ReadInt32());
+            }
+        }
+        var lbType = r.ReadInt32();
+        LbType = lbType == -1 ? null : (ELbType)lbType;
+        var inBeta = r.ReadByte();
+        InBeta = inBeta == 255 ? null : Convert.ToBoolean(inBeta);
+        var inPlayLater = r.ReadByte();
+        InPlayLater = inPlayLater == 255 ? null : Convert.ToBoolean(inPlayLater);
+        var inFeatured = r.ReadByte();
+        InFeatured = inFeatured == 255 ? null : Convert.ToBoolean(inFeatured);
+        var inSupporter = r.ReadByte();
+        InSupporter = inSupporter == 255 ? null : Convert.ToBoolean(inSupporter);
+        var inFavorite = r.ReadByte();
+        InFavorite = inFavorite == 255 ? null : Convert.ToBoolean(inFavorite);
+        var inDownloads = r.ReadByte();
+        InDownloads = inDownloads == 255 ? null : Convert.ToBoolean(inDownloads);
+        var inReplays = r.ReadByte();
+        InReplays = inReplays == 255 ? null : Convert.ToBoolean(inReplays);
+        var inEnvmix = r.ReadByte();
+        InEnvmix = inEnvmix == 255 ? null : Convert.ToBoolean(inEnvmix);
+        var inHasRecord = r.ReadByte();
+        InHasRecord = inHasRecord == 255 ? null : Convert.ToBoolean(inHasRecord);
+        var inLatestAuthor = r.ReadByte();
+        InLatestAuthor = inLatestAuthor == 255 ? null : Convert.ToBoolean(inLatestAuthor);
+        var inLatestAwardedAuthor = r.ReadByte();
+        InLatestAwardedAuthor = inLatestAwardedAuthor == 255 ? null : Convert.ToBoolean(inLatestAwardedAuthor);
+        var inScreenshot = r.ReadByte();
+        InScreenshot = inScreenshot == 255 ? null : Convert.ToBoolean(inScreenshot);
+        var uploadedBefore = r.ReadString();
+        UploadedBefore = string.IsNullOrEmpty(uploadedBefore) ? null : DateOnly.Parse(uploadedBefore);
+        var uploadedAfter = r.ReadString();
+        UploadedAfter = string.IsNullOrEmpty(uploadedAfter) ? null : DateOnly.Parse(uploadedAfter);
+        var authorTimeMin = r.ReadInt32();
+        AuthorTimeMin = authorTimeMin == 0 ? null : TimeInt32.FromMilliseconds(authorTimeMin);
+        var authorTimeMax = r.ReadInt32();
+        AuthorTimeMax = authorTimeMax == 0 ? null : TimeInt32.FromMilliseconds(authorTimeMax);
     }
 }

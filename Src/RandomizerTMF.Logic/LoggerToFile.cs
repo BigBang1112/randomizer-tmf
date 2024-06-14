@@ -12,17 +12,17 @@ public class LoggerToFile : ILogger
 
     public LoggerToFile(StreamWriter writer)
     {
-        Writers = ImmutableArray.Create(writer);
+        Writers = [writer];
     }
 
     public void SetSessionWriter(StreamWriter writer)
     {
-        Writers = ImmutableArray.Create(Writers[0], writer);
+        Writers = [Writers[0], writer];
     }
 
     public void RemoveSessionWriter()
     {
-        Writers = ImmutableArray.Create(Writers[0]);
+        Writers = [Writers[0]];
     }
 
     public IDisposable BeginScope<TState>(TState state) where TState : notnull

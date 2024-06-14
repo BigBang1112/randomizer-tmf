@@ -13,7 +13,7 @@ namespace RandomizerTMF
     {
         public static Window MainWindow { get; private set; } = default!;
 
-        public static Window[] Modules { get; set; } = Array.Empty<Window>();
+        public static Window[] Modules { get; set; } = [];
 
         public override void Initialize()
         {
@@ -58,7 +58,7 @@ namespace RandomizerTMF
             base.OnFrameworkInitializationCompleted();
         }
 
-        private bool IsValidGameDirectory(IFilePathManager filePathManager, string? gameDirectory)
+        private static bool IsValidGameDirectory(IFilePathManager filePathManager, string? gameDirectory)
         {
             return !string.IsNullOrWhiteSpace(gameDirectory) && filePathManager.UpdateGameDirectory(gameDirectory) is { NadeoIniException: null, TmForeverException: null };
         }

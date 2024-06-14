@@ -59,7 +59,7 @@
 					HorizontalAlignment="Center"
 					VerticalAlignment="Center"
 					Opacity="0.7">
-			<TextBlock IsVisible="{Binding !HasFinishedMaps}" Text="No maps finished"/>
+			<TextBlock IsVisible="{Binding !HasFinishedMaps}" Text="No maps completed"/>
 		</StackPanel>
 	</Grid>
 	

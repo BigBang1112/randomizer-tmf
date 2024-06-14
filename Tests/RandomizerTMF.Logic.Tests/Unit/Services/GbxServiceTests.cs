@@ -1,10 +1,17 @@
-﻿using GBX.NET.Engines.Game;
+﻿using GBX.NET;
+using GBX.NET.Engines.Game;
+using GBX.NET.LZO;
 using RandomizerTMF.Logic.Services;
 
 namespace RandomizerTMF.Logic.Tests.Unit.Services;
 
 public class GbxServiceTests
 {
+    public GbxServiceTests()
+    {
+        Gbx.LZO = new MiniLZO();
+    }
+
     [Fact]
     public async Task Parse_ValidMapGbx_ReturnsFullNode()
     {

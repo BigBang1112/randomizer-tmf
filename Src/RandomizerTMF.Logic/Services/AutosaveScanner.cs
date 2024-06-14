@@ -226,51 +226,58 @@ public class AutosaveScanner : IAutosaveScanner
 
         using var stream = fileSystem.File.OpenRead(autosavePath);
 
-        if (gbx.Parse(stream) is not CGameCtnReplayRecord { Time: not null } replay)
+        try
         {
-            return;
+            if (gbx.Parse(stream) is not CGameCtnReplayRecord { Time: not null } replay)
+            {
+                return;
+            }
+
+            if (replay.Challenge is null)
+            {
+                return;
+            }
+
+            var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
+            var mapEnv = (string?)replay.Challenge.Collection;
+            var mapBronzeTime = replay.Challenge.BronzeTime ?? throw new ImportantPropertyNullException("Bronze time is null.");
+            var mapSilverTime = replay.Challenge.SilverTime ?? throw new ImportantPropertyNullException("Silver time is null.");
+            var mapGoldTime = replay.Challenge.GoldTime ?? throw new ImportantPropertyNullException("Gold time is null.");
+            var mapAuthorTime = replay.Challenge.AuthorTime ?? throw new ImportantPropertyNullException("Author time is null.");
+            var mapAuthorScore = replay.Challenge.AuthorScore;
+            var mapMode = replay.Challenge.Mode;
+            var mapCarPure = replay.Challenge.PlayerModel?.Id;
+            var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
+
+            mapCar = mapCar switch
+            {
+                Constants.AlpineCar => Constants.SnowCar,
+                Constants.American or Constants.SpeedCar => Constants.DesertCar,
+                Constants.Rally => Constants.RallyCar,
+                Constants.SportCar => Constants.IslandCar,
+                _ => mapCar
+            };
+
+            var ghost = replay.GetGhosts(alsoInClips: false).FirstOrDefault();
+
+            AutosaveDetails[autosaveMapUid] = new(
+                replay.Time.Value,
+                Score: ghost?.StuntScore,
+                Respawns: ghost?.Respawns,
+                mapName,
+                mapEnv,
+                mapCar,
+                mapBronzeTime,
+                mapSilverTime,
+                mapGoldTime,
+                mapAuthorTime,
+                mapAuthorScore,
+                mapMode);
         }
-
-        if (replay.Challenge is null)
+        catch (Exception ex)
         {
-            return;
+            throw new AutosaveScannerException($"Error while updating autosave details for {Path.GetFileName(autosavePath)}.", ex);
         }
-
-        var mapName = TextFormatter.Deformat(replay.Challenge.MapName);
-        var mapEnv = (string)replay.Challenge.Collection;
-        var mapBronzeTime = replay.Challenge.TMObjective_BronzeTime ?? throw new ImportantPropertyNullException("Bronze time is null.");
-        var mapSilverTime = replay.Challenge.TMObjective_SilverTime ?? throw new ImportantPropertyNullException("Silver time is null.");
-        var mapGoldTime = replay.Challenge.TMObjective_GoldTime ?? throw new ImportantPropertyNullException("Gold time is null.");
-        var mapAuthorTime = replay.Challenge.TMObjective_AuthorTime ?? throw new ImportantPropertyNullException("Author time is null.");
-        var mapAuthorScore = replay.Challenge.AuthorScore ?? throw new ImportantPropertyNullException("AuthorScore is null.");
-        var mapMode = replay.Challenge.Mode;
-        var mapCarPure = replay.Challenge.PlayerModel?.Id;
-        var mapCar = string.IsNullOrEmpty(mapCarPure) ? $"{mapEnv}Car" : mapCarPure;
-
-        mapCar = mapCar switch
-        {
-            Constants.AlpineCar => Constants.SnowCar,
-            Constants.American or Constants.SpeedCar => Constants.DesertCar,
-            Constants.Rally => Constants.RallyCar,
-            Constants.SportCar => Constants.IslandCar,
-            _ => mapCar
-        };
-
-        var ghost = replay.GetGhosts(alsoInClips: false).FirstOrDefault();
-
-        AutosaveDetails[autosaveMapUid] = new(
-            replay.Time.Value,
-            Score: ghost?.StuntScore,
-            Respawns: ghost?.Respawns,
-            mapName,
-            mapEnv,
-            mapCar,
-            mapBronzeTime,
-            mapSilverTime,
-            mapGoldTime,
-            mapAuthorTime,
-            mapAuthorScore,
-            mapMode);
     }
 
     /// <summary>

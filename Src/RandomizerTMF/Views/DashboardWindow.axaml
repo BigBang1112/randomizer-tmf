@@ -64,6 +64,7 @@
 				<TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
 					Your sessions:
 				</TextBlock>
+				<ToggleButton IsChecked="{Binding TopSessions}" Grid.Row="2" FontSize="10">TOP</ToggleButton>
 				<Border Grid.Row="3" Width="250" BorderThickness="2">
 					<Border.BorderBrush>
 						<SolidColorBrush Color="Gray" Opacity="0.5"/>
@@ -142,15 +143,21 @@
 				<views:RequestRulesControl Grid.Row="1" Grid.Column="1" DataContext="{Binding RequestRulesControlViewModel}">
 					
 				</views:RequestRulesControl>
-
-				<Button Grid.Row="4" Grid.Column="1"
-						HorizontalAlignment="Stretch"
-						VerticalAlignment="Stretch"
-						HorizontalContentAlignment="Center"
-						VerticalContentAlignment="Center"
-						FontSize="24" FontWeight="Bold"
-						Command="{Binding StartModulesClick}"
-						IsEnabled="{Binding HasAutosavesScanned}">OPEN MODULES</Button>
+				
+				<Border Grid.Row="4" Grid.Column="1"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"
+					BorderThickness="{Binding HasAutosavesScannedThickness}"
+					BorderBrush="#00FF68"
+					CornerRadius="3">
+					<Button HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
+							HorizontalContentAlignment="Center"
+							VerticalContentAlignment="Center"
+							FontSize="24" FontWeight="Bold"
+							Command="{Binding StartModulesClick}"
+							IsEnabled="{Binding HasAutosavesScanned}">OPEN MODULES</Button>
+				</Border>
 			</Grid>
 			<Grid Grid.Column="2">
 				<Grid.RowDefinitions>

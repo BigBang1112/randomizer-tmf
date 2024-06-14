@@ -18,6 +18,7 @@ public interface IRandomizerConfig
     bool DisableAutosaveDetailScan { get; set; }
     bool DisableAutoSkip { get; set; }
     DiscordRichPresenceConfig DiscordRichPresence { get; set; }
+    bool TopSessions { get; set; }
 
     void Save();
 }
@@ -43,10 +44,12 @@ public class RandomizerConfig : IRandomizerConfig
 
     public int ReplayParseFailRetries { get; set; } = 10;
     public int ReplayParseFailDelayMs { get; set; } = 50;
-    public bool DisableAutosaveDetailScan { get; set; } = false;
-    public bool DisableAutoSkip { get; set; } = false;
+    public bool DisableAutosaveDetailScan { get; set; }
+    public bool DisableAutoSkip { get; set; }
 
     public DiscordRichPresenceConfig DiscordRichPresence { get; set; } = new();
+
+    public bool TopSessions { get; set; }
 
     public RandomizerConfig()
     {

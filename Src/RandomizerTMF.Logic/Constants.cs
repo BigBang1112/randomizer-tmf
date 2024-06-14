@@ -33,4 +33,6 @@ public static class Constants
     public const string RallyCar = "RallyCar";
     public const string SportCar = "SportCar";
     public const string IslandCar = "IslandCar";
+
+    public const string SessionBin = "Session.bin";
 }

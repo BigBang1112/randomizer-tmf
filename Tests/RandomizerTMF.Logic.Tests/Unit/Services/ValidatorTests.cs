@@ -1,5 +1,6 @@
 ﻿using GBX.NET;
 using GBX.NET.Engines.Game;
+using GBX.NET.Serialization.Chunking;
 using Moq;
 using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.Services;
@@ -133,7 +134,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Environment = new() { env }
+                    Environment = [env]
                 }
             }
         };
@@ -168,8 +169,8 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Environment = new() { env },
-                    Vehicle = new() { vehicle }
+                    Environment = [env],
+                    Vehicle = [vehicle]
                 }
             }
         };
@@ -210,7 +211,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Vehicle = new() { env }
+                    Vehicle = [env]
                 }
             }
         };
@@ -326,7 +327,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Environment = new() { env }
+                    Environment = [env]
                 }
             }
         };
@@ -366,7 +367,7 @@ public class ValidatorTests
                 RequestRules = new()
                 {
                     Site = site,
-                    Vehicle = new() { env }
+                    Vehicle = [env]
                 }
             }
         };
@@ -382,7 +383,7 @@ public class ValidatorTests
     public void ValidateMap_AutosavesContainUid_ReturnsFalse()
     {
         var autosaveHeaders = new ConcurrentDictionary<string, AutosaveHeader>();
-        autosaveHeaders["mapuid"] = new AutosaveHeader("path/to/file.Replay.Gbx", NodeInstance.Create<CGameCtnReplayRecord>());
+        autosaveHeaders["mapuid"] = new AutosaveHeader("path/to/file.Replay.Gbx", new CGameCtnReplayRecord());
 
         var mockAutosaveScanner = new Mock<IAutosaveScanner>();
         mockAutosaveScanner.SetupGet(x => x.AutosaveHeaders).Returns(autosaveHeaders);
@@ -393,8 +394,10 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid"
+        };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -420,9 +423,11 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid",
+            ChallengeParameters = new CGameCtnChallengeParameters()
+        };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -442,9 +447,11 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
-        map.Chunks.Add(new SkippableChunk<CGameCtnChallenge>(map, Array.Empty<byte>(), 0x3F001000));
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid"
+        };
+        map.Chunks.Add(new SkippableChunk(0x3F001000));
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -464,9 +471,11 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
-        map.Size = null;
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid",
+            Size = default
+        };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -482,17 +491,19 @@ public class ValidatorTests
         var autosaveScanner = mockAutosaveScanner.Object;
 
         var mockAdditionalData = new Mock<IAdditionalData>();
-        mockAdditionalData.SetupGet(x => x.MapSizes).Returns(new Dictionary<string, HashSet<Int3>>());
+        mockAdditionalData.SetupGet(x => x.MapSizes).Returns([]);
         var additionalData = mockAdditionalData.Object;
         
         var config = new RandomizerConfig();
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
-        map.Collection = "Rally";
-        map.Size = (45, 32, 45);
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid",
+            Size = (45, 32, 45)
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -518,10 +529,12 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
-        map.Collection = "Rally";
-        map.Size = (255, 32, 255);
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid",
+            Size = (255, 32, 255)
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -541,17 +554,19 @@ public class ValidatorTests
         {
             { "Rally", new HashSet<Int3> { (45, 32, 45) } }
         });
-        mockAdditionalData.SetupGet(x => x.OfficialBlocks).Returns(new Dictionary<string, HashSet<string>>());
+        mockAdditionalData.SetupGet(x => x.OfficialBlocks).Returns([]);
         var additionalData = mockAdditionalData.Object;
 
         var config = new RandomizerConfig();
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.MapUid = "mapuid";
-        map.Collection = "Rally";
-        map.Size = (45, 32, 45);
+        var map = new CGameCtnChallenge
+        {
+            MapUid = "mapuid",
+            Size = (45, 32, 45)
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -581,12 +596,14 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.MapUid = "mapuid";
-        map.Collection = "Rally";
-        map.Size = (45, 32, 45);
-        map.Blocks = new List<CGameCtnBlock> { CGameCtnBlock.Unassigned1 };
+        var map = new CGameCtnChallenge
+        {
+            ChallengeParameters = new CGameCtnChallengeParameters(),
+            MapUid = "mapuid",
+            Size = (45, 32, 45),
+            Blocks = [new() { Name = "Unassigned1" }]
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 
@@ -616,12 +633,14 @@ public class ValidatorTests
 
         var validator = new Validator(autosaveScanner, additionalData, config);
 
-        var map = NodeInstance.Create<CGameCtnChallenge>();
-        map.ChallengeParameters = NodeInstance.Create<CGameCtnChallengeParameters>();
-        map.MapUid = "mapuid";
-        map.Collection = "Rally";
-        map.Size = (45, 32, 45);
-        map.Blocks = new List<CGameCtnBlock> { CGameCtnBlock.Unassigned1 };
+        var map = new CGameCtnChallenge
+        {
+            ChallengeParameters = new CGameCtnChallengeParameters(),
+            MapUid = "mapuid",
+            Size = (45, 32, 45),
+            Blocks = [new() { Name = "Unassigned1" }]
+        };
+        map.MapInfo = map.MapInfo with { Collection = new("Rally") };
 
         var result = validator.ValidateMap(map, out string? invalidBlock);
 

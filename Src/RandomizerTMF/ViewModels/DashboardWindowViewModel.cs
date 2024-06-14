@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RandomizerTMF.Logic;
@@ -14,8 +15,8 @@ namespace RandomizerTMF.ViewModels;
 
 internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 {
-    private ObservableCollection<AutosaveModel> autosaves = new();
-    private ObservableCollection<SessionDataModel> sessions = new();
+    private ObservableCollection<AutosaveModel> autosaves = [];
+    private ObservableCollection<SessionDataModel> sessions = [];
     private readonly IRandomizerEngine engine;
     private readonly IRandomizerConfig config;
     private readonly IValidator validator;
@@ -44,6 +45,25 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
     public bool HasAutosavesScanned => autosaveScanner.HasAutosavesScanned;
     public int AutosaveScanCount => autosaveScanner.AutosaveHeaders.Count;
+
+    public bool TopSessions
+    {
+        get => config.TopSessions;
+        set
+        {
+            config.TopSessions = value;
+
+            this.RaisePropertyChanged(nameof(TopSessions));
+
+            config.Save();
+            
+            Sessions = config.TopSessions
+                ? new(sessions.OrderByDescending(x => x.Data.GetScore()))
+                : new(sessions.OrderByDescending(x => x.Data.StartedAt));
+        }
+    }
+
+    public Thickness HasAutosavesScannedThickness => HasAutosavesScanned ? new Thickness(1) : new Thickness(0);
 
     public DashboardWindowViewModel(TopBarViewModel topBarViewModel,
                                     IRandomizerEngine engine,
@@ -82,7 +102,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     {
         sessions.Clear();
 
-        var sessionsTask = ScanSessionsAsync();
+        var sessionsTask = ScanSessionsAsync(config.TopSessions);
 
         var anythingChanged = await ScanAutosavesAsync();
 
@@ -94,13 +114,17 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         await sessionsTask;
     }
     
-    private async Task ScanSessionsAsync()
+    private async Task ScanSessionsAsync(bool top)
     {
         foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
         {
+            var sessionBin = Path.Combine(dir, "Session.bin");
             var sessionYml = Path.Combine(dir, "Session.yml");
+            var sessionBinExists = File.Exists(sessionBin);
+            var sessionYmlExists = File.Exists(sessionYml);
+            var hasSessionFile = sessionBinExists || sessionYmlExists;
 
-            if (!File.Exists(sessionYml))
+            if (!hasSessionFile)
             {
                 continue;
             }
@@ -108,15 +132,43 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             SessionData sessionData;
             SessionDataModel sessionDataModel;
 
-            try
+            if (!sessionBinExists && sessionYmlExists)
             {
                 var sessionYmlContent = await File.ReadAllTextAsync(sessionYml);
                 sessionData = Yaml.Deserializer.Deserialize<SessionData>(sessionYmlContent);
+                using var fs = File.Create(sessionBin);
+                using var writer = new BinaryWriter(fs);
+                sessionData.Serialize(writer);
+                sessionBinExists = true;
+            }
+
+            try
+            {
+                if (sessionBinExists)
+                {
+                    using var fs = File.OpenRead(sessionBin);
+                    using var reader = new BinaryReader(fs);
+                    sessionData = new SessionData();
+                    sessionData.Deserialize(reader);
+                }
+                else
+                {
+                    throw new Exception("Session.bin not found");
+                }
+
                 sessionDataModel = new SessionDataModel(sessionData);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
+                if (sessionBinExists)
+                {
+                    logger.LogError(ex, "Corrupted Session.bin in '{session}'", Path.GetFileName(dir));
+                }
+                else
+                {
+                    logger.LogError(ex, "Corrupted Session.yml in '{session}'", Path.GetFileName(dir));
+                }
+
                 continue;
             }
 
@@ -126,6 +178,27 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 continue;
             }
             
+            if (top)
+            {
+                var sessionDataScore = sessionData.GetScore();
+
+                for (int i = 0; i < sessions.Count; i++)
+                {
+                    if (sessions[i].Data.GetScore() < sessionDataScore)
+                    {
+                        sessions.Insert(i, sessionDataModel);
+                        break;
+                    }
+
+                    if (i == sessions.Count - 1)
+                    {
+                        sessions.Add(sessionDataModel);
+                        break;
+                    }
+                }
+                continue;
+            }
+
             // insert by date
             for (int i = 0; i < sessions.Count; i++)
             {
@@ -159,6 +232,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         Autosaves = new(GetAutosaveModels());
 
         this.RaisePropertyChanged(nameof(HasAutosavesScanned));
+        this.RaisePropertyChanged(nameof(HasAutosavesScannedThickness));
 
         return anythingChanged.Result;
     }
@@ -216,13 +290,13 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
         discord.Idle();
         discord.SessionState();
 
-        App.Modules = new Window[]
-        {
+        App.Modules =
+        [
             OpenModule<ControlModuleWindow, ControlModuleWindowViewModel>(config.Modules.Control),
             OpenModule<StatusModuleWindow, StatusModuleWindowViewModel>(config.Modules.Status),
             OpenModule<ProgressModuleWindow, ProgressModuleWindowViewModel>(config.Modules.Progress),
             OpenModule<HistoryModuleWindow, HistoryModuleWindowViewModel>(config.Modules.History)
-        };
+        ];
 
         Window.Close();
     }
