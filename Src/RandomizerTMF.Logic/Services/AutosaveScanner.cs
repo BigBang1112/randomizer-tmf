@@ -276,7 +276,7 @@ public class AutosaveScanner : IAutosaveScanner
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Error while updating autosave details for {autosavePath}.", Path.GetFileName(autosavePath));
+            throw new AutosaveScannerException($"Error while updating autosave details for {Path.GetFileName(autosavePath)}.", ex);
         }
     }
 

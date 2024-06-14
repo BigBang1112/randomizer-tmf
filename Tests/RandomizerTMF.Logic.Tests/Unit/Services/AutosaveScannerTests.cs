@@ -438,7 +438,7 @@ public class AutosaveScannerTests
         var scanner = Arrange_UpdateAutosaveDetail(map);
         
         // Act & Assert
-        Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
+        Assert.Throws<AutosaveScannerException>(() => scanner.UpdateAutosaveDetail("uid"));
         Assert.Null(map.BronzeTime); // making sure test tests what it should even tho its a mock
     }
 
@@ -457,7 +457,7 @@ public class AutosaveScannerTests
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
         // Act & Assert
-        Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
+        Assert.Throws<AutosaveScannerException>(() => scanner.UpdateAutosaveDetail("uid"));
         Assert.Null(map.SilverTime); // making sure test tests what it should even tho its a mock
     }
 
@@ -476,7 +476,7 @@ public class AutosaveScannerTests
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
         // Act & Assert
-        Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
+        Assert.Throws<AutosaveScannerException>(() => scanner.UpdateAutosaveDetail("uid"));
         Assert.Null(map.GoldTime); // making sure test tests what it should even tho its a mock
     }
 
@@ -495,7 +495,7 @@ public class AutosaveScannerTests
         var scanner = Arrange_UpdateAutosaveDetail(map);
 
         // Act & Assert
-        Assert.Throws<ImportantPropertyNullException>(() => scanner.UpdateAutosaveDetail("uid"));
+        Assert.Throws<AutosaveScannerException>(() => scanner.UpdateAutosaveDetail("uid"));
         Assert.Null(map.AuthorTime); // making sure test tests what it should even tho its a mock
     }
 
@@ -562,7 +562,7 @@ public class AutosaveScannerTests
     [Theory]
     [InlineData(null, "StadiumCar")]
     [InlineData("", "StadiumCar")]
-    public void UpdateAutosaveDetail_NoPlayerModelId_AddsAutosaveDetailWithExpectedMapCarName(string givenCar, string expectedCar)
+    public void UpdateAutosaveDetail_NoPlayerModelId_AddsAutosaveDetailWithExpectedMapCarName(string? givenCar, string expectedCar)
     {
         // Arrange
         var map = new CGameCtnChallenge
@@ -572,7 +572,7 @@ public class AutosaveScannerTests
             SilverTime = new TimeInt32(400),
             BronzeTime = new TimeInt32(500),
             AuthorScore = 69,
-            PlayerModel = new Ident(givenCar, "Vehicles", "Nadeo")
+            PlayerModel = new Ident(givenCar!, "Vehicles", "Nadeo")
         };
         map.MapInfo = map.MapInfo with { Collection = new("Stadium") };
 

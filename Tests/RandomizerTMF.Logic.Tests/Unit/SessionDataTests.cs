@@ -100,12 +100,12 @@ public class SessionDataTests
         Assert.Equal(expected: expectedElapsed, sessionReplay.Timestamp);
 
         Assert.True(fileSystem.FileExists(expectedReplayFilePath));
-        Assert.True(fileSystem.FileExists(Path.Combine(sessionData.DirectoryPath, "Session.yml")));
+        Assert.True(fileSystem.FileExists(Path.Combine(sessionData.DirectoryPath, "Session.bin")));
         Assert.Equal(fileSystem.File.ReadAllBytes(expectedReplayFilePath), actual: fileSystem.File.ReadAllBytes(fullPath));
     }
 
     [Fact]
-    public void Save_CreatesSessionYml()
+    public void Save_CreatesSessionBin()
     {
         // Arrange
         var config = new RandomizerConfig();
@@ -117,11 +117,11 @@ public class SessionDataTests
         sessionData.Save();
 
         // Assert
-        Assert.True(fileSystem.FileExists(Path.Combine(sessionData.DirectoryPath, "Session.yml")));
+        Assert.True(fileSystem.FileExists(Path.Combine(sessionData.DirectoryPath, "Session.bin")));
     }
 
     [Fact]
-    public void InternalSetReadOnlySessionYml_SetsReadOnlyAttribute()
+    public void InternalSetReadOnlySessionBin_SetsReadOnlyAttribute()
     {
         // Arrange
         var config = new RandomizerConfig();
@@ -130,14 +130,14 @@ public class SessionDataTests
         var sessionData = SessionData.Initialize(config, mockLogger.Object, fileSystem);
 
         // Act
-        sessionData.InternalSetReadOnlySessionYml();
+        sessionData.InternalSetReadOnlySessionBin();
 
         // Assert
-        Assert.True(fileSystem.File.GetAttributes(Path.Combine(sessionData.DirectoryPath, "Session.yml")).HasFlag(FileAttributes.ReadOnly));
+        Assert.True(fileSystem.File.GetAttributes(Path.Combine(sessionData.DirectoryPath, "Session.bin")).HasFlag(FileAttributes.ReadOnly));
     }
 
     [Fact]
-    public void InternalSetReadOnlySessionYml_SetsReadOnlyAttribute_FileNotFound()
+    public void InternalSetReadOnlySessionBin_SetsReadOnlyAttribute_FileNotFound()
     {
         // Arrange
         var config = new RandomizerConfig();
@@ -146,10 +146,10 @@ public class SessionDataTests
         var sessionData = SessionData.Initialize(config, mockLogger.Object, fileSystem);
         
         // To make things easier
-        fileSystem.File.Delete(Path.Combine(sessionData.DirectoryPath, "Session.yml"));
+        fileSystem.File.Delete(Path.Combine(sessionData.DirectoryPath, "Session.bin"));
 
         // Act & Assert
-        Assert.Throws<FileNotFoundException>(sessionData.InternalSetReadOnlySessionYml);
+        Assert.Throws<FileNotFoundException>(sessionData.InternalSetReadOnlySessionBin);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class SessionDataTests
         var mockLogger = new Mock<ILogger>();
         var fileSystem = new MockFileSystem();
         var sessionData = SessionData.Initialize(config, mockLogger.Object, fileSystem);
-        var fileTimestamp = fileSystem.GetFile(Path.Combine(sessionData.DirectoryPath, "Session.yml")).LastWriteTime;
+        var fileTimestamp = fileSystem.GetFile(Path.Combine(sessionData.DirectoryPath, "Session.bin")).LastWriteTime;
 
         var map = new CGameCtnChallenge
         {
@@ -188,6 +188,6 @@ public class SessionDataTests
         // Assert
         Assert.Equal(expected: "SomeResult", actual: sessionData.Maps[0].Result);
         Assert.Equal(expected: lastTimestamp, actual: sessionData.Maps[0].LastTimestamp);
-        Assert.NotEqual(expected: fileTimestamp, actual: fileSystem.GetFile(Path.Combine(sessionData.DirectoryPath, "Session.yml")).LastWriteTime);
+        Assert.NotEqual(expected: fileTimestamp, actual: fileSystem.GetFile(Path.Combine(sessionData.DirectoryPath, "Session.bin")).LastWriteTime);
     }
 }
