@@ -168,7 +168,7 @@ public class Validator : IValidator
 
         if (config.Rules.NoUnlimiter)
         {
-            if (map.Chunks.Any(x => x.Id == 0x3F001000))
+            if (map.Chunks.Any(x => x.Id >= 0x3F001000 && x.Id <= 0x3F001003))
             {
                 return false;
             }
