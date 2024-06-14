@@ -210,7 +210,8 @@ public class SessionData
         using var w = new BinaryWriter(deflate);
 
         w.Write(Version ?? "");
-        w.Write(StartedAt.ToUnixTimeSeconds());
+        w.Write(StartedAt.Ticks);
+        w.Write((short)StartedAt.TotalOffsetMinutes);
 
         Rules.Serialize(w);
 
@@ -246,7 +247,10 @@ public class SessionData
         using var r = new BinaryReader(inflate);
 
         Version = r.ReadString();
-        StartedAt = DateTimeOffset.FromUnixTimeSeconds(r.ReadInt64());
+        
+        var startedAtTicks = r.ReadInt64();
+        var startedAtOffset = r.ReadInt16();
+        StartedAt = new DateTimeOffset(startedAtTicks, TimeSpan.FromMinutes(startedAtOffset));
 
         Rules = new();
         Rules.Deserialize(r);

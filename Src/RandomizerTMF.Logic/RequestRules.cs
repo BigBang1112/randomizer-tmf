@@ -341,7 +341,8 @@ public class RequestRules
         Site = (ESite)r.ReadInt32();
         EqualEnvironmentDistribution = r.ReadBoolean();
         EqualVehicleDistribution = r.ReadBoolean();
-        Author = r.ReadString();
+        var author = r.ReadString();
+        Author = string.IsNullOrEmpty(author) ? null : author;
         var envCount = r.ReadInt32();
         if (envCount > 0)
         {
@@ -351,7 +352,8 @@ public class RequestRules
                 Environment.Add((EEnvironment)r.ReadInt32());
             }
         }
-        Name = r.ReadString();
+        var name = r.ReadString();
+        Name = string.IsNullOrEmpty(name) ? null : name;
         var vehCount = r.ReadInt32();
         if (vehCount > 0)
         {
