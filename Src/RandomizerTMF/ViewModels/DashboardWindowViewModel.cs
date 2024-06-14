@@ -139,6 +139,7 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 using var fs = File.Create(sessionBin);
                 using var writer = new BinaryWriter(fs);
                 sessionData.Serialize(writer);
+                sessionBinExists = true;
             }
 
             try
