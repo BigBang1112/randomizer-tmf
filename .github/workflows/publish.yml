@@ -16,18 +16,18 @@ jobs:
     name: Publish on ${{ matrix.os.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 7.0.x
+        dotnet-version: 8.0.x
         
     - name: Restore dependencies
       run: dotnet restore
       
     - name: Publish ${{ matrix.os.runtime }}
-      run: dotnet publish Src/RandomizerTMF -c Release -f net7.0 -r ${{ matrix.os.runtime }} -o RandomizerTMF --self-contained
+      run: dotnet publish Src/RandomizerTMF -c Release -f net8.0 -r ${{ matrix.os.runtime }} -o RandomizerTMF --self-contained
       
     - name: Zip to RandomizerTMF.${{ github.ref_name }}.${{ matrix.os.runtime }}.zip
       uses: thedoctor0/zip-release@main
