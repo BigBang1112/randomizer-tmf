@@ -163,7 +163,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { "Challenge.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { "Challenge.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem);
         var logger = Mock.Of<ILogger>();
@@ -188,7 +188,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { "Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { "Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem);
         var logger = Mock.Of<ILogger>();
@@ -217,7 +217,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { "Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { "Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem);
         var logger = Mock.Of<ILogger>();
@@ -247,7 +247,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { "Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { "Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem);
         var logger = Mock.Of<ILogger>();
@@ -312,7 +312,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem)
         {
@@ -342,7 +342,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem)
         {
@@ -376,7 +376,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem)
         {
@@ -409,7 +409,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem)
         {
@@ -620,7 +620,7 @@ public class AutosaveScannerTests
         var config = new RandomizerConfig();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData(Array.Empty<byte>()) }
+            { $"C:{slash}UserData{slash}Tracks{slash}Replays{slash}Autosaves{slash}Replay.Gbx", new MockFileData([]) }
         });
         var filePathManager = new FilePathManager(config, fileSystem)
         {

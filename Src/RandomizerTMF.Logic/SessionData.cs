@@ -209,7 +209,7 @@ public class SessionData
         using var deflate = new DeflateStream(crypto, CompressionLevel.Fastest);
         using var w = new BinaryWriter(deflate);
 
-        w.Write(Version ?? "");
+        w.Write(Version ?? string.Empty);
         w.Write(StartedAt.Ticks);
         w.Write((short)StartedAt.TotalOffsetMinutes);
 
@@ -246,7 +246,8 @@ public class SessionData
         using var inflate = new DeflateStream(crypto, CompressionMode.Decompress);
         using var r = new BinaryReader(inflate);
 
-        Version = r.ReadString();
+        var versionStr = r.ReadString();
+        Version = string.IsNullOrEmpty(versionStr) ? null : versionStr;
         
         var startedAtTicks = r.ReadInt64();
         var startedAtOffset = r.ReadInt16();
