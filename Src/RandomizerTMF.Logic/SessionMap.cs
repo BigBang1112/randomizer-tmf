@@ -65,4 +65,37 @@ public class SessionMap : ISessionMap
             _ => throw new NotSupportedException($"Unsupported gamemode {Mode}."),
         };
     }
+
+    internal bool IsSilverMedal(CGameCtnGhost ghost)
+    {
+        return Mode switch
+        {
+            CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle => ghost.RaceTime <= ChallengeParameters.SilverTime,
+            CGameCtnChallenge.PlayMode.Platform => ghost.Respawns <= ChallengeParameters.SilverTime.GetValueOrDefault().TotalMilliseconds,
+            CGameCtnChallenge.PlayMode.Stunts => ghost.StuntScore >= ChallengeParameters.SilverTime.GetValueOrDefault().TotalMilliseconds,
+            _ => throw new NotSupportedException($"Unsupported gamemode {Mode}."),
+        };
+    }
+
+    internal bool IsBronzeMedal(CGameCtnGhost ghost)
+    {
+        return Mode switch
+        {
+            CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle => ghost.RaceTime <= ChallengeParameters.BronzeTime,
+            CGameCtnChallenge.PlayMode.Platform => ghost.Respawns <= ChallengeParameters.BronzeTime.GetValueOrDefault().TotalMilliseconds,
+            CGameCtnChallenge.PlayMode.Stunts => ghost.StuntScore >= ChallengeParameters.BronzeTime.GetValueOrDefault().TotalMilliseconds,
+            _ => throw new NotSupportedException($"Unsupported gamemode {Mode}."),
+        };
+    }
+
+    internal bool IsFinished(CGameCtnGhost ghost)
+    {
+        return Mode switch
+        {
+            CGameCtnChallenge.PlayMode.Race or CGameCtnChallenge.PlayMode.Puzzle => ghost.RaceTime > ChallengeParameters.BronzeTime,
+            CGameCtnChallenge.PlayMode.Platform => ghost.Respawns > ChallengeParameters.BronzeTime.GetValueOrDefault().TotalMilliseconds,
+            CGameCtnChallenge.PlayMode.Stunts => ghost.StuntScore > ChallengeParameters.BronzeTime.GetValueOrDefault().TotalMilliseconds,
+            _ => throw new NotSupportedException($"Unsupported gamemode {Mode}."),
+        };
+    }
 }

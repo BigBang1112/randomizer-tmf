@@ -17,6 +17,7 @@ public interface IRandomizerConfig
     RandomizerRules Rules { get; set; }
     bool DisableAutosaveDetailScan { get; set; }
     bool DisableAutoSkip { get; set; }
+    AutoSkipMode AutoSkipMode { get; set; }
     DiscordRichPresenceConfig DiscordRichPresence { get; set; }
     bool TopSessions { get; set; }
 
@@ -46,6 +47,7 @@ public class RandomizerConfig : IRandomizerConfig
     public int ReplayParseFailDelayMs { get; set; } = 50;
     public bool DisableAutosaveDetailScan { get; set; }
     public bool DisableAutoSkip { get; set; }
+    public AutoSkipMode AutoSkipMode { get; set; }
 
     public DiscordRichPresenceConfig DiscordRichPresence { get; set; } = new();
 

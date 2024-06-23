@@ -295,7 +295,7 @@ public class Session : ISession
     internal void SkipManually(SessionMap map)
     {
         // If the player didn't receive a gold/author medal, the skip is counted
-        if (GoldMaps.ContainsKey(map.MapUid) == false && AuthorMaps.ContainsKey(map.MapUid) == false)
+        if (!GoldMaps.ContainsKey(map.MapUid) && !AuthorMaps.ContainsKey(map.MapUid))
         {
             SkippedMaps.TryAdd(map.MapUid, map);
             map.LastTimestamp = Watch.Elapsed;
@@ -385,28 +385,28 @@ public class Session : ISession
         if (Map.IsAuthorMedal(ghost))
         {
             AuthorMedalReceived(Map);
-
-            if (!config.DisableAutoSkip)
-            {
-                SkipTokenSource?.Cancel();
-            }
-
             return;
         }
         
         if (Map.IsGoldMedal(ghost))
         {
             GoldMedalReceived(Map);
+            return;
         }
-    }
 
-    private void GoldMedalReceived(SessionMap map)
-    {
-        GoldMaps.TryAdd(map.MapUid, map);
-        map.LastTimestamp = Watch.Elapsed;
-        Data?.SetMapResult(map, Constants.GoldMedal);
+        if (Map.IsSilverMedal(ghost))
+        {
+            SilverMedalReceived(Map);
+            return;
+        }
 
-        events.OnMedalUpdate();
+        if (Map.IsBronzeMedal(ghost))
+        {
+            BronzeMedalReceived(Map);
+            return;
+        }
+
+        Finished(Map);
     }
 
     private void AuthorMedalReceived(SessionMap map)
@@ -417,6 +417,82 @@ public class Session : ISession
         Data?.SetMapResult(map, Constants.AuthorMedal);
 
         events.OnMedalUpdate();
+
+        if (!config.DisableAutoSkip)
+        {
+            SkipTokenSource?.Cancel();
+        }
+    }
+
+    private void GoldMedalReceived(SessionMap map)
+    {
+        GoldMaps.TryAdd(map.MapUid, map);
+        map.LastTimestamp = Watch.Elapsed;
+        Data?.SetMapResult(map, Constants.GoldMedal);
+
+        events.OnMedalUpdate();
+
+        if (!config.DisableAutoSkip && config.AutoSkipMode >= AutoSkipMode.GoldMedal)
+        {
+            SkipTokenSource?.Cancel();
+        }
+    }
+
+    private void SilverMedalReceived(SessionMap map)
+    {
+        if (config.DisableAutoSkip || config.AutoSkipMode < AutoSkipMode.GoldMedal)
+        {
+            return;
+        }
+
+        SkippedMaps.TryAdd(map.MapUid, map);
+        map.LastTimestamp = Watch.Elapsed;
+        Data?.SetMapResult(map, Constants.Skipped);
+
+        events.OnMedalUpdate();
+
+        SkipTokenSource?.Cancel();
+
+        // MapSkip event is thrown to update the UI
+        events.OnMapSkip();
+    }
+
+    private void BronzeMedalReceived(SessionMap map)
+    {
+        if (config.DisableAutoSkip || config.AutoSkipMode < AutoSkipMode.BronzeMedal)
+        {
+            return;
+        }
+
+        SkippedMaps.TryAdd(map.MapUid, map);
+        map.LastTimestamp = Watch.Elapsed;
+        Data?.SetMapResult(map, Constants.Skipped);
+
+        events.OnMedalUpdate();
+
+        SkipTokenSource?.Cancel();
+
+        // MapSkip event is thrown to update the UI
+        events.OnMapSkip();
+    }
+
+    private void Finished(SessionMap map)
+    {
+        if (config.DisableAutoSkip || config.AutoSkipMode < AutoSkipMode.Finished)
+        {
+            return;
+        }
+
+        SkippedMaps.TryAdd(map.MapUid, map);
+        map.LastTimestamp = Watch.Elapsed;
+        Data?.SetMapResult(map, Constants.Skipped);
+
+        events.OnMedalUpdate();
+
+        SkipTokenSource?.Cancel();
+
+        // MapSkip event is thrown to update the UI
+        events.OnMapSkip();
     }
 
     public void Stop()
