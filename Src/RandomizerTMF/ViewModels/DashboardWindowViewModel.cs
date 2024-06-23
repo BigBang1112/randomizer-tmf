@@ -142,6 +142,15 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 sessionBinExists = true;
             }
 
+            if (sessionYmlExists)
+            {
+                var backupDir = FilePathManager.SessionsDirectoryPath + "_Backup";
+                Directory.CreateDirectory(backupDir);
+                
+                var backupSessionYml = Path.Combine(backupDir, Path.GetFileName(dir) + ".yml");
+                File.Move(sessionYml, backupSessionYml, true);
+            }
+
             try
             {
                 if (sessionBinExists)
@@ -257,7 +266,9 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
     private IEnumerable<AutosaveModel> GetAutosaveModels()
     {
-        return autosaveScanner.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
+        return autosaveScanner.AutosaveDetails
+            .Select(x => new AutosaveModel(x.Key, x.Value))
+            .OrderBy(x => x.Autosave.MapName);
     }
 
     protected override void CloseClick()

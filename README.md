@@ -2,7 +2,7 @@
 
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/BigBang1112/randomizer-tmf?include_prereleases&style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
 [![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
-[![Code Coverage](https://img.shields.io/badge/Code%20Coverage-65%25-yellow?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf)
+[![Code Coverage](https://img.shields.io/badge/Code%20Coverage-63%25-yellow?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf)
 
 **Randomizer TMF - Random Map Challenge for TMNF/TMUF** is a project (inspired from the Flink's Random Map Challenge) that ports random map picking experience to TMNF and TMUF games.
 
@@ -34,6 +34,31 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 - Filter Unlimiter maps!
 - Custom time limit
 - Preview of your autosaves
+
+## Hidden settings
+
+Some settings are not available in the UI. They are hidden in the `Config.yml` file. You can find it in the installation directory.
+
+```yml
+# {0} is the map name, {1} is the replay score (example: 9'59''59 in Race/Puzzle or 999_9'59''59 in Platform/Stunts), {2} is the player login.
+ReplayFileFormat: '{0}_{1}_{2}.Replay.Gbx'
+# When replay cannot be accessed due to permissions/corruption, how many times to attempt the parse.
+ReplayParseFailRetries: 10
+# When replay cannot be accessed due to permissions/corruption, how many milliseconds to wait before next attempt.
+ReplayParseFailDelayMs: 50
+# If to disable in-depth parse of autosave replays, used for further validation.
+DisableAutosaveDetailScan: false
+# If to disable automatic skip completely.
+DisableAutoSkip: false
+# When should automatic skip apply. Options are: AuthorMedal, GoldMedal, SilverMedal, BronzeMedal, Finished
+AutoSkipMode: AuthorMedal
+# Discord Rich Presence configuration.
+DiscordRichPresence:
+  # Disable Discord Rich Presence entirely.
+  Disable: false
+  # Disable map thumbnail in Discord Rich Presence, questionmark icon will be used instead.
+  DisableMapThumbnail: false
+```
 
 ## Download goals
 

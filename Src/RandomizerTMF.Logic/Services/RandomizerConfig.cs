@@ -17,6 +17,7 @@ public interface IRandomizerConfig
     RandomizerRules Rules { get; set; }
     bool DisableAutosaveDetailScan { get; set; }
     bool DisableAutoSkip { get; set; }
+    AutoSkipMode AutoSkipMode { get; set; }
     DiscordRichPresenceConfig DiscordRichPresence { get; set; }
     bool TopSessions { get; set; }
 
@@ -40,13 +41,25 @@ public class RandomizerConfig : IRandomizerConfig
     /// <summary>
     /// {0} is the map name, {1} is the replay score (example: 9'59''59 in Race/Puzzle or 999_9'59''59 in Platform/Stunts), {2} is the player login.
     /// </summary>
+    [YamlMember(Description = "{0} is the map name, {1} is the replay score (example: 9'59''59 in Race/Puzzle or 999_9'59''59 in Platform/Stunts), {2} is the player login.")]
     public string? ReplayFileFormat { get; set; } = Constants.DefaultReplayFileFormat;
 
+    [YamlMember(Description = "When replay cannot be accessed due to permissions/corruption, how many times to attempt the parse.")]
     public int ReplayParseFailRetries { get; set; } = 10;
+
+    [YamlMember(Description = "When replay cannot be accessed due to permissions/corruption, how many milliseconds to wait before next attempt.")]
     public int ReplayParseFailDelayMs { get; set; } = 50;
+
+    [YamlMember(Description = "If to disable in-depth parse of autosave replays, used for further validation.")]
     public bool DisableAutosaveDetailScan { get; set; }
+
+    [YamlMember(Description = "If to disable automatic skip completely.")]
     public bool DisableAutoSkip { get; set; }
 
+    [YamlMember(Description = "When should automatic skip apply. Options are: AuthorMedal, GoldMedal, SilverMedal, BronzeMedal, Finished")]
+    public AutoSkipMode AutoSkipMode { get; set; }
+
+    [YamlMember(Description = "Discord Rich Presence configuration.")]
     public DiscordRichPresenceConfig DiscordRichPresence { get; set; } = new();
 
     public bool TopSessions { get; set; }
