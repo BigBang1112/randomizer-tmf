@@ -142,6 +142,15 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
                 sessionBinExists = true;
             }
 
+            if (sessionYmlExists)
+            {
+                var backupDir = FilePathManager.SessionsDirectoryPath + "_Backup";
+                Directory.CreateDirectory(backupDir);
+                
+                var backupSessionYml = Path.Combine(backupDir, Path.GetFileName(dir) + ".yml");
+                File.Move(sessionYml, backupSessionYml, true);
+            }
+
             try
             {
                 if (sessionBinExists)
