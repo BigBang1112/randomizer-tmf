@@ -37,7 +37,7 @@ The project combines features of [TMX](https://tm-exchange.com/), autosave Gbx f
 
 ## Hidden settings
 
-Some settings are hidden in the `Config.yml` file and not available in the UI. You can find the file in the installation directory.
+Some settings are not available in the UI. They are hidden in the `Config.yml` file. You can find it in the installation directory.
 
 ```yml
 # {0} is the map name, {1} is the replay score (example: 9'59''59 in Race/Puzzle or 999_9'59''59 in Platform/Stunts), {2} is the player login.
