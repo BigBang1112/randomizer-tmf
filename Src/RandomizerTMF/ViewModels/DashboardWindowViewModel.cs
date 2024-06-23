@@ -266,7 +266,9 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
 
     private IEnumerable<AutosaveModel> GetAutosaveModels()
     {
-        return autosaveScanner.AutosaveDetails.Select(x => new AutosaveModel(x.Key, x.Value)).OrderBy(x => x.Autosave.MapName);
+        return autosaveScanner.AutosaveDetails
+            .Select(x => new AutosaveModel(x.Key, x.Value))
+            .OrderBy(x => x.Autosave.MapName);
     }
 
     protected override void CloseClick()
