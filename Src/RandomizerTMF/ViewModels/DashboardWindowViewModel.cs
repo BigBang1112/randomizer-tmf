@@ -116,7 +116,28 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
     
     private async Task ScanSessionsAsync(bool top)
     {
-        foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
+        var backupDirPath = FilePathManager.SessionsDirectoryPath + "_Backup";
+
+        if (Directory.Exists(backupDirPath))
+		{
+            foreach (var filePath in Directory.EnumerateFiles(backupDirPath, "*.yml", SearchOption.TopDirectoryOnly))
+			{
+                try
+                {
+					File.SetAttributes(filePath, FileAttributes.Normal);
+					File.Delete(filePath);
+                }
+                catch { }
+			}
+
+            try
+            {
+                Directory.Delete(backupDirPath);
+            }
+            catch { }
+		}
+
+		foreach (var dir in Directory.EnumerateDirectories(FilePathManager.SessionsDirectoryPath))
         {
             var sessionBin = Path.Combine(dir, "Session.bin");
             var sessionYml = Path.Combine(dir, "Session.yml");
@@ -143,12 +164,16 @@ internal class DashboardWindowViewModel : WindowWithTopBarViewModelBase
             }
 
             if (sessionYmlExists)
-            {
-                var backupDir = FilePathManager.SessionsDirectoryPath + "_Backup";
-                Directory.CreateDirectory(backupDir);
-                
-                var backupSessionYml = Path.Combine(backupDir, Path.GetFileName(dir) + ".yml");
-                File.Move(sessionYml, backupSessionYml, true);
+			{
+                try
+                { 
+				    File.SetAttributes(sessionYml, FileAttributes.Normal);
+				    File.Delete(sessionYml);
+                }
+				catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to delete Session.yml in '{session}'", Path.GetFileName(dir));
+                }
             }
 
             try

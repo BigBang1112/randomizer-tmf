@@ -193,8 +193,10 @@ public class SessionData
 
     public void Serialize(BinaryWriter writer)
     {
+        const int version = 1;
+
         writer.Write("RandTMF");
-        writer.Write((byte)0); // version
+        writer.Write((byte)version); // version
         
         using var aes = Aes.Create();
         aes.GenerateKey();
@@ -213,7 +215,7 @@ public class SessionData
         w.Write(StartedAt.Ticks);
         w.Write((short)StartedAt.TotalOffsetMinutes);
 
-        Rules.Serialize(w);
+        Rules.Serialize(w, version);
 
         w.Write(Maps.Count);
         foreach (var map in Maps)
@@ -231,7 +233,7 @@ public class SessionData
         }
 
         var version = reader.ReadByte();
-        if (version != 0)
+        if (version > 1)
         {
             throw new InvalidDataException("Invalid version.");
         }
@@ -255,7 +257,7 @@ public class SessionData
         DirectoryPath = Path.Combine(FilePathManager.SessionsDirectoryPath, StartedAtText);
 
         Rules = new();
-        Rules.Deserialize(r);
+        Rules.Deserialize(r, version);
 
         Maps.Clear();
         var mapsCount = r.ReadInt32();

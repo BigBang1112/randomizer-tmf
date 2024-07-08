@@ -190,7 +190,7 @@
 				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
 				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Seconds"/>
 				<TextBlock Text="." VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hundredths"/>
+				<NumericUpDown IsEnabled="{Binding MinATEnabled}" Value="{Binding MinATMillisecond}" FormatString="00" Maximum="99" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hundredths"/>
 				<CheckBox IsChecked="{Binding MinATEnabled}" ToolTip.Tip="Enable/disable minimal author time filter."/>
 			</StackPanel>
 
@@ -201,7 +201,7 @@
 				<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
 				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATSecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Seconds"/>
 				<TextBlock Text="." VerticalAlignment="Center" FontSize="16" FontWeight="Bold"/>
-				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMillisecond}" FormatString="00" Maximum="59" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hundredths"/>
+				<NumericUpDown IsEnabled="{Binding MaxATEnabled}" Value="{Binding MaxATMillisecond}" FormatString="00" Maximum="99" Minimum="0" Width="38" MinWidth="38" VerticalContentAlignment="Center" ShowButtonSpinner="False" ToolTip.Tip="Hundredths"/>
 				<CheckBox IsChecked="{Binding MaxATEnabled}" ToolTip.Tip="Enable/disable maximal author time filter."/>
 			</StackPanel>
 

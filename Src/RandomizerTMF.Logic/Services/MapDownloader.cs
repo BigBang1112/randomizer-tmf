@@ -70,11 +70,29 @@ public class MapDownloader : IMapDownloader
     /// <returns>True if map has been prepared successfully, false if soft error/problem appeared (it's possible to ask for another track).</returns>
     public async Task<bool> PrepareNewMapAsync(Session currentSession, CancellationToken cancellationToken)
     {
-        using var randomResponse = await FetchRandomTrackAsync(cancellationToken);
+		Status("Fetching random track...");
 
-        // Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
+		// Randomized URL is constructed with the ToUrl() method.
+		var requestUrl = config.Rules.RequestRules.ToUrl(random, out var site);
 
-        var requestUri = GetRequestUriFromResponse(randomResponse);
+		logger.LogDebug("Requesting generated URL: {url}", requestUrl);
+		using var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
+
+		if (randomResponse.StatusCode == HttpStatusCode.NotFound)
+		{
+			// The session is ALWAYS invalid if there's no map that can be found.
+			// This DOES NOT relate to the lack of maps left that the user hasn't played.
+
+			logger.LogWarning("No map fulfills the randomization filter.");
+
+			throw new InvalidSessionException();
+		}
+
+		randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
+
+		// Following code gathers the track ID from the HEAD response (and ensures everything makes sense)
+
+		var requestUri = GetRequestUriFromResponse(randomResponse);
 
         if (requestUri is null)
         {
@@ -90,9 +108,17 @@ public class MapDownloader : IMapDownloader
             return false;
         }
 
-        // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
+		if (uint.TryParse(trackId, out var trackIdUint)
+			&& config.Rules.BannedMaps.TryGetValue(site, out var bannedTrackIds)
+            && bannedTrackIds.Contains(trackIdUint))
+		{
+			logger.LogInformation("Track {trackId} is banned.", trackId);
+			return false;
+		}
 
-        using var trackGbxResponse = await DownloadMapByTrackIdAsync(requestUri.Host, trackId, cancellationToken);
+		// With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
+
+		using var trackGbxResponse = await DownloadMapByTrackIdAsync(requestUri.Host, trackId, cancellationToken);
 
         var map = await GetMapFromResponseAsync(trackGbxResponse, cancellationToken);
 
@@ -163,31 +189,6 @@ public class MapDownloader : IMapDownloader
         logger.LogInformation("Map saved successfully!");
 
         return mapSavePath;
-    }
-
-    internal async Task<HttpResponseMessage> FetchRandomTrackAsync(CancellationToken cancellationToken)
-    {
-        Status("Fetching random track...");
-
-        // Randomized URL is constructed with the ToUrl() method.
-        var requestUrl = config.Rules.RequestRules.ToUrl(random);
-
-        logger.LogDebug("Requesting generated URL: {url}", requestUrl);
-        var randomResponse = await http.HeadAsync(requestUrl, cancellationToken);
-
-        if (randomResponse.StatusCode == HttpStatusCode.NotFound)
-        {
-            // The session is ALWAYS invalid if there's no map that can be found.
-            // This DOES NOT relate to the lack of maps left that the user hasn't played.
-
-            logger.LogWarning("No map fulfills the randomization filter.");
-
-            throw new InvalidSessionException();
-        }
-
-        randomResponse.EnsureSuccessStatusCode(); // Handles server issues, should normally retry
-
-        return randomResponse;
     }
 
     internal Uri? GetRequestUriFromResponse(HttpResponseMessage response)
