@@ -328,7 +328,7 @@ public class MapDownloaderTests
     }
 
     [Fact]
-    public async Task FetchRandomTrackAsync_MapNotFound_Throws()
+    public async Task PrepareNewMapAsync_MapNotFound_Throws()
     {
         // Arrange
         var events = Mock.Of<IRandomizerEvents>();
@@ -341,47 +341,19 @@ public class MapDownloaderTests
         var delay = Mock.Of<IDelayService>();
         var logger = Mock.Of<ILogger>();
         var gbxService = Mock.Of<IGbxService>();
+		var game = Mock.Of<ITMForever>();
 
-        var mockHandler = new MockHttpMessageHandler();
+		var mockHandler = new MockHttpMessageHandler();
         mockHandler.When("https://tmnf.exchange/trackrandom?primarytype=0&authortimemax=180000").Respond(HttpStatusCode.NotFound);
         var http = new HttpClient(mockHandler);
 
         var mapDownloader = new MapDownloader(events, config, filePathManager, discord, validator, http, random, delay, fileSystem, gbxService, logger);
+		var session = new Session(events, mapDownloader, validator, config, game, logger, fileSystem);
 
-        var cts = new CancellationTokenSource();
+		var cts = new CancellationTokenSource();
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidSessionException>(async () => await mapDownloader.FetchRandomTrackAsync(cts.Token));
-    }
-
-    [Fact]
-    public async Task FetchRandomTrackAsync_Success_ReturnsResponse()
-    {
-        // Arrange
-        var events = Mock.Of<IRandomizerEvents>();
-        var config = new RandomizerConfig();
-        var fileSystem = new MockFileSystem();
-        var filePathManager = new FilePathManager(config, fileSystem);
-        var discord = Mock.Of<IDiscordRichPresence>();
-        var validator = Mock.Of<IValidator>();
-        var random = Mock.Of<IRandomGenerator>();
-        var delay = Mock.Of<IDelayService>();
-        var logger = Mock.Of<ILogger>();
-        var gbxService = Mock.Of<IGbxService>();
-
-        var mockHandler = new MockHttpMessageHandler();
-        mockHandler.When("https://tmnf.exchange/trackrandom?primarytype=0&authortimemax=180000").Respond(HttpStatusCode.OK);
-        var http = new HttpClient(mockHandler);
-
-        var mapDownloader = new MapDownloader(events, config, filePathManager, discord, validator, http, random, delay, fileSystem, gbxService, logger);
-
-        var cts = new CancellationTokenSource();
-
-        // Act
-        var response = await mapDownloader.FetchRandomTrackAsync(cts.Token);
-
-        // Assert
-        Assert.Equal(expected: HttpStatusCode.OK, actual: response.StatusCode);
+        await Assert.ThrowsAsync<InvalidSessionException>(async () => await mapDownloader.PrepareNewMapAsync(session, cts.Token));
     }
 
     [Fact]
