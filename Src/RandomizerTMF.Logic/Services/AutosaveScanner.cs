@@ -106,7 +106,7 @@ public class AutosaveScanner : IAutosaveScanner
 
                 using var stream = fileSystem.File.OpenRead(e.FullPath);
 
-                if (GameBox.ParseNode(stream) is not CGameCtnReplayRecord r)
+                if (Gbx.ParseNode(stream) is not CGameCtnReplayRecord r)
                 {
                     logger.LogWarning("Found file {file} that is not a replay.", e.FullPath);
                     return;

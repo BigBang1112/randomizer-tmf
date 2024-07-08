@@ -47,7 +47,7 @@ public class RequestRules
     public TimeInt32? AuthorTimeMin { get; set; }
     public TimeInt32? AuthorTimeMax { get; set; }
 
-    public string ToUrl(IRandomGenerator random) // Not very efficient but does the job done fast enough
+    public string ToUrl(IRandomGenerator random, out ESite site) // Not very efficient but does the job done fast enough
     {
         var b = new StringBuilder("https://");
 
@@ -56,7 +56,7 @@ public class RequestRules
             .ToArray();
 
         // If Site is Any, then it picks from sites that are valid within environments and cars
-        var site = GetRandomSite(random, matchingSites.Length == 0
+        site = GetRandomSite(random, matchingSites.Length == 0
             ? siteValues.Where(x => x is not ESite.Any
             && IsSiteValidWithEnvironments(x)
             && IsSiteValidWithVehicles(x)
