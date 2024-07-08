@@ -2,7 +2,7 @@
 
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/BigBang1112/randomizer-tmf?include_prereleases&style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
 [![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
-[![Code Coverage](https://img.shields.io/badge/Code%20Coverage-63%25-yellow?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf)
+[![Code Coverage](https://img.shields.io/badge/Code%20Coverage-64%25-yellow?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf)
 
 **Randomizer TMF - Random Map Challenge for TMNF/TMUF** is a project (inspired from the Flink's Random Map Challenge) that ports random map picking experience to TMNF and TMUF games.
 
