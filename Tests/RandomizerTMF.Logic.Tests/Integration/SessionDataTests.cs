@@ -19,8 +19,10 @@ public class SessionDataTests
         var serialized = new SessionData();
         serialized.Rules.RequestRules.Environment = [EEnvironment.Desert];
         serialized.Rules.RequestRules.UploadedAfter = DateOnly.MaxValue;
+        serialized.Rules.BannedMaps.Add(ESite.TMNF, [123, 1456]);
+		serialized.Rules.BannedMaps.Add(ESite.Nations, [1234, 14586]);
 
-        using var ms = new MemoryStream();
+		using var ms = new MemoryStream();
         using var w = new BinaryWriter(ms);
         serialized.Serialize(w);
 
