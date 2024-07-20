@@ -193,7 +193,7 @@ public class SessionData
 
     public void Serialize(BinaryWriter writer)
     {
-        const int version = 1;
+        const int version = 2;
 
         writer.Write("RandTMF");
         writer.Write((byte)version); // version
