@@ -20,7 +20,7 @@ public class RandomizerRules
     {
         writer.Write(TimeLimit.Ticks);
         writer.Write(NoUnlimiter);
-        RequestRules.Serialize(writer);
+        RequestRules.Serialize(writer, version);
 
         if (version < 1)
 		{
@@ -43,7 +43,7 @@ public class RandomizerRules
     {
         TimeLimit = TimeSpan.FromTicks(r.ReadInt64());
         NoUnlimiter = r.ReadBoolean();
-        RequestRules.Deserialize(r);
+        RequestRules.Deserialize(r, version);
 
         if (version < 1)
 		{

@@ -193,7 +193,7 @@ public class SessionData
 
     public void Serialize(BinaryWriter writer)
     {
-        const int version = 1;
+        const int version = 2;
 
         writer.Write("RandTMF");
         writer.Write((byte)version); // version
@@ -233,7 +233,7 @@ public class SessionData
         }
 
         var version = reader.ReadByte();
-        if (version > 1)
+        if (version > 2)
         {
             throw new InvalidDataException("Invalid version.");
         }

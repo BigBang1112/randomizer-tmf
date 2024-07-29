@@ -934,6 +934,19 @@ internal class RequestRulesControlViewModel : WindowViewModelBase
         }
     }
 
+    public bool NoUnlimiter
+    {
+        get => config.Rules.NoUnlimiter;
+        set
+        {
+            config.Rules.NoUnlimiter = value;
+
+            this.RaisePropertyChanged(nameof(NoUnlimiter));
+
+            config.Save();
+        }
+    }
+
     public bool EqualEnvDistribution
     {
         get => config.Rules.RequestRules.EqualEnvironmentDistribution;
