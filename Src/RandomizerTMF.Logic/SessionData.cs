@@ -233,7 +233,7 @@ public class SessionData
         }
 
         var version = reader.ReadByte();
-        if (version > 1)
+        if (version > 2)
         {
             throw new InvalidDataException("Invalid version.");
         }
