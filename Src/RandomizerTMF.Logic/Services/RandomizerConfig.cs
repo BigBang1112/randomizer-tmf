@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using RandomizerTMF.Logic.Exceptions;
 using System.IO.Abstractions;
 using System.Reflection;
 using YamlDotNet.Core;
@@ -101,12 +102,12 @@ public class RandomizerConfig : IRandomizerConfig
             catch (YamlException ex)
             {
                 logger.LogWarning(ex.InnerException, "Error while deserializing the config file ({configPath}; [{start}] - [{end}]).", Constants.ConfigYml, ex.Start, ex.End);
-                throw new Exception("Config file is corrupted or incorrectly formatted.");
+                throw new ConfigCorruptedException("Config file is corrupted or incorrectly formatted.", ex);
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Error while deserializing the config file ({configPath}).", Constants.ConfigYml);
-                throw new Exception("Config file is corrupted or there's another problem.");
+                throw new ConfigCorruptedException("Config file is corrupted or there's another problem.", ex);
             }
         }
 

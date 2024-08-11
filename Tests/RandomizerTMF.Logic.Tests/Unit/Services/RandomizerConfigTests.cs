@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
+using RandomizerTMF.Logic.Exceptions;
 using RandomizerTMF.Logic.Services;
 using System.IO.Abstractions.TestingHelpers;
 
@@ -48,7 +49,7 @@ public class RandomizerConfigTests
     [Theory]
     [InlineData(@"GameDirectory: [C:\GameDirectory")]
     [InlineData("ReplayParseFailRetries: number")]
-    public void GetOrCreate_CorruptedConfig_Overwrite(string configContent)
+    public void GetOrCreate_CorruptedConfig_Throws(string configContent)
     {
         // Arrange
         var mockLogger = new Mock<ILogger>();
@@ -59,16 +60,7 @@ public class RandomizerConfigTests
         var lastWriteTime = fileSystem.File.GetLastWriteTime("Config.yml");
         var defaultConfig = new RandomizerConfig();
 
-        // Act
-        var config = RandomizerConfig.GetOrCreate(mockLogger.Object, fileSystem);
-
-        // Assert
-        Assert.True(fileSystem.FileExists("Config.yml"));
-        Assert.NotEqual(expected: lastWriteTime, fileSystem.File.GetLastWriteTime("Config.yml"));
-        Assert.Equal(expected: defaultConfig.GameDirectory, actual: config.GameDirectory);
-        Assert.Equal(expected: defaultConfig.DownloadedMapsDirectory, actual: config.DownloadedMapsDirectory);
-        Assert.Equal(expected: defaultConfig.ReplayParseFailRetries, actual: config.ReplayParseFailRetries);
-        Assert.Equal(expected: defaultConfig.ReplayParseFailDelayMs, actual: config.ReplayParseFailDelayMs);
-        Assert.Equal(expected: defaultConfig.ReplayFileFormat, actual: config.ReplayFileFormat);
+        // Act & Assert
+        Assert.Throws<ConfigCorruptedException>(() => RandomizerConfig.GetOrCreate(mockLogger.Object, fileSystem));
     }
 }
