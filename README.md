@@ -52,12 +52,17 @@ DisableAutosaveDetailScan: false
 DisableAutoSkip: false
 # When should automatic skip apply. Options are: AuthorMedal, GoldMedal, SilverMedal, BronzeMedal, Finished
 AutoSkipMode: AuthorMedal
+# How many attempts to try before terminating the session if randomly picked map fails validation. Hardcoded maximum is 50.
+ValidationRetries: 10
 # Discord Rich Presence configuration.
 DiscordRichPresence:
   # Disable Discord Rich Presence entirely.
   Disable: false
   # Disable map thumbnail in Discord Rich Presence, questionmark icon will be used instead.
   DisableMapThumbnail: false
+Rules:
+  AvoidSkippedMaps: false
+  BannedMaps: {}
 ```
 
 ## Download goals
