@@ -6,7 +6,8 @@ public class RandomizerRules
 {
     public TimeSpan TimeLimit { get; set; } = TimeSpan.FromHours(1);
     public bool NoUnlimiter { get; set; } = true;
-    
+    public bool AvoidSkippedMaps { get; set; }
+
     public RequestRules RequestRules { get; init; } = new()
     {
         Site = ESite.TMNF,
@@ -15,7 +16,6 @@ public class RandomizerRules
     };
 
     public Dictionary<ESite, HashSet<uint>> BannedMaps { get; init; } = [];
-    public bool AvoidSkippedMaps { get; set; }
 
     public void Serialize(BinaryWriter writer, int version)
     {
