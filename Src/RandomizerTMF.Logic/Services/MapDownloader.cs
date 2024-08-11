@@ -28,7 +28,7 @@ public class MapDownloader : IMapDownloader
     private readonly IGbxService gbxService;
     private readonly ILogger logger;
 
-    private readonly int requestMaxAttempts = 10;
+    private readonly int maxRequestMaxAttempts = 50;
     private int requestAttempt;
 
     public MapDownloader(IRandomizerEvents events,
@@ -158,7 +158,7 @@ public class MapDownloader : IMapDownloader
             TmxLink = tmxLink,
         });
 
-        discord.SessionMap(mapName, $"https://{requestUri.Host}/trackshow/{trackId}/image/1", map.Collection);
+        discord.SessionMap(mapName, $"https://{requestUri.Host}/trackshow/{trackId}/image/1", map.GetEnvironment());
 
         return true;
     }
@@ -279,6 +279,8 @@ public class MapDownloader : IMapDownloader
             logger.LogInformation("Map is invalid because {invalidBlock} is not valid for the {env} environment.", invalidBlock, map.Collection);
             await delayService.Delay(500, cancellationToken);
         }
+
+        var requestMaxAttempts = Math.Min(config.ValidationRetries, maxRequestMaxAttempts);
 
         Status($"Map is invalid (attempt {requestAttempt}/{requestMaxAttempts}).");
 

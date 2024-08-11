@@ -18,6 +18,7 @@ public interface IRandomizerConfig
     bool DisableAutosaveDetailScan { get; set; }
     bool DisableAutoSkip { get; set; }
     AutoSkipMode AutoSkipMode { get; set; }
+    int ValidationRetries { get; set; }
     DiscordRichPresenceConfig DiscordRichPresence { get; set; }
     bool TopSessions { get; set; }
 
@@ -58,6 +59,9 @@ public class RandomizerConfig : IRandomizerConfig
 
     [YamlMember(Description = "When should automatic skip apply. Options are: AuthorMedal, GoldMedal, SilverMedal, BronzeMedal, Finished")]
     public AutoSkipMode AutoSkipMode { get; set; }
+
+    [YamlMember(Description = "How many attempts to try before terminating the session if randomly picked map fails validation. Hardcoded maximum is 50.")]
+    public int ValidationRetries { get; set; } = 10;
 
     [YamlMember(Description = "Discord Rich Presence configuration.")]
     public DiscordRichPresenceConfig DiscordRichPresence { get; set; } = new();
