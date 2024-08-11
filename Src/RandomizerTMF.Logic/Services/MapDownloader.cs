@@ -108,17 +108,25 @@ public class MapDownloader : IMapDownloader
             return false;
         }
 
-		if (uint.TryParse(trackId, out var trackIdUint)
-			&& config.Rules.BannedMaps.TryGetValue(site, out var bannedTrackIds)
+        if (uint.TryParse(trackId, out var trackIdUint)
+            && config.Rules.BannedMaps.TryGetValue(site, out var bannedTrackIds)
             && bannedTrackIds.Contains(trackIdUint))
-		{
-			logger.LogInformation("Track {trackId} is banned.", trackId);
-			return false;
-		}
+        {
+            logger.LogInformation("Track {trackId} is banned.", trackId);
+            return false;
+        }
 
-		// With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
+        var tmxLink = requestUri.ToString();
 
-		using var trackGbxResponse = await DownloadMapByTrackIdAsync(requestUri.Host, trackId, cancellationToken);
+        if (config.Rules.AvoidSkippedMaps && currentSession.SkippedMaps.Values.Any(x => x.TmxLink == tmxLink))
+        {
+            logger.LogInformation("Track {trackId} has been played already.", trackId);
+            return false;
+        }
+
+        // With the ID, it is possible to immediately download the track Gbx and process it with GBX.NET
+
+        using var trackGbxResponse = await DownloadMapByTrackIdAsync(requestUri.Host, trackId, cancellationToken);
 
         var map = await GetMapFromResponseAsync(trackGbxResponse, cancellationToken);
 
@@ -135,8 +143,6 @@ public class MapDownloader : IMapDownloader
         // The map is saved to the defined DownloadedDirectoryPath using the FileName provided in ContentDisposition
 
         var mapSavePath = await SaveMapAsync(trackGbxResponse, map.MapUid, cancellationToken);
-
-        var tmxLink = requestUri.ToString();
 
         currentSession.Map = new SessionMap(map, randomResponse.Headers.Date ?? DateTimeOffset.Now, tmxLink) // The map should be ready to be played now
         {

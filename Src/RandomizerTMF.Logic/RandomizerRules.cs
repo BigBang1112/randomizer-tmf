@@ -15,6 +15,7 @@ public class RandomizerRules
     };
 
     public Dictionary<ESite, HashSet<uint>> BannedMaps { get; init; } = [];
+    public bool AvoidSkippedMaps { get; set; }
 
     public void Serialize(BinaryWriter writer, int version)
     {
@@ -37,6 +38,13 @@ public class RandomizerRules
 				writer.Write(id);
 			}
 		}
+
+        if (version < 2)
+        {
+            return;
+        }
+
+        writer.Write(AvoidSkippedMaps);
     }
 
     public void Deserialize(BinaryReader r, int version)
@@ -63,5 +71,12 @@ public class RandomizerRules
 			}
 			BannedMaps.Add(site, ids);
 		}
+
+        if (version < 2)
+        {
+            return;
+        }
+
+        AvoidSkippedMaps = r.ReadBoolean();
     }
 }
