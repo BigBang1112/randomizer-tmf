@@ -42,6 +42,7 @@ public class RequestRules
     public bool? InLatestAuthor { get; set; }
     public bool? InLatestAwardedAuthor { get; set; }
     public bool? InScreenshot { get; set; }
+    public bool? InUnlimiter { get; set; }
     public DateOnly? UploadedBefore { get; set; }
     public DateOnly? UploadedAfter { get; set; }
     public TimeInt32? AuthorTimeMin { get; set; }
@@ -268,7 +269,7 @@ public class RequestRules
         }
     }
 
-    public void Serialize(BinaryWriter writer)
+    public void Serialize(BinaryWriter writer, int version)
     {
         writer.Write((int)Site);
         writer.Write(EqualEnvironmentDistribution);
@@ -330,13 +331,19 @@ public class RequestRules
         writer.Write(InLatestAuthor.HasValue ? Convert.ToByte(InLatestAuthor.Value) : (byte)255);
         writer.Write(InLatestAwardedAuthor.HasValue ? Convert.ToByte(InLatestAwardedAuthor.Value) : (byte)255);
         writer.Write(InScreenshot.HasValue ? Convert.ToByte(InScreenshot.Value) : (byte)255);
+
+        if (version >= 2)
+        {
+            writer.Write(InUnlimiter.HasValue ? Convert.ToByte(InUnlimiter.Value) : (byte)255);
+        }
+
         writer.Write(UploadedBefore?.ToString("yyyy-MM-dd") ?? string.Empty);
         writer.Write(UploadedAfter?.ToString("yyyy-MM-dd") ?? string.Empty);
         writer.Write(AuthorTimeMin?.TotalMilliseconds ?? 0);
         writer.Write(AuthorTimeMax?.TotalMilliseconds ?? 0);
     }
 
-    public void Deserialize(BinaryReader r)
+    public void Deserialize(BinaryReader r, int version)
     {
         Site = (ESite)r.ReadInt32();
         EqualEnvironmentDistribution = r.ReadBoolean();
@@ -420,6 +427,13 @@ public class RequestRules
         InLatestAwardedAuthor = inLatestAwardedAuthor == 255 ? null : Convert.ToBoolean(inLatestAwardedAuthor);
         var inScreenshot = r.ReadByte();
         InScreenshot = inScreenshot == 255 ? null : Convert.ToBoolean(inScreenshot);
+
+        if (version >= 2)
+        {
+            var inUnlimiter = r.ReadByte();
+            InUnlimiter = inUnlimiter == 255 ? null : Convert.ToBoolean(inUnlimiter);
+        }
+
         var uploadedBefore = r.ReadString();
         UploadedBefore = string.IsNullOrEmpty(uploadedBefore) ? null : DateOnly.Parse(uploadedBefore);
         var uploadedAfter = r.ReadString();

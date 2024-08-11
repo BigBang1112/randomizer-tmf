@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using RandomizerTMF.Logic.Exceptions;
 using System.IO.Abstractions;
 using System.Reflection;
 using YamlDotNet.Core;
@@ -18,6 +19,7 @@ public interface IRandomizerConfig
     bool DisableAutosaveDetailScan { get; set; }
     bool DisableAutoSkip { get; set; }
     AutoSkipMode AutoSkipMode { get; set; }
+    int ValidationRetries { get; set; }
     DiscordRichPresenceConfig DiscordRichPresence { get; set; }
     bool TopSessions { get; set; }
 
@@ -59,6 +61,9 @@ public class RandomizerConfig : IRandomizerConfig
     [YamlMember(Description = "When should automatic skip apply. Options are: AuthorMedal, GoldMedal, SilverMedal, BronzeMedal, Finished")]
     public AutoSkipMode AutoSkipMode { get; set; }
 
+    [YamlMember(Description = "How many attempts to try before terminating the session if randomly picked map fails validation. Hardcoded maximum is 50.")]
+    public int ValidationRetries { get; set; } = 10;
+
     [YamlMember(Description = "Discord Rich Presence configuration.")]
     public DiscordRichPresenceConfig DiscordRichPresence { get; set; } = new();
 
@@ -97,16 +102,18 @@ public class RandomizerConfig : IRandomizerConfig
             catch (YamlException ex)
             {
                 logger.LogWarning(ex.InnerException, "Error while deserializing the config file ({configPath}; [{start}] - [{end}]).", Constants.ConfigYml, ex.Start, ex.End);
+                throw new ConfigCorruptedException("Config file is corrupted or incorrectly formatted.", ex);
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Error while deserializing the config file ({configPath}).", Constants.ConfigYml);
+                throw new ConfigCorruptedException("Config file is corrupted or there's another problem.", ex);
             }
         }
 
         if (config is null)
         {
-            logger.LogInformation("Config file not found or is corrupted, creating a new one...");
+            logger.LogInformation("Config file not found, creating a new one...");
             config = new RandomizerConfig(logger, fileSystem);
         }
 

@@ -15,12 +15,13 @@ public class RandomizerRules
     };
 
     public Dictionary<ESite, HashSet<uint>> BannedMaps { get; init; } = [];
+    public bool AvoidSkippedMaps { get; set; }
 
     public void Serialize(BinaryWriter writer, int version)
     {
         writer.Write(TimeLimit.Ticks);
         writer.Write(NoUnlimiter);
-        RequestRules.Serialize(writer);
+        RequestRules.Serialize(writer, version);
 
         if (version < 1)
 		{
@@ -37,13 +38,20 @@ public class RandomizerRules
 				writer.Write(id);
 			}
 		}
+
+        if (version < 2)
+        {
+            return;
+        }
+
+        writer.Write(AvoidSkippedMaps);
     }
 
     public void Deserialize(BinaryReader r, int version)
     {
         TimeLimit = TimeSpan.FromTicks(r.ReadInt64());
         NoUnlimiter = r.ReadBoolean();
-        RequestRules.Deserialize(r);
+        RequestRules.Deserialize(r, version);
 
         if (version < 1)
 		{
@@ -63,5 +71,12 @@ public class RandomizerRules
 			}
 			BannedMaps.Add(site, ids);
 		}
+
+        if (version < 2)
+        {
+            return;
+        }
+
+        AvoidSkippedMaps = r.ReadBoolean();
     }
 }

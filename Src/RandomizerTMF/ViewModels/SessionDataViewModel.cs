@@ -161,7 +161,7 @@ internal class SessionDataViewModel : WindowWithTopBarViewModelBase
             }
             else
             {
-                val = null;
+                return;
             }
         }
 

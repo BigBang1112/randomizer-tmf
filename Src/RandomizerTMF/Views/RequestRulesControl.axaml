@@ -205,7 +205,7 @@
 				<CheckBox IsChecked="{Binding MaxATEnabled}" ToolTip.Tip="Enable/disable maximal author time filter."/>
 			</StackPanel>
 
-			<CheckBox Grid.Row="6" Grid.Column="2" IsChecked="True" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
+			<CheckBox Grid.Row="6" Grid.Column="2" IsChecked="{Binding NoUnlimiter}" Content="No Unlimiter maps" ToolTip.Tip="Avoid maps made in TMUnlimiter. There will be an option for Unlimiter only maps once TMX receives an Unlimiter map filter."/>
 
 			<TextBlock Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">Map name:</TextBlock>
 			<TextBox Grid.Column="5" Text="{Binding MapName}"/>
