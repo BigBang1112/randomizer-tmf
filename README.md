@@ -67,17 +67,7 @@ Rules:
 
 ## Download goals
 
-[![GitHub all releases](https://img.shields.io/github/downloads/BigBang1112/randomizer-tmf/total?style=for-the-badge)](https://github.com/BigBang1112/randomizer-tmf/releases)
-
-- ✔️ **50 downloads within 1 week** - Guaranteed support throughout 2023
-- ✔️ **100 downloads** - Discord Rich Presence integration
-- ✔️ **300 downloads** - TMUF theme **(coming at the end of the year)**
-- ✔️ **500 downloads** - Profile management (fresh account randomization) **(coming at the end of the year)**
-- ✔️ **2000 downloads** - Automated RMC leaderboards **(coming at the end of the year)**
-- **10000 downloads** - UI directly displayed ingame (fullscreen support)
-- **99999 downloads** - Randomizer TMTurbo
-
-Gogo!
+Sorry for not fulfilling many of these goals. The tool is now on maintenance mode, as the project is not fun to add features on, and no matter how hard I'll try, people will switch to OpenPlanet's RMC once it's out. :D
 
 ## Special thanks
 
